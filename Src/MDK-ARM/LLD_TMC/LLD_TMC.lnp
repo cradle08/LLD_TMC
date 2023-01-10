@@ -1,0 +1,25 @@
+--cpu Cortex-M3
+"lld_tmc\startup_stm32f103xe.o"
+"lld_tmc\main.o"
+"lld_tmc\stm32f1xx_it.o"
+"lld_tmc\stm32f1xx_hal_msp.o"
+"lld_tmc\stm32f1xx_hal_gpio_ex.o"
+"lld_tmc\stm32f1xx_hal_spi.o"
+"lld_tmc\stm32f1xx_hal.o"
+"lld_tmc\stm32f1xx_hal_rcc.o"
+"lld_tmc\stm32f1xx_hal_rcc_ex.o"
+"lld_tmc\stm32f1xx_hal_gpio.o"
+"lld_tmc\stm32f1xx_hal_dma.o"
+"lld_tmc\stm32f1xx_hal_cortex.o"
+"lld_tmc\stm32f1xx_hal_pwr.o"
+"lld_tmc\stm32f1xx_hal_flash.o"
+"lld_tmc\stm32f1xx_hal_flash_ex.o"
+"lld_tmc\stm32f1xx_hal_exti.o"
+"lld_tmc\stm32f1xx_hal_tim.o"
+"lld_tmc\stm32f1xx_hal_tim_ex.o"
+"lld_tmc\stm32f1xx_hal_uart.o"
+"lld_tmc\system_stm32f1xx.o"
+--strict --scatter "LLD_TMC\LLD_TMC.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "LLD_TMC.map" -o LLD_TMC\LLD_TMC.axf
