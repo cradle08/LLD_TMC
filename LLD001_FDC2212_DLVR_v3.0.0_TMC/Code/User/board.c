@@ -16,9 +16,6 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "include.h"
 
 
-//
-#include "event.h"
-
 
 
 //定义变量---------------------------------------------------------------------//
@@ -63,10 +60,10 @@ RT_WEAK void *rt_heap_end_get(void)
  */
 void rt_hw_board_init()
 {
-#if 0
 	//初始化SysTick
 	SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);	
 
+#if 0
 	//硬件BSP初始化统统放在这里，比如LED，串口，LCD等
 	//外设初始化------------------------------------//
 	IWDG_Config(IWDG_Prescaler_64 ,625);         //IWDG 1s 超时溢出
@@ -101,7 +98,7 @@ void rt_hw_board_init()
 //	MonModbusCommInit();
 	LLDInit();
 	FLASH_Init();
-
+	
 #else
 	//初始化SysTick
 	SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);	
@@ -143,7 +140,6 @@ void rt_hw_board_init()
 //	FLASH_Init();
 
 #endif
-
 	
 	
 	

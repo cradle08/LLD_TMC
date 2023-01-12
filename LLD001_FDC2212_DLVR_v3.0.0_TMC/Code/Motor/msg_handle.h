@@ -188,7 +188,7 @@ typedef __packed struct {
 uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg);
 
 //串口消息处理
-uint8_t Handle_Usart_RxMsg(MsgUsart_t *ptMsgUsart);
+//uint8_t Handle_Usart_RxMsg(MsgUsart_t *ptMsgUsart);
 
 
 
@@ -199,8 +199,8 @@ uint16_t Get_SN(uint8_t ucFlag);
 
 
 
-
-
+//消息事件处理
+void Event_Process(void);
 
 
 

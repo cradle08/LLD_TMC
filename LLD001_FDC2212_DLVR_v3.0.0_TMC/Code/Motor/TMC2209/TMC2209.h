@@ -1,18 +1,49 @@
-/*
- * TMC2209.h
- *
- *  Created on: 18.01.2019
- *      Author: LK
- */
+
 
 #ifndef TMC_IC_TMC2209_H_
 #define TMC_IC_TMC2209_H_
 
-#include "tmc/helpers/Constants.h"
-#include "tmc/helpers/API_Header.h"
+//#include "Constants.h"
+//#include "API_Header.h"
+#include "stdint.h"
 #include "TMC2209_Register.h"
 #include "TMC2209_Constants.h"
 #include "TMC2209_Fields.h"
+
+#define TMC_REGISTER_COUNT 128 // Default register count
+#define ____ 0x00
+#define TMC2209_DEFAULT_ADDR	2
+#define size_t uint32_t
+
+#define TMC_ACCESS_NONE        0x00
+
+#define TMC_ACCESS_READ        0x01
+#define TMC_ACCESS_WRITE       0x02
+                            // 0x04 is currently unused
+#define TMC_ACCESS_DIRTY       0x08  // Register has been written since reset -> shadow register is valid for restore
+
+// Special Register bits
+#define TMC_ACCESS_RW_SPECIAL  0x10  // Read and write are independent - different values and/or different functions
+#define TMC_ACCESS_FLAGS       0x20  // Register has read or write to clear flags.
+#define TMC_ACCESS_HW_PRESET   0x40  // Register has hardware presets (e.g. Factory calibrations) - do not write a default value
+                            // 0x80 is currently unused
+
+// Permission combinations
+#define TMC_ACCESS_RW              (TMC_ACCESS_READ  | TMC_ACCESS_WRITE)        // 0x03 - Read and write
+#define TMC_ACCESS_RW_SEPARATE     (TMC_ACCESS_RW    | TMC_ACCESS_RW_SPECIAL)   // 0x13 - Read and write, with separate values/functions
+#define TMC_ACCESS_R_FLAGS         (TMC_ACCESS_READ  | TMC_ACCESS_FLAGS)        // 0x21 - Read, has flags (read to clear)
+#define TMC_ACCESS_RW_FLAGS        (TMC_ACCESS_RW    | TMC_ACCESS_FLAGS)        // 0x23 - Read and write, has flags (read or write to clear)
+#define TMC_ACCESS_W_PRESET        (TMC_ACCESS_WRITE | TMC_ACCESS_HW_PRESET)    // 0x42 - Write, has hardware preset - skipped in reset routine
+#define TMC_ACCESS_RW_PRESET       (TMC_ACCESS_RW    | TMC_ACCESS_HW_PRESET)    // 0x43 - Read and write, has hardware presets - skipped in reset routine
+
+// Helper macros
+#define TMC_IS_READABLE(x)    ((x) & TMC_ACCESS_READ)
+#define TMC_IS_WRITABLE(x)    ((x) & TMC_ACCESS_WRITE)
+#define TMC_IS_DIRTY(x)       ((x) & TMC_ACCESS_DIRTY)
+#define TMC_IS_PRESET(x)      ((x) & TMC_ACCESS_HW_PRESET)
+#define TMC_IS_RESETTABLE(x)  (((x) & (TMC_ACCESS_W_PRESET)) == TMC_ACCESS_WRITE) // Write bit set, Hardware preset bit not set
+#define TMC_IS_RESTORABLE(x)  (((x) & TMC_ACCESS_WRITE) && (!(x & TMC_ACCESS_HW_PRESET) || (x & TMC_ACCESS_DIRTY))) // Write bit set, if it's a hardware preset register, it needs to be dirty
+
 
 // Helper macros
 #define TMC2209_FIELD_READ(tdef, address, mask, shift) \
@@ -21,16 +52,16 @@
 	(tmc2209_writeInt(tdef, address, FIELD_SET(tmc2209_readInt(tdef, address), mask, shift, value)))
 
 // Usage note: use 1 TypeDef per IC
-typedef struct {
-	ConfigurationTypeDef *config;
+//typedef struct {
+//	ConfigurationTypeDef *config;
 
-	int32_t registerResetState[TMC2209_REGISTER_COUNT];
-	uint8_t registerAccess[TMC2209_REGISTER_COUNT];
+//	int32_t registerResetState[TMC2209_REGISTER_COUNT];
+//	uint8_t registerAccess[TMC2209_REGISTER_COUNT];
 
-	uint8_t slaveAddress;
-} TMC2209TypeDef;
+//	uint8_t slaveAddress;
+//} TMC2209TypeDef;
 
-typedef void (*tmc2209_callback)(TMC2209TypeDef*, ConfigState);
+//typedef void (*tmc2209_callback)(TMC2209TypeDef*, ConfigState);
 
 // Default Register values
 #define R00 0x00000040  // GCONF
@@ -81,18 +112,62 @@ static const int32_t tmc2209_defaultRegisterResetState[TMC2209_REGISTER_COUNT] =
 #undef R6C
 #undef R70
 
-// Communication
-void tmc2209_writeInt(TMC2209TypeDef *tmc2209, uint8_t address, int32_t value);
-int32_t tmc2209_readInt(TMC2209TypeDef *tmc2209, uint8_t address);
 
-void tmc2209_init(TMC2209TypeDef *tmc2209, uint8_t channel, uint8_t slaveAddress, ConfigurationTypeDef *tmc2209_config, const int32_t *registerResetState);
-uint8_t tmc2209_reset(TMC2209TypeDef *tmc2209);
-uint8_t tmc2209_restore(TMC2209TypeDef *tmc2209);
-void tmc2209_setRegisterResetState(TMC2209TypeDef *tmc2209, const int32_t *resetState);
-void tmc2209_setCallback(TMC2209TypeDef *tmc2209, tmc2209_callback callback);
-void tmc2209_periodicJob(TMC2209TypeDef *tmc2209, uint32_t tick);
 
-uint8_t tmc2209_get_slave(TMC2209TypeDef *tmc2209);
-void tmc2209_set_slave(TMC2209TypeDef *tmc2209, uint8_t slaveAddress);
+#define TMC_WRITE_BIT 0x80
+#define TMC_ADDRESS_MASK 0x7F
+// Macro to remove write bit for shadow register array access
+#define TMC_ADDRESS(x) ((x) & (TMC_ADDRESS_MASK))
+// Macro to remove write bit for shadow register array access
+#define TMC_ADDRESS(x) ((x) & (TMC_ADDRESS_MASK))
+
+
+
+typedef __packed struct {
+	uint32_t ulOldTick;
+	int32_t lVelocity;
+	int32_t lOldX;
+	
+	uint8_t Addr;
+//	int32_t laRegisterResetStatus[TMC5160_REGISTER_COUNT];
+	uint8_t	registerAccess[TMC2209_REGISTER_COUNT];
+	int32_t shadowRegister[TMC2209_REGISTER_COUNT];
+	
+} TMC2209_t;
+
+
+
+
+void tmc2209_readWriteArray(uint8_t *data, size_t writeLength, size_t readLength);
+void tmc2209_writeInt(uint8_t address, int32_t value);
+void tmc2209_init(void);
+
+//
+void tmc2209_writeRegister(uint8_t ucAddress, int32_t lValue);
+void tmc2209_readRegister(uint8_t ucAddress, int32_t *plValue);
+
+
+
+
+
+
+
+
+//// Communication
+//void tmc2209_writeInt(TMC2209TypeDef *tmc2209, uint8_t address, int32_t value);
+//int32_t tmc2209_readInt(TMC2209TypeDef *tmc2209, uint8_t address);
+
+//void tmc2209_init(TMC2209TypeDef *tmc2209, uint8_t channel, uint8_t slaveAddress, ConfigurationTypeDef *tmc2209_config, const int32_t *registerResetState);
+//uint8_t tmc2209_reset(TMC2209TypeDef *tmc2209);
+//uint8_t tmc2209_restore(TMC2209TypeDef *tmc2209);
+//void tmc2209_setRegisterResetState(TMC2209TypeDef *tmc2209, const int32_t *resetState);
+//void tmc2209_setCallback(TMC2209TypeDef *tmc2209, tmc2209_callback callback);
+//void tmc2209_periodicJob(TMC2209TypeDef *tmc2209, uint32_t tick);
+
+//uint8_t tmc2209_get_slave(TMC2209TypeDef *tmc2209);
+//void tmc2209_set_slave(TMC2209TypeDef *tmc2209, uint8_t slaveAddress);
 
 #endif /* TMC_IC_TMC2209_H_ */
+
+
+

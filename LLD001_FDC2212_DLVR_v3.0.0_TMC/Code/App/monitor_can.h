@@ -91,6 +91,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  CAN_ID_MIM                    201u
 #define  CAN_ID_MAX                    208u
 
+
 //Can应用通信地址（电机部分）
 #define  CAN_ID_MIM_MOTOR              101u
 #define  CAN_ID_MAX_MOTOR              108u

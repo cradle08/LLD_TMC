@@ -1,13 +1,8 @@
 #include "main.h"
 #include "bsp_spi.h"
-#include "TMC5160.h"
-#include "TMC_Api.h"
-#include "bsp_outin.h"
+#include "tmc_api.h"
 #include "public.h"
-#include "log.h"
-#include "TMC5160_Constants.h"
-#include "process.h"
-#include "TMC_Process.h"
+
 
 /*
  * set TMC mode work mode

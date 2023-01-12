@@ -2,7 +2,6 @@
 #define __TMC_API_H__
 
 #include "main.h"
-#include "project.h"
 #include "public.h"
 
 

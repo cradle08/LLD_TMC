@@ -13,9 +13,6 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "stdlib.h"
 #include "time.h"
 
-//
-#include "event.h"
-
 
 
 //定义变量---------------------------------------------------------------------//
@@ -224,9 +221,6 @@ uint8_t CanIRQRecv(void)
 	uint16_t    result = FALSE;
 	CanRxMsg    rx_msg;
 	
-	//
-	SysEvent_t *ptSysEvent = NULL;
-	
 	
 	//从邮箱中读出报文
 	CAN_Receive(CAN1, CAN_FIFO0, &rx_msg);
@@ -246,16 +240,10 @@ uint8_t CanIRQRecv(void)
 	}
 	else if(((rx_msg.StdId == MonCan.Confg.BroadcastID_Motor) || (rx_msg.StdId == MonCan.Confg.BroadcastID_Motor)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 	{
-		//接收成功	
-		ptSysEvent = SysEventAlloc();
-		if(NULL != ptSysEvent)
-		{
-			ptSysEvent->eMsgType = MSG_TYPE_CAN;
-			memmove((void*)ptSysEvent->tMsg.ucaDataBuf, (void*)rx_msg.Data, CAN_MSG_DATA_LENGTH);
-			SysEventPut(ptSysEvent, 0);
-		}
-	}	
-	
+		//接收成功
+		rly2 = TRUE;
+		MonCan.ReceBroadcastFinish = TRUE;	
+	}
 	
 	//装进缓存
 	if(TRUE == rly1)

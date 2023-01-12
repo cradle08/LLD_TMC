@@ -8,7 +8,8 @@
 #ifndef TMC_HELPERS_CRC_H_
 #define TMC_HELPERS_CRC_H_
 
-	#include "Types.h"
+	#include "main.h"
+	#include "public.h"
 
 	// Amount of CRC tables available
 	// Each table takes ~260 bytes (257 bytes, one bool and structure padding)

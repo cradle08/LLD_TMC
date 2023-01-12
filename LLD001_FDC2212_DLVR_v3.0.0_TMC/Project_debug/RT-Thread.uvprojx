@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F10X_MD,DEBUG</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Code\Libraries\CMSIS\startup;..\Code\Libraries\CMSIS;..\Code\Libraries\FWlib\inc;..\Code\BSP;..\Code\User;..\Code\App;..\Code\RT-Thread Nano\3.1.5\components\finsh;..\Code\RT-Thread Nano\3.1.5\include;..\Code\RT-Thread Nano\3.1.5\include\libc;..\Code\Motor</IncludePath>
+              <IncludePath>..\Code\Libraries\CMSIS\startup;..\Code\Libraries\CMSIS;..\Code\Libraries\FWlib\inc;..\Code\BSP;..\Code\User;..\Code\App;..\Code\Motor;..\Code\RT-Thread Nano\3.1.5\components\finsh;..\Code\RT-Thread Nano\3.1.5\include;..\Code\RT-Thread Nano\3.1.5\include\libc;..\Code\Motor\TMC2209</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -717,6 +717,31 @@
               <FileName>public.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Code\Motor\public.c</FilePath>
+            </File>
+            <File>
+              <FileName>project_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Code\Motor\project_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>tmc_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\tmc_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>CRC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\TMC2209\CRC.c</FilePath>
+            </File>
+            <File>
+              <FileName>TMC2209.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\TMC2209\TMC2209.c</FilePath>
+            </File>
+            <File>
+              <FileName>tmc_api.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\tmc_api.c</FilePath>
             </File>
           </Files>
         </Group>

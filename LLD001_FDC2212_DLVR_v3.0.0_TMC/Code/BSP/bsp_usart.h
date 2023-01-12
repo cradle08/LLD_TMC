@@ -22,9 +22,12 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 //宏定义----------------------------------------------------------------------//
 //缓冲区长度
-#define BUFFER_SIZE 1024
-#define INTR_PRI	5
-#define UART_TIMEOUT_VALUE	10
+#define  UART_SEND_MAXNUM              100	//发送缓冲区长度
+#define  UART_RECV_MAXNUM              100	//接收缓冲区长度
+
+//调试错误信息
+#define EEPROM_ERROR(fmt,arg...)       printf("<<-EEPROM-ERROR->> "fmt"\n",##arg)
+
 
 
 //定义结构体--------------------------------------------------------------------//
@@ -36,42 +39,13 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //声明函数----------------------------------------------------------------------//
-
-void UART1_Init(void)
-{
-	USART_InitTypeDef UART_InitStructure;
-	NVIC_InitTypeDef  NVIC_InitStructure;
-	GPIO_InitTypeDef  GPIO_InitStructure;
-	
-	USART_DeInit(USART2);
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void USART1_Config(void);
+void USART2_Config(void);
+void Usart_SendByte(USART_TypeDef *pUSARTx, uint8_t ch);
+void Usart_SendArray(USART_TypeDef * pUSARTx, uint8_t *array, uint16_t num);
+void Usart_SendString(USART_TypeDef *pUSARTx, char *str);
+void Usart_SendHalfWord(USART_TypeDef *pUSARTx, uint16_t ch);
+void USART1_printf(char *fmt, ...);
+void USART2_printf(char *fmt, ...);
 
 #endif
-
-
-

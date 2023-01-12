@@ -60,8 +60,8 @@ struct tagCanConfig
 	uint16_t    ModuleID_Motor;                                                  //本模块ID  电机部分
 	uint16_t    ReplyID_Motor;                                                   //应答ID	   电机部分
 	uint16_t    BroadcastID_Motor;                                               //广播ID	   电机部分
-		
-//	uint16_t    Bps;                                                           //波特率
+
+	//	uint16_t    Bps;                                                           //波特率
 	uint16_t    BpsMode;                                                       //波特率模式
 };
 

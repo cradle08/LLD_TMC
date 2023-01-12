@@ -41,8 +41,6 @@ FDC2212:
     INTB: PA4
     SD: PA5
 
-
-
 光耦：
 P_DP1: PA15（复位光耦）
 P_DP1: PB0（限位位光耦）

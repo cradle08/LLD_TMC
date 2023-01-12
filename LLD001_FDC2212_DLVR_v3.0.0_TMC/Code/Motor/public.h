@@ -45,10 +45,10 @@ typedef enum {
 *	Bool
 */
 typedef enum{
-	FALSE	= 0,
-	TRUE    = !FALSE
+	false	= 0,
+	true    = !false
 
-}Bool_e;
+}bool;
 
 
 
@@ -151,8 +151,6 @@ typedef __packed union{
 // Force the compiler to access a location exactly once
 #define ACCESS_ONCE(x) *((volatile typeof(x) *) (&x))
 
-// Macro to remove write bit for shadow register array access
-#define TMC_ADDRESS(x) ((x) & (TMC_ADDRESS_MASK))
 
 
 

@@ -194,7 +194,7 @@ void CAN_Filter_Config(CAN_TypeDef* can, struct tagCanConfig  *confg)
 	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = ((confg->ModuleID_Motor<<21) & 0xFFFF0000)>>16;   //CanID3，预留ID
 	CAN_FilterInitStructure.CAN_FilterMaskIdLow = ((confg->BroadcastID_Motor<<21) & 0xFFFF0000)>>16;  //CanID4，预留ID
 	//CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x00;                                    //CanID3，预留ID
-	//CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x00;                                     //CanID4，预留ID
+	//CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x00;                                     //CanID4，预留ID                                    //CanID4，预留ID
 	
 	CAN_FilterInitStructure.CAN_FilterFIFOAssignment = CAN_Filter_FIFO0;       //筛选器被关联到FIFO0
 	CAN_FilterInitStructure.CAN_FilterActivation = ENABLE;                     //使能筛选器
