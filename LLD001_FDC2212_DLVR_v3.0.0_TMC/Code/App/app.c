@@ -12,7 +12,8 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "stm32f10x.h"
 #include "include.h"
 
-
+#include "event.h"
+#include "msg_handle.h"
 
 
 
@@ -70,16 +71,19 @@ void SWTimer10ms(void* parameter)
 {
 	while(1)
 	{
-		//同时使用IIC1和IIC2接口进行通信，发现有相互干扰现象。
-		CapSensor();
-		AirSensor();
-		LLDReslut();
+//		//同时使用IIC1和IIC2接口进行通信，发现有相互干扰现象。
+//		CapSensor();
+//		AirSensor();
+//		LLDReslut();
+//		
+//		CheckPhotosensor();
+//		DipSWCheck();
+//		TempNTC();
 		
-		CheckPhotosensor();
-		DipSWCheck();
-		TempNTC();
-		
-		rt_thread_delay(10);
+		GPIO_SetBits(GPIOB,  GPIO_Pin_5);
+		rt_thread_delay(100);
+		GPIO_ResetBits(GPIOB,  GPIO_Pin_5);
+		rt_thread_delay(100);
 	}
 }
 
@@ -97,9 +101,11 @@ void CommMonitor(void* parameter)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
 		
-		CanMonComStage();
+//		CanMonComStage();
 		
+		//电机协议处理
+//		Event_Process();
 		
-		rt_thread_delay(2);
+		rt_thread_delay(2000);
 	}
 }

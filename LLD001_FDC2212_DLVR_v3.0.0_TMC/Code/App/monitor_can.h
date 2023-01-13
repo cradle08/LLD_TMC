@@ -95,6 +95,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 //Can应用通信地址（电机部分）
 #define  CAN_ID_MIM_MOTOR              101u
 #define  CAN_ID_MAX_MOTOR              108u
+#define  CAN_BROADCAST_ID_MOTOR        0
 #define  CAN_MSG_DATA_LENGTH		   8
 
 //Can波特率模式

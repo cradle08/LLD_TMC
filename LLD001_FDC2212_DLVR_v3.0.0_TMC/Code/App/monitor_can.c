@@ -13,6 +13,8 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "stdlib.h"
 #include "time.h"
 
+//
+#include "event.h"
 
 
 //定义变量---------------------------------------------------------------------//
@@ -147,7 +149,7 @@ uint8_t CAN_MonInit(void)
 		can_id_motor = CAN_ID_MIM_MOTOR;
 	}
 	MonCan.Confg.ModuleID_Motor = can_id_motor;
-	MonCan.Confg.BroadcastID_Motor = 0x00;
+	MonCan.Confg.BroadcastID_Motor = CAN_BROADCAST_ID_MOTOR;
 	
 	
 	//设置Can波特率模式
@@ -240,9 +242,16 @@ uint8_t CanIRQRecv(void)
 	}
 	else if(((rx_msg.StdId == MonCan.Confg.BroadcastID_Motor) || (rx_msg.StdId == MonCan.Confg.BroadcastID_Motor)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 	{
-		//接收成功
-		rly2 = TRUE;
-		MonCan.ReceBroadcastFinish = TRUE;	
+		//接收成功	
+		SysEvent_t *ptSysEvent = NULL;
+		ptSysEvent = SysEventAlloc();
+		if(NULL != ptSysEvent)
+		{
+			ptSysEvent->eMsgType = MSG_TYPE_CAN;
+			memmove((void*)ptSysEvent->tMsg.tMsgCan.ucaBuffer, (void*)rx_msg.Data, CAN_MSG_DATA_LENGTH);
+			ptSysEvent->tMsg.tMsgCan.ulRecvCanID = rx_msg.StdId;
+			SysEventPut(ptSysEvent, 0);
+		}
 	}
 	
 	//装进缓存

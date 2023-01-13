@@ -12,7 +12,10 @@ extern "C" {
 
 #define  TMC_COMM_UART	1		
 
-
+#define  TMC2209_HARDWARE_TEST	1
+  
+  
+  
   
 #ifdef __cplusplus
 }

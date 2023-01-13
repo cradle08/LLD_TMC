@@ -96,6 +96,7 @@ extern "C" {
 */
 typedef struct {
 //	CAN_RxHeaderTypeDef tCan_RxHeader;
+	uint32_t ulRecvCanID;				
 	uint8_t  ucaRxData[CAN_DATA_MAX_LEN];
 
 }Can_RxMsg_t;

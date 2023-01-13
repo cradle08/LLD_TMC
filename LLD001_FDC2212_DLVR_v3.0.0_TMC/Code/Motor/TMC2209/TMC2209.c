@@ -9,11 +9,11 @@
 TMC2209_t g_tTMC2209 = {0};
 
 
-#define TMC2209_CRC(data, length) tmc_CRC8(data, length, 1)
+#define TMC2209_CRC8(data, length) tmc_CRC8(data, length, 1)
 
 
 // => UART wrapper
-void tmc2209_readWriteArray(uint8_t *data, size_t writeLength, size_t readLength)
+void TMC2209_ReadWriteArray(uint8_t *data, size_t writeLength, size_t readLength)
 {
 	UART_ReadWrite(data, writeLength, readLength);
 }
@@ -22,10 +22,10 @@ void tmc2209_readWriteArray(uint8_t *data, size_t writeLength, size_t readLength
 // <= UART wrapper
 
 // => CRC wrapper
-uint8_t tmc2209_CRC8(uint8_t *data, size_t length);
+//uint8_t tmc2209_CRC8(uint8_t *data, size_t length);
 // <= CRC wrapper
 
-void tmc2209_writeInt(uint8_t address, int32_t value)
+void TMC2209_WriteInt(uint8_t address, int32_t value)
 {
 	uint8_t data[8];
 	
@@ -36,9 +36,9 @@ void tmc2209_writeInt(uint8_t address, int32_t value)
 	data[4] = (value >> 16) & 0xFF;
 	data[5] = (value >> 8 ) & 0xFF;
 	data[6] = (value      ) & 0xFF;
-	data[7] = tmc2209_CRC8(data, 7);
+	data[7] = TMC2209_CRC8(data, 7);
 
-	tmc2209_readWriteArray(&data[0], 8, 0);
+	TMC2209_ReadWriteArray(&data[0], 8, 0);
 
 	// Write to the shadow register and mark the register dirty
 	address = TMC_ADDRESS(address);
@@ -49,7 +49,7 @@ void tmc2209_writeInt(uint8_t address, int32_t value)
 
 
 
-int32_t tmc2209_readInt(uint8_t address)
+int32_t TMC2209_ReadInt(uint8_t address)
 {
 	uint8_t data[8] = { 0 };
 
@@ -61,9 +61,9 @@ int32_t tmc2209_readInt(uint8_t address)
 	data[0] = 0x05;
 	data[1] = TMC2209_DEFAULT_ADDR;
 	data[2] = address;
-	data[3] = tmc2209_CRC8(data, 3);
+	data[3] = TMC2209_CRC8(data, 3);
 
-	tmc2209_readWriteArray(data, 4, 8);
+	TMC2209_ReadWriteArray(data, 4, 8);
 
 	// Byte 0: Sync nibble correct?
 	if (data[0] != 0x05)
@@ -78,7 +78,7 @@ int32_t tmc2209_readInt(uint8_t address)
 		return 0;
 
 	// Byte 7: CRC correct?
-	if (data[7] != tmc2209_CRC8(data, 7))
+	if (data[7] != TMC2209_CRC8(data, 7))
 		return 0;
 
 	return ((uint32_t)data[3] << 24) | ((uint32_t)data[4] << 16) | (data[5] << 8) | data[6];
@@ -86,7 +86,7 @@ int32_t tmc2209_readInt(uint8_t address)
 
 
 
-void tmc2209_init(void)
+void TMC2209_Init(void)
 {
 	
 	g_tTMC2209.Addr = TMC2209_DEFAULT_ADDR;
@@ -95,19 +95,26 @@ void tmc2209_init(void)
 		g_tTMC2209.registerAccess[i]      = tmc2209_defaultRegisterAccess[i];
 		g_tTMC2209.shadowRegister[i]  = tmc2209_defaultRegisterResetState[i];
 	}
+	
+	//ÅäÖÃ¼Ä´æÆ÷
+	
+	
+	TMC2209_ENABLE;
+	
+	
 }
 
 
 
-void tmc2209_writeRegister(uint8_t ucAddress, int32_t lValue)
+void TMC2209_WriteRegister(uint8_t ucAddress, int32_t lValue)
 {
-	tmc2209_writeInt(ucAddress, lValue);
+	TMC2209_WriteInt(ucAddress, lValue);
 
 }
 
-void tmc2209_readRegister(uint8_t ucAddress, int32_t *plValue)
+void TMC2209_ReadRegister(uint8_t ucAddress, int32_t *plValue)
 {
-	*plValue = tmc2209_readInt(ucAddress);
+	*plValue = TMC2209_ReadInt(ucAddress);
 }
 
 

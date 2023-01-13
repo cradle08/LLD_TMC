@@ -6,6 +6,7 @@
 //#include "public.h"
 //#include "log.h"
 #include "event.h"
+#include "monitor_can.h"
 //#include "crc.h"
 //
 
@@ -113,6 +114,236 @@
 
 
 
+/* 
+*
+*	发送CAN应答消息
+*/
+uint8_t Can_Send_Msg(SendFrame_t *ptSendFrame)
+{
+	extern struct tagMonCan    MonCan;
+	uint8_t    mailbox = 0;
+	CanTxMsg    TxMsg;
+	
+	//填充报文
+	TxMsg.StdId = MonCan.Confg.ModuleID_Motor; 
+	TxMsg.ExtId = 0x00;
+	TxMsg.IDE = CAN_ID_STD;                 //标准模式
+	TxMsg.RTR = CAN_RTR_DATA;               //发送的是数据
+	TxMsg.DLC = 8;                          //数据长度为8字节	
+	TxMsg.Data[0] = ptSendFrame->ucMsgID;
+	memmove((void*)TxMsg.Data, (void*)ptSendFrame, CAN_MSG_DATA_LENGTH);
+	
+	//发送报文
+	mailbox = CAN_Transmit(CAN1, &TxMsg);
+	return(mailbox);
+
+}
+
+
+
+
+/* 
+*
+*	处理Motor消息
+*/
+uint8_t Handle_Motor_Msg(RecvFrame_t *ptRecvFrame, SendFrame_t *ptSendFrame)
+{
+	uint8_t SendFlag = 0;
+
+	
+	switch(ptRecvFrame->ucCmd)
+	{
+		case CMD_ROTATE:  //0x10
+		{
+			
+		}
+		break;
+		case CMD_MOVE_POSITION_WITHOUT_ENC:  //0x11
+		{
+			
+		}
+		break;
+		case CMD_MOVE_POSITION_WITH_ENC: //0x12
+		{		
+		
+		
+		}
+		break;
+		case CMD_STOP:   //0x13
+		{	
+		
+		}
+		break;
+		case CMD_MOTOR_RESET: //0x14
+		{
+
+
+
+
+		}
+		break;
+		case CMD_MCU_REST:  //0x20
+		{
+
+
+		}
+		break;		
+		case CMD_QUERY_BOARD_TYPE:  //0x21
+		{
+
+
+		}
+		break;		
+		case CMD_HARD_SOFT_VERSION:  //0x22
+		{
+			
+			
+			
+		}
+		break;
+		case CMD_SET_AXIS_PARAM:  //0x30
+		{			
+			
+			
+		}
+		break;
+		case CMD_GET_AXIS_PARAM:  //0x31
+		{
+
+
+		}
+		break;		
+		case CMD_SET_DEFAULT_AXIS_PARAM: //0x3A
+		{
+
+
+
+		}
+		break;
+		case CMD_GET_DEFAULT_AXIS_PARAM: //0x3B
+		{
+			
+			
+			
+			
+		}
+		break;		
+		case CMD_SET_GLOBAL_PARAM:  //0x33
+		{			
+			
+			
+		}
+		break;
+		case CMD_GET_GLOBAL_PARAM:  //0x34
+		{
+
+
+
+
+		}
+		break;			
+		case CMD_SET_IO_STATUS:  //0x35
+		{
+			
+			
+		}
+		break;
+		case CMD_GET_INPUT_IO_STATUS:  //0x36
+		{
+
+
+		}
+		break;	
+		case CMD_GET_OUTPUT_IO_STATUS: //0x37
+		{			
+			
+			
+		}
+		break;
+		case CMD_SET_EXEC_PROCESS:  //0x40
+		{
+				
+			
+			
+		}
+		break;	
+		case CMD_GET_EXEC_PROCESS:  //0x41
+		{		
+			
+			
+		}
+		break;
+		case CMD_EXEC_PROCESS_CTRL:  //0x42
+		{		
+			
+			
+		}
+		break;
+		case CMD_CLS_SAVE_EXEC_PROCESS:  //0x43
+		{
+
+
+
+		}
+		break;
+		case CMD_QUERY_STATUS:  //0x50
+		{
+			
+			
+		}
+		break;
+		case CMD_CLEAR_EEPROM_PARAM: //0x60
+		{
+			
+			
+		}
+		break;
+		case CMD_UPGRADE_LANCH: //0x70
+		{
+
+
+		}
+		break;
+		case CMD_QUERY_RUNING_SOFT_TYPE: //0x75
+		{
+			
+			
+		}
+		break;
+		case CMD_GET_SN_CAN_ID: //0x80
+		{
+
+
+
+		}
+		break;
+		case CMD_SET_CAN_ID_WITH_SN: //0x81
+		{
+
+
+
+		}
+		break;
+		case CMD_SHAKE_WITH_SN: //0x82
+		{
+			
+			
+			
+		}
+		break;
+		case CMD_SHINE_WITH_SN: //0x83
+		{
+
+
+		}
+		default:
+		{
+			ptSendFrame->ucStatus = ERROR_TYPE_CMD;
+		}
+		break;		
+	}	
+	return SendFlag;
+}
 
 
 
@@ -143,46 +374,43 @@
 *   Byte7:  数据,Data0
 *
 */
-uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg)
+uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRecvCanMsg)
 {
-////	extern CAN_HandleTypeDef hcan;
 
-////	
-////	MsgType_e eMsgType = MSG_TYPE_CAN;
-////	Can_TxMsg_t tTxMsg = {0};
-////	uint8_t ucaRxData[CAN_DATA_MAX_LEN] = {0};
-////	
-////	//获取接收的数据
-////	memmove(ucaRxData, ptRxMsg->ucaRxData, CAN_DATA_MAX_LEN);
-////	RecvFrame_t *ptRecvFrame = (RecvFrame_t*)ucaRxData;
-////	
-////	//打印接受消息
-//////	LOG_Info("Recv Msg: MsgID=%02X, DeviceID=%02X, Cmd=%02X, Type=%02X, Data=%02X %02X %02X %02X", ptRecvFrame->ucMsgID, \
-////			ptRecvFrame->ucDeviceID, ptRecvFrame->ucCmd, ptRecvFrame->ucType, ptRecvFrame->uData.ucData[0],\
-////			ptRecvFrame->uData.ucData[1],ptRecvFrame->uData.ucData[2],ptRecvFrame->uData.ucData[3]);
-////	
-////	//发送报文--头部分
-////	SendFrame_t *ptSendFrame = (SendFrame_t*)tTxMsg.ucaTxData;
-////	ptSendFrame->ucMsgID     = ptRecvFrame->ucMsgID;
-////	ptSendFrame->ucStatus    = 0;
-////	ptSendFrame->ucCmd  	 = ptRecvFrame->ucCmd;
-////	ptSendFrame->ucType  	 = ptRecvFrame->ucType;
 
-////	
-////	//判断是否为广播消息，如何是广播消息，只支持“获取板卡识别码及CAN ID信息”协议
-////	if(ptRxMsg->tCan_RxHeader.StdId == CAN_BROADCAST_ID  && ptRxMsg->ucaRxData[2] != CMD_GET_SN_CAN_ID)
-////	{
-////		ptSendFrame->ucStatus    = ERROR_TYPE_EXEC_RIGH;
-////		Can_Send_Msg(ptSendFrame);
-////		return 0;
-////	}
-////	
-////	//接受消息处理
-////	if(0 == Handle_RxMsg(eMsgType, ptRecvFrame, ptSendFrame))
-////	{	
-////		//应答消息
-////		Can_Send_Msg(ptSendFrame);
-////	}
+	Can_TxMsg_t tTxMsg = {0};
+	
+	
+	//获取接收的数据
+	RecvFrame_t *ptRecvFrame = (RecvFrame_t*)ptRecvCanMsg->ucaRxData;
+	
+	//打印接受消息
+//	LOG_Info("Recv Msg: MsgID=%02X, DeviceID=%02X, Cmd=%02X, Type=%02X, Data=%02X %02X %02X %02X", ptRecvFrame->ucMsgID, \
+			ptRecvFrame->ucDeviceID, ptRecvFrame->ucCmd, ptRecvFrame->ucType, ptRecvFrame->uData.ucData[0],\
+			ptRecvFrame->uData.ucData[1],ptRecvFrame->uData.ucData[2],ptRecvFrame->uData.ucData[3]);
+	
+	//发送报文--头部分
+	SendFrame_t *ptSendFrame = (SendFrame_t*)tTxMsg.ucaTxData;
+	ptSendFrame->ucMsgID     = ptRecvFrame->ucMsgID;
+	ptSendFrame->ucStatus    = 0;
+	ptSendFrame->ucCmd  	 = ptRecvFrame->ucCmd;
+	ptSendFrame->ucType  	 = ptRecvFrame->ucType;
+
+	
+	//判断是否为广播消息，如何是广播消息，只支持“获取板卡识别码及CAN ID信息”协议
+	if(ptRecvCanMsg->ulRecvCanID == CAN_BROADCAST_ID_MOTOR  && ptRecvCanMsg->ucaRxData[2] != CMD_GET_SN_CAN_ID)
+	{
+		ptSendFrame->ucStatus    = ERROR_TYPE_EXEC_RIGH;
+		Can_Send_Msg(ptSendFrame);
+		return 0;
+	}
+	
+	//接受消息处理
+	if(0 == Handle_Motor_Msg(ptRecvFrame, ptSendFrame))
+	{	
+		//应答消息
+		Can_Send_Msg(ptSendFrame);
+	}
 	
 	return 0;
 }
@@ -191,50 +419,13 @@ uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg)
 
 
 
-///*
-//*	串口消息处理，（当前该功能仅用于调试！！！）
-//* 
-//*/
-//uint8_t Handle_Usart_RxMsg(MsgUsart_t *ptMsgUsart)
-//{
-//	extern CAN_HandleTypeDef hcan;
-//	
-//	MsgType_e eMsgType = MSG_TYPE_USART;
-//	uint8_t ucaStData[USART_DATA_MAX_LEN+1] = {0};
-//	uint8_t ucaRxData[USART_DATA_MAX_LEN] = {0};
 
-//	
-//	//获取接收的数据
-//	if(ptMsgUsart->usLen > USART_DATA_MAX_LEN) ptMsgUsart->usLen = USART_DATA_MAX_LEN;
-//	memmove(ucaRxData, ptMsgUsart->ucaBuffer, ptMsgUsart->usLen);
-//	RecvFrame_t *ptRecvFrame = (RecvFrame_t*)ucaRxData;
-//	
-//	//打印接受消息
-////	LOG_Info("Recv Msg: MsgID=%02X, DeviceID=%02X, Cmd=%02X, Type=%02X, Data=%02X %02X %02X %02X", ptRecvFrame->ucMsgID, \
-//			ptRecvFrame->ucDeviceID, ptRecvFrame->ucCmd, ptRecvFrame->ucType, ptRecvFrame->uData.ucData[0],\
-//			ptRecvFrame->uData.ucData[1],ptRecvFrame->uData.ucData[2],ptRecvFrame->uData.ucData[3]);
-//	
-//	//发送报文--头部分
-//	SendFrame_t *ptSendFrame = (SendFrame_t*)ucaStData;
-//	ptSendFrame->ucMsgID     = ptRecvFrame->ucMsgID;
-//	ptSendFrame->ucStatus    = 0;
-//	ptSendFrame->ucCmd  	 = ptRecvFrame->ucCmd;
-//	ptSendFrame->ucType  	 = ptRecvFrame->ucType;
-
-//	//接受消息处理
-//	Handle_RxMsg(eMsgType, ptRecvFrame, ptSendFrame);
-//	
-//	//应答消息
-//	LOG_Info("%s", ucaStData);
-//	return 0;
-//}
-
-
-
-
-
+/*
+*	消息事件处理
+*/
 void Event_Process(void)
 {
+
     SysEvent_t *e;
 	SysEvent_t tSysEvent = {0};
     
@@ -251,12 +442,13 @@ void Event_Process(void)
     
 	//
     switch(tSysEvent.eMsgType)
-    {
+    {  
         case MSG_TYPE_CAN:
         {
-            Can_RxMsg_t tRxMsg = {0};
-			memmove((void*)&tRxMsg, (void*)tSysEvent.tMsg.ucaDataBuf, sizeof(Can_RxMsg_t));
-            Handle_Can_RxMsg(&tRxMsg);
+            Can_RxMsg_t tRecvCan = {0};
+			memmove((void*)&tRecvCan.ucaRxData, (void*)&tSysEvent.tMsg.tMsgCan.ucaBuffer, sizeof(MsgCan_t));
+			tRecvCan.ulRecvCanID = tSysEvent.tMsg.tMsgCan.ulRecvCanID;
+            Handle_Can_RxMsg(&tRecvCan);
         }
         break;
 //        case MSG_TYPE_USART:

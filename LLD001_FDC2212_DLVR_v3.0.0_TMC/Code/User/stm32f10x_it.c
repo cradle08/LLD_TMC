@@ -146,7 +146,7 @@ void SysTick_Handler(void)
     rt_interrupt_enter();
 
     //更新时基
-    rt_tick_increase();
+    rt_tick_increase(); 
 
     //离开中断
     rt_interrupt_leave();

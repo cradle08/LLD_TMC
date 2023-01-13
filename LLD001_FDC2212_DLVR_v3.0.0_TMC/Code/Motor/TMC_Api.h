@@ -12,20 +12,6 @@
 #define TMC_ADDRESS(x) 			((x) & (TMC_ADDRESS_MASK))
 #define BYTE(value, n)    		(((value) >> ((n) << 3)) & 0xFF)
 
-/*
- * TMC Chip Index, 最大支持六轴
- */
-typedef enum {
-	TMC_0 = 0,	//TMC5160
-	TMC_1,		//TMC5160
-	TMC_2,		//TMC5160
-	TMC_3,		//TMC5160
-	TMC_4,		//TMC5160
-	TMC_5,		//TMC5160
-	TMC_END
-
-}TMC_e;
-
 
 
 
@@ -93,36 +79,36 @@ typedef enum {
 
 
 
-//
-void TMC_Init(void);
-//
-uint8_t TMC_WriteInt(TMC_e eTMC, uint8_t ucAddr, uint32_t ulValue);
-//uint8_t TMC_ReadInt(TMC_e eTMC, uint8_t ucAddr, int32_t *plValue);
-int32_t TMC_ReadInt(TMC_e eTMC, uint8_t ucAddr);
-uint8_t TMC_WriteDataGram(TMC_e eTMC, uint8_t ucAddr, uint8_t Byte1, uint8_t Byte2, uint8_t Byte3, uint8_t Byte4);
-//void TMC_FillShadowRegisters(TMC_e eTMC);
+////
+//void TMC_Init(void);
+////
+//uint8_t TMC_WriteInt(TMC_e eTMC, uint8_t ucAddr, uint32_t ulValue);
+////uint8_t TMC_ReadInt(TMC_e eTMC, uint8_t ucAddr, int32_t *plValue);
+//int32_t TMC_ReadInt(TMC_e eTMC, uint8_t ucAddr);
+//uint8_t TMC_WriteDataGram(TMC_e eTMC, uint8_t ucAddr, uint8_t Byte1, uint8_t Byte2, uint8_t Byte3, uint8_t Byte4);
+////void TMC_FillShadowRegisters(TMC_e eTMC);
 
-//
-//初始化
-void TMC_SetVMode_V(TMC_e eTMC, uint8_t ucOpt);
-void TMC_SetPMode_V(TMC_e eTMC, uint8_t ucOpt);
-//
-ErrorType_e TMC_Mode_Set(TMC_e eTMC, TMC_Work_Mode_e eMode);
-void TMC_Enable(TMC_e eTMC);
-void TMC_Disable(TMC_e eTMC);
-//uint8_t TMC_Restore(TMC_e eTMC);
-//void TMC_SetRegisterResetState(TMC_e eTMC, const int32_t *pulState);
-void Print_Register_Value(TMC_e eTMC,  uint8_t ucAddr);
-void Print_AllRegister_Value(TMC_e eTMC);
+////
+////初始化
+//void TMC_SetVMode_V(TMC_e eTMC, uint8_t ucOpt);
+//void TMC_SetPMode_V(TMC_e eTMC, uint8_t ucOpt);
+////
+//ErrorType_e TMC_Mode_Set(TMC_e eTMC, TMC_Work_Mode_e eMode);
+//void TMC_Enable(TMC_e eTMC);
+//void TMC_Disable(TMC_e eTMC);
+////uint8_t TMC_Restore(TMC_e eTMC);
+////void TMC_SetRegisterResetState(TMC_e eTMC, const int32_t *pulState);
+//void Print_Register_Value(TMC_e eTMC,  uint8_t ucAddr);
+//void Print_AllRegister_Value(TMC_e eTMC);
 
-//
-ErrorType_e TMC_Rotate(TMC_e eTMC, RotateDirect_e eDirect, uint32_t lVelocity);
-ErrorType_e TMC_Stop(TMC_e eTMC);
-ErrorType_e TMC_Stop_Urgent(TMC_e eTMC);
-ErrorType_e TMC_MoveTo(TMC_e eTMC, int32_t lPosition);
-ErrorType_e TMC_MoveBy(TMC_e eTMC, int32_t lTicks);
-//堵塞复位
-uint8_t TMC_Reset(TMC_e eTMC, TMC_Ref_e eRef);
+////
+//ErrorType_e TMC_Rotate(TMC_e eTMC, RotateDirect_e eDirect, uint32_t lVelocity);
+//ErrorType_e TMC_Stop(TMC_e eTMC);
+//ErrorType_e TMC_Stop_Urgent(TMC_e eTMC);
+//ErrorType_e TMC_MoveTo(TMC_e eTMC, int32_t lPosition);
+//ErrorType_e TMC_MoveBy(TMC_e eTMC, int32_t lTicks);
+////堵塞复位
+//uint8_t TMC_Reset(TMC_e eTMC, TMC_Ref_e eRef);
 
 
 

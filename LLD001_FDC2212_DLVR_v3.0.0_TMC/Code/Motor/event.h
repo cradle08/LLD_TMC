@@ -26,6 +26,7 @@
 //串口buffer长度
 #define DATA_BUF_LEN	  8
 #define USART_BUFFER_LEN  10
+#define CAN_BUFFER_LEN    8
 
 
 
@@ -76,6 +77,17 @@ typedef struct {
 }MsgTimer_t;
 
 
+/*
+*	CAN事件,消息结构体
+*/
+typedef struct {
+	uint32_t 	ulRecvCanID;		//接受canid
+//	uint8_t 	ucType;				//消息子类别
+	uint8_t 	ucaBuffer[CAN_BUFFER_LEN]; //消息buffer
+	
+}MsgCan_t;
+
+
 
 /*
 *	串口事件,消息结构体
@@ -108,6 +120,7 @@ typedef struct SysEvent{
         MsgKey_t		tMsgKey;  		//按键
 		MsgTimer_t		tMsgTimer;		//定时器事件
 		MsgUsart_t		tMsgUsart;		//串口消息
+		MsgCan_t		tMsgCan;		//CAN消息
 		Aging_t			tAging;			//老化事件
 		uint8_t			ucaDataBuf[DATA_BUF_LEN];	//数据buffer
     }tMsg;
