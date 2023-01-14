@@ -139,8 +139,15 @@ typedef __packed struct {
 
 //Ê¹ÄÜ
 #define TMC2209_ENABLE 		GPIO_ResetBits(GPIOA, GPIO_Pin_6)
-//Ê§ÄÜ
 #define TMC2209_DISABLE 	GPIO_SetBits(GPIOA, GPIO_Pin_6)
+
+// STEP
+#define TMC2209_STEP_HIGH	GPIO_SetBits(GPIOA, GPIO_Pin_7);
+#define TMC2209_STEP_LOW	GPIO_ResetBits(GPIOA, GPIO_Pin_7);
+
+//DIR
+#define TMC2209_DIR_HIGH 	GPIO_ResetBits(GPIOB, GPIO_Pin_4)
+#define TMC2209_DIR_LOW 	GPIO_ResetBits(GPIOB, GPIO_Pin_4)
 
 void TMC2209_ReadWriteArray(uint8_t *data, size_t writeLength, size_t readLength);
 void TMC2209_WriteInt(uint8_t address, int32_t value);

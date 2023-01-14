@@ -155,12 +155,12 @@ typedef __packed union{
 
 
 
-///*
-//*   us延时函数
-//*/
-//void Delay_US(uint32_t ulUS);
-//uint8_t Delay_MS_NOBlock(uint32_t ulMS);
-//uint8_t Delay_MS_NOBlock_10ms(void);
+/*
+*   us延时函数
+*/
+void Delay_US(uint32_t ulUS);
+uint8_t Delay_MS_NOBlock(uint32_t ulMS);
+uint8_t Delay_MS_NOBlock_10ms(void);
 
 
 

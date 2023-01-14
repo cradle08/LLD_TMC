@@ -62,7 +62,7 @@ void rt_hw_board_init()
 {
 	//初始化SysTick
 	SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);	
-	rt_thread_delay(300);
+	
 	
 #if 0
 	//硬件BSP初始化统统放在这里，比如LED，串口，LCD等
@@ -102,8 +102,7 @@ void rt_hw_board_init()
 	FLASH_Init();
 	
 #else
-	//初始化SysTick
-	SysTick_Config(SystemCoreClock / RT_TICK_PER_SECOND);	
+
 
 	//硬件BSP初始化统统放在这里，比如LED，串口，LCD等
 	//外设初始化------------------------------------//
@@ -124,7 +123,7 @@ void rt_hw_board_init()
 //	ADCx_Init();
 	
 	GPIO_Config();
-	TMC2209_Init();
+//	TMC2209_Init();
 	
 	GenDelay_nop(72000);
 	//用户初始化------------------------------------//

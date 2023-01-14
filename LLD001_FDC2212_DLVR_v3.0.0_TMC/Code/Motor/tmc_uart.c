@@ -6,7 +6,7 @@
 //
 
 //
-#define BUFFER_SIZE  1024
+#define BUFFER_SIZE  16
 #define INTR_PRI     5
 #define UART_TIMEOUT_VALUE 10
 
@@ -224,7 +224,7 @@ void UART1_IRQHandler(void)
 	//接受中断
 	if(USART1->SR & USART_FLAG_RXNE)
 	{
-		byte = USART2->DR;
+		byte = USART1->DR;
 		if(!UARTSendFlag)
 		{
 			tTxRxBuffer.tRx.pucaBuffer[tTxRxBuffer.tRx.usWrite] = byte;

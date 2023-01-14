@@ -99,6 +99,12 @@ void TMC2209_Init(void)
 	//ÅäÖÃ¼Ä´æÆ÷
 	
 	
+    TMC2209_WriteInt(0x00,0x000000C0);			//gcong
+    TMC2209_WriteInt(0x10,0x00070C03);          //IHOLD_IRUN: IHOLD=3, IRUN=0C=600MAµçÁ÷, IHOLDDELAY=7
+    TMC2209_WriteInt(0x6C,0x10010053);	        //TMC2209_CHOPCONF
+    TMC2209_WriteInt(0x70,0xC10D0024);			// pwmconf
+
+	
 	TMC2209_ENABLE;
 	
 	

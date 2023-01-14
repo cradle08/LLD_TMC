@@ -14,7 +14,8 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 #include "event.h"
 #include "msg_handle.h"
-
+#include "TMC2209.h"
+#include "public.h"
 
 
 //定义变量---------------------------------------------------------------------//
@@ -81,9 +82,9 @@ void SWTimer10ms(void* parameter)
 //		TempNTC();
 		
 		GPIO_SetBits(GPIOB,  GPIO_Pin_5);
-		rt_thread_delay(100);
+		rt_thread_delay(500);
 		GPIO_ResetBits(GPIOB,  GPIO_Pin_5);
-		rt_thread_delay(100);
+		rt_thread_delay(500);
 	}
 }
 
@@ -97,6 +98,7 @@ void SWTimer10ms(void* parameter)
  */
 void CommMonitor(void* parameter)
 {
+	TMC2209_Init();
 	while(1)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
@@ -106,6 +108,17 @@ void CommMonitor(void* parameter)
 		//电机协议处理
 //		Event_Process();
 		
-		rt_thread_delay(2000);
+		uint32_t i = 0, Tick = rt_tick_get();
+		while(i < Tick+5000)
+		{
+			TMC2209_STEP_HIGH;
+			Delay_US(10);
+			TMC2209_STEP_LOW;
+			Delay_US(10);
+			
+			i = rt_tick_get();
+		}
+		
+		rt_thread_delay(5000);
 	}
 }
