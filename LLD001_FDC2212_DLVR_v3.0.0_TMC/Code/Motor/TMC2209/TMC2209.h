@@ -142,8 +142,8 @@ typedef __packed struct {
 #define TMC2209_DISABLE 	GPIO_SetBits(GPIOA, GPIO_Pin_6)
 
 // STEP
-#define TMC2209_STEP_HIGH	GPIO_SetBits(GPIOA, GPIO_Pin_7);
-#define TMC2209_STEP_LOW	GPIO_ResetBits(GPIOA, GPIO_Pin_7);
+#define TMC2209_STEP_HIGH	GPIO_SetBits(GPIOB, GPIO_Pin_5);
+#define TMC2209_STEP_LOW	GPIO_ResetBits(GPIOB, GPIO_Pin_5);
 
 //DIR
 #define TMC2209_DIR_HIGH 	GPIO_ResetBits(GPIOB, GPIO_Pin_4)

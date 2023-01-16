@@ -114,7 +114,7 @@ void rt_hw_board_init()
 ////	GPIO_IIC1_Init();
 //	GPIO_IIC2_Init();
 	
-	USART1_Config();                             //串口配置
+//	USART1_Config();                             //串口配置
 //	USART2_Config();
 	
 //	SysEventInit();

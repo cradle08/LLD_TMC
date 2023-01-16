@@ -81,10 +81,10 @@ void SWTimer10ms(void* parameter)
 //		DipSWCheck();
 //		TempNTC();
 		
-		GPIO_SetBits(GPIOB,  GPIO_Pin_5);
-		rt_thread_delay(500);
-		GPIO_ResetBits(GPIOB,  GPIO_Pin_5);
-		rt_thread_delay(500);
+		GPIO_SetBits(GPIOB,  GPIO_Pin_1);
+		rt_thread_delay(1000);
+		GPIO_ResetBits(GPIOB,  GPIO_Pin_1);
+		rt_thread_delay(1000);
 	}
 }
 

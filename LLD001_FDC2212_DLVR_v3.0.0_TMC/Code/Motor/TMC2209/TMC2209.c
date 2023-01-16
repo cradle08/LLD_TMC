@@ -97,7 +97,7 @@ void TMC2209_Init(void)
 	}
 	
 	//ÅäÖÃ¼Ä´æÆ÷
-	
+	Uart_Init();
 	
     TMC2209_WriteInt(0x00,0x000000C0);			//gcong
     TMC2209_WriteInt(0x10,0x00070C03);          //IHOLD_IRUN: IHOLD=3, IRUN=0C=600MAµçÁ÷, IHOLDDELAY=7

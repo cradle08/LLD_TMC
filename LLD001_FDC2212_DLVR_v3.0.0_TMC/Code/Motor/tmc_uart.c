@@ -150,16 +150,16 @@ void Uart_Init()
 	USART_DeInit(USART1);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-	
-	//PA10 Rx
-	GPIO_InitStructure.GPIO_Pin    = GPIO_Pin_10;
-	GPIO_InitStructure.GPIO_Mode   = GPIO_Mode_IPU;
-	GPIO_InitStructure.GPIO_Speed  = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
 
 	//PA9 Tx
 	GPIO_InitStructure.GPIO_Pin    = GPIO_Pin_9;
-	GPIO_InitStructure.GPIO_Mode   = GPIO_Mode_Out_OD;
+	GPIO_InitStructure.GPIO_Mode   = GPIO_Mode_AF_PP;
+	GPIO_InitStructure.GPIO_Speed  = GPIO_Speed_50MHz;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	
+	//PA10 Rx
+	GPIO_InitStructure.GPIO_Pin    = GPIO_Pin_10;
+	GPIO_InitStructure.GPIO_Mode   = GPIO_Mode_IN_FLOATING;
 	GPIO_InitStructure.GPIO_Speed  = GPIO_Speed_50MHz;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	
@@ -192,20 +192,20 @@ void Uart_Init()
 	NVIC_Init(&NVIC_InitStructure);
 
 
-	USART_ClearFlag(USART2, USART_FLAG_CTS | USART_FLAG_LBD  | USART_FLAG_TXE  |
+	USART_ClearFlag(USART1, USART_FLAG_CTS | USART_FLAG_LBD  | USART_FLAG_TXE  |
 	                        USART_FLAG_TC  | USART_FLAG_RXNE | USART_FLAG_IDLE |
 	                        USART_FLAG_ORE | USART_FLAG_NE   | USART_FLAG_FE   |
 	                        USART_FLAG_PE);
-	USART_ITConfig(USART2,USART_IT_PE, DISABLE);
-	USART_ITConfig(USART2,USART_IT_TXE, ENABLE);
-	USART_ITConfig(USART2,USART_IT_TC, ENABLE);
-	USART_ITConfig(USART2,USART_IT_RXNE, ENABLE);
-	USART_ITConfig(USART2,USART_IT_IDLE, DISABLE);
-	USART_ITConfig(USART2,USART_IT_LBD, DISABLE);
-	USART_ITConfig(USART2,USART_IT_CTS, DISABLE);
-	USART_ITConfig(USART2,USART_IT_ERR, DISABLE);
+//	USART_ITConfig(USART1,USART_IT_PE, DISABLE);
+//	USART_ITConfig(USART1,USART_IT_TXE, ENABLE);
+//	USART_ITConfig(USART1,USART_IT_TC, ENABLE);
+	USART_ITConfig(USART1,USART_IT_RXNE, ENABLE);
+	USART_ITConfig(USART1,USART_IT_IDLE, DISABLE);
+	USART_ITConfig(USART1,USART_IT_LBD, DISABLE);
+	USART_ITConfig(USART1,USART_IT_CTS, DISABLE);
+	USART_ITConfig(USART1,USART_IT_ERR, DISABLE);
 
-	USART_Cmd(USART2, ENABLE);
+	USART_Cmd(USART1, ENABLE);
 }
 
 
@@ -217,9 +217,9 @@ void Uart_Init()
  * @param
  * @retval
  */
-void UART1_IRQHandler(void)
+void USART1_IRQHandler(void)
 {
-	uint8_t byte;
+	uint8_t byte = 0;
 	
 	//接受中断
 	if(USART1->SR & USART_FLAG_RXNE)

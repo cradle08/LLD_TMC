@@ -54,7 +54,7 @@ static uint32_t bytesAvailable(void);
 void Uart_Init(void);
 
 //UART1 ÖÐ¶Ïº¯Êý
-void UART1_IRQHandler(void);
+void USART1_IRQHandler(void);
 
 //UART¶ÁÐ´
 int32_t UART_ReadWrite(uint8_t *pucaData, uint16_t usWriteLen, uint8_t ucReadLen);

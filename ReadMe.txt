@@ -26,8 +26,8 @@ IIC2（电容传感器）:
 TMC2209:
     SPREAD: PB3
     DIR: PB4
-    STEP:PB5
     EN: PA6
+    STEP:PB5
     CLK:PA8
 
 SW1-4:
@@ -76,7 +76,3 @@ STEP:PB5 ---> PA7、PC7
 EN: PA6
 
 CLK:PA8 --->*
-
-
-
-

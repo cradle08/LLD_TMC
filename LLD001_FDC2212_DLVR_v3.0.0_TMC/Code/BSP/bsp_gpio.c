@@ -59,12 +59,6 @@ void GPIO_Config(void)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
 	
 	/* 其他，输入输出 */
-	//电机复位，检测光耦, PA15
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);	
-	
 	//检测光电传感器的输出信号(限位光耦?), PB0
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -108,6 +102,7 @@ void GPIO_Config(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	GPIO_SetBits(GPIOA, GPIO_Pin_6);
 	
+	
 	#if TMC2209_HARDWARE_TEST
 		//STEP, TIM3_CH2,PA7
 		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
@@ -129,8 +124,6 @@ void GPIO_Config(void)
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 		GPIO_Init(GPIOB, &GPIO_InitStructure);
 		GPIO_ResetBits(GPIOB, GPIO_Pin_5);
-		
-
 	#endif
 	
 	//CLK, MCO, PA8
@@ -139,18 +132,23 @@ void GPIO_Config(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);	
 	GPIO_ResetBits(GPIOA, GPIO_Pin_8);
+
+	//电机复位，检测光耦, PA15
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);	
 	
-	/* PA15, 电机复位光耦 */
-	//选择EXTI的信号源
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA, GPIO_PinSource15); 
-	EXTI_InitStructure.EXTI_Line = EXTI_Line15;
-	//EXTI为中断模式
-	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
-	//下降沿中断
-	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
-	//使能中断
-	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStructure);
+//	//选择EXTI的信号源
+//	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA, GPIO_PinSource15); 
+//	EXTI_InitStructure.EXTI_Line = EXTI_Line15;
+//	//EXTI为中断模式
+//	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+//	//下降沿中断
+//	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
+//	//使能中断
+//	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+//	EXTI_Init(&EXTI_InitStructure);
 	
 	/* FDC2212 */
 	//FDC2212的ADDR
