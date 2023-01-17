@@ -88,6 +88,9 @@ int32_t TMC2209_ReadInt(uint8_t address)
 
 void TMC2209_Init(void)
 {
+	int32_t lReg = 0;
+	//CRC校验表
+	tmc_fillCRC8Table(0x07, true, 1);//初始化CRC校验表
 	
 	g_tTMC2209.Addr = TMC2209_DEFAULT_ADDR;
 	for(size_t i = 0; i < TMC2209_REGISTER_COUNT; i++)
@@ -104,6 +107,14 @@ void TMC2209_Init(void)
     TMC2209_WriteInt(0x6C,0x10010053);	        //TMC2209_CHOPCONF
     TMC2209_WriteInt(0x70,0xC10D0024);			// pwmconf
 
+	
+//	lReg = TMC2209_ReadInt(0x6C);	
+//	while(1)
+//    {
+
+//        rt_thread_delay(500);
+//        //if(lReg==0xC0)break;//写入和读取成功，退出
+//    }
 	
 	TMC2209_ENABLE;
 	

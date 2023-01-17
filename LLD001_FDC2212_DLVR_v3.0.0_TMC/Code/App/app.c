@@ -82,9 +82,9 @@ void SWTimer10ms(void* parameter)
 //		TempNTC();
 		
 		GPIO_SetBits(GPIOB,  GPIO_Pin_1);
-		rt_thread_delay(1000);
+		rt_thread_delay(500);
 		GPIO_ResetBits(GPIOB,  GPIO_Pin_1);
-		rt_thread_delay(1000);
+		rt_thread_delay(500);
 	}
 }
 
@@ -98,6 +98,7 @@ void SWTimer10ms(void* parameter)
  */
 void CommMonitor(void* parameter)
 {
+	uint32_t i = 0, Tick = 0;
 	TMC2209_Init();
 	while(1)
 	{
@@ -108,7 +109,28 @@ void CommMonitor(void* parameter)
 		//电机协议处理
 //		Event_Process();
 		
-		uint32_t i = 0, Tick = rt_tick_get();
+		
+		
+		
+		
+//		TMC2209_WriteInt(0x10,0x00071403); //IHOLD_IRUN: IHOLD=3, IRUN=0C=600MA电流, IHOLDDELAY=7
+//		Tick = rt_tick_get();
+//		while(i < Tick+5000)
+//		{
+//			TMC2209_STEP_HIGH;
+//			Delay_US(10);
+//			TMC2209_STEP_LOW;
+//			Delay_US(10);
+//			
+//			i = rt_tick_get();
+//		}
+//		rt_thread_delay(5000);
+	
+		//
+		//TMC2209_WriteInt(0x10,0x00070903); //IHOLD_IRUN: IHOLD=3, IRUN=0C=600MA电流, IHOLDDELAY=7
+		//TMC2209_WriteInt(0x10,0x00071403);
+		TMC2209_WriteInt(0x10,0x00070903); //0-31
+		Tick = rt_tick_get();
 		while(i < Tick+5000)
 		{
 			TMC2209_STEP_HIGH;
@@ -118,7 +140,6 @@ void CommMonitor(void* parameter)
 			
 			i = rt_tick_get();
 		}
-		
 		rt_thread_delay(5000);
 	}
 }
