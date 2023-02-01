@@ -10,7 +10,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 *****************************************************************************/
 #include "bsp_can.h" 
 #include "include.h"
-
+#include "param.h"
 
 
 //定义变量---------------------------------------------------------------------//
@@ -173,6 +173,7 @@ void CAN_Mode_Config(CAN_TypeDef* can, struct tagCanConfig  *confg)
  */
 void CAN_Filter_Config(CAN_TypeDef* can, struct tagCanConfig  *confg)
 {
+	extern __IO GlobalParam_t  g_tGlobalParam;
 	CAN_FilterInitTypeDef  CAN_FilterInitStructure;
 	
 	
@@ -191,8 +192,8 @@ void CAN_Filter_Config(CAN_TypeDef* can, struct tagCanConfig  *confg)
 	//设置标识符寄存器高字节.这里为什么是左移5位呢？标准帧ID只有11位，CanMan.ID是16位变量，高5位无效。
 	CAN_FilterInitStructure.CAN_FilterIdHigh = ((confg->ModuleID<<21) & 0xFFFF0000)>>16;    //CanID1
 	CAN_FilterInitStructure.CAN_FilterIdLow = ((confg->BroadcastID<<21) & 0xFFFF0000)>>16;  //CanID2，广播ID
-	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = ((confg->ModuleID_Motor<<21) & 0xFFFF0000)>>16;   //CanID3，预留ID
-	CAN_FilterInitStructure.CAN_FilterMaskIdLow = ((confg->BroadcastID_Motor<<21) & 0xFFFF0000)>>16;  //CanID4，预留ID
+	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = ((g_tGlobalParam.ulRecvCanID<<21) & 0xFFFF0000)>>16;   //CanID3，预留ID
+	CAN_FilterInitStructure.CAN_FilterMaskIdLow = ((CAN_BROADCAST_ID_MOTOR <<21) & 0xFFFF0000)>>16;  //CanID4，预留ID
 	//CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x00;                                    //CanID3，预留ID
 	//CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x00;                                     //CanID4，预留ID                                    //CanID4，预留ID
 	

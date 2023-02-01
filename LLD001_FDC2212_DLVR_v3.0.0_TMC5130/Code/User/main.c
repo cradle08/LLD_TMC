@@ -11,6 +11,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 *****************************************************************************/
 #include "stm32f10x.h"
 #include "include.h"
+#include "main.h"
 
 
 
@@ -57,29 +58,29 @@ int main(void)
 	//并且系统空闲线程被设置为最低优先级（默认值7），当有用户线程也设置为7时，实时性就会变差。
 	
 	
-	//看门狗
-	rt_thread_init(&wdog_tcb,                                        // 线程控制块
-	               "wdog",                                           // 线程名字
-	               IWDG_Feed,                                        // 线程入口函数
-	               RT_NULL,                                          // 线程入口函数参数
-	               &rt_wdog_stk[0],                                  // 线程栈起始地址
-	               sizeof(rt_wdog_stk),                              // 线程栈大小
-	               0,                                                // 线程的优先级
-	               5);                                               // 线程时间片(心跳时间tick)
-	rt_thread_startup(&wdog_tcb);                                    // 启动线程，开启调度
+//	//看门狗
+//	rt_thread_init(&wdog_tcb,                                        // 线程控制块
+//	               "wdog",                                           // 线程名字
+//	               IWDG_Feed,                                        // 线程入口函数
+//	               RT_NULL,                                          // 线程入口函数参数
+//	               &rt_wdog_stk[0],                                  // 线程栈起始地址
+//	               sizeof(rt_wdog_stk),                              // 线程栈大小
+//	               0,                                                // 线程的优先级
+//	               5);                                               // 线程时间片(心跳时间tick)
+//	rt_thread_startup(&wdog_tcb);                                    // 启动线程，开启调度
+//	
 	
-	
-	//软件计时
-	rt_thread_init(&SWSysTimer_tcb,                                  // 线程控制块
-	               "SWSysT",                                         // 线程名字
-	               SWSysTimer,                                       // 线程入口函数
-	               RT_NULL,                                          // 线程入口函数参数
-	               &rt_SWSysTimer_stk[0],                            // 线程栈起始地址
-	               sizeof(rt_SWSysTimer_stk),                        // 线程栈大小
-	               4,                                                // 线程的优先级
-	               5);                                               // 线程时间片(心跳时间tick)
-	rt_thread_startup(&SWSysTimer_tcb);                              // 启动线程，开启调度
-	
+//	//软件计时
+//	rt_thread_init(&SWSysTimer_tcb,                                  // 线程控制块
+//	               "SWSysT",                                         // 线程名字
+//	               SWSysTimer,                                       // 线程入口函数
+//	               RT_NULL,                                          // 线程入口函数参数
+//	               &rt_SWSysTimer_stk[0],                            // 线程栈起始地址
+//	               sizeof(rt_SWSysTimer_stk),                        // 线程栈大小
+//	               4,                                                // 线程的优先级
+//	               5);                                               // 线程时间片(心跳时间tick)
+//	rt_thread_startup(&SWSysTimer_tcb);                              // 启动线程，开启调度
+//	
 	
 	//10ms软件定时
 	rt_thread_init(&SWTimer10ms_tcb,                                 // 线程控制块

@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F10X_MD,DEBUG</Define>
               <Undefine></Undefine>
-              <IncludePath>..\Code\Libraries\CMSIS\startup;..\Code\Libraries\CMSIS;..\Code\Libraries\FWlib\inc;..\Code\BSP;..\Code\User;..\Code\App;..\Code\Motor;..\Code\RT-Thread Nano\3.1.5\components\finsh;..\Code\RT-Thread Nano\3.1.5\include;..\Code\RT-Thread Nano\3.1.5\include\libc;..\Code\Motor\TMC2209</IncludePath>
+              <IncludePath>..\Code\Libraries\CMSIS\startup;..\Code\Libraries\CMSIS;..\Code\Libraries\FWlib\inc;..\Code\BSP;..\Code\User;..\Code\App;..\Code\Motor;..\Code\RT-Thread Nano\3.1.5\components\finsh;..\Code\RT-Thread Nano\3.1.5\include;..\Code\RT-Thread Nano\3.1.5\include\libc;..\Code\Motor\TMC;..\Code\Motor\TMC\TMC5130;..\Code\Motor\Comm;..\Code\Motor\App</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -704,44 +704,69 @@
           <GroupName>Motor</GroupName>
           <Files>
             <File>
-              <FileName>event.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Code\Motor\event.c</FilePath>
-            </File>
-            <File>
-              <FileName>msg_handle.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Code\Motor\msg_handle.c</FilePath>
-            </File>
-            <File>
-              <FileName>public.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Code\Motor\public.c</FilePath>
-            </File>
-            <File>
               <FileName>project_config.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\Code\Motor\project_config.h</FilePath>
             </File>
             <File>
-              <FileName>tmc_uart.c</FileName>
+              <FileName>public.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Code\Motor\tmc_uart.c</FilePath>
+              <FilePath>..\Code\Motor\Comm\public.c</FilePath>
             </File>
             <File>
-              <FileName>CRC.c</FileName>
+              <FileName>TMC_Api.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Code\Motor\TMC2209\CRC.c</FilePath>
+              <FilePath>..\Code\Motor\TMC\TMC_Api.c</FilePath>
             </File>
             <File>
-              <FileName>TMC2209.c</FileName>
+              <FileName>TMC_Process.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Code\Motor\TMC2209\TMC2209.c</FilePath>
+              <FilePath>..\Code\Motor\TMC\TMC_Process.c</FilePath>
             </File>
             <File>
-              <FileName>tmc_api.c</FileName>
+              <FileName>TMC5130.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Code\Motor\tmc_api.c</FilePath>
+              <FilePath>..\Code\Motor\TMC\TMC5130\TMC5130.c</FilePath>
+            </File>
+            <File>
+              <FileName>m95xxx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\m95xxx.c</FilePath>
+            </File>
+            <File>
+              <FileName>crc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\Comm\crc.c</FilePath>
+            </File>
+            <File>
+              <FileName>eeprom.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\Comm\eeprom.c</FilePath>
+            </File>
+            <File>
+              <FileName>event.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\Comm\event.c</FilePath>
+            </File>
+            <File>
+              <FileName>log.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\Comm\log.c</FilePath>
+            </File>
+            <File>
+              <FileName>msg_handle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\App\msg_handle.c</FilePath>
+            </File>
+            <File>
+              <FileName>param.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\App\param.c</FilePath>
+            </File>
+            <File>
+              <FileName>process.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Code\Motor\App\process.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -852,5 +877,14 @@
     <components/>
     <files/>
   </RTE>
+
+  <LayerInfo>
+    <Layers>
+      <Layer>
+        <LayName>RT-Thread</LayName>
+        <LayPrjMark>1</LayPrjMark>
+      </Layer>
+    </Layers>
+  </LayerInfo>
 
 </Project>

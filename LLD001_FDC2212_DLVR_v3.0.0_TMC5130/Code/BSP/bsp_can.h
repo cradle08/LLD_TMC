@@ -57,9 +57,9 @@ struct tagCanConfig
 	uint16_t    ReplyID;                                                       //应答ID	
 	uint16_t    BroadcastID;                                                   //广播ID	
 	
-	uint16_t    ModuleID_Motor;                                                  //本模块ID  电机部分
-	uint16_t    ReplyID_Motor;                                                   //应答ID	   电机部分
-	uint16_t    BroadcastID_Motor;                                               //广播ID	   电机部分
+//	uint16_t    ModuleID_Motor;                                                  //本模块ID  电机部分
+//	uint16_t    ReplyID_Motor;                                                   //应答ID	   电机部分
+//	uint16_t    BroadcastID_Motor;                                               //广播ID	   电机部分
 
 	//	uint16_t    Bps;                                                           //波特率
 	uint16_t    BpsMode;                                                       //波特率模式
@@ -80,6 +80,10 @@ void CAN_Config(CAN_TypeDef* can, struct tagCanConfig *confg);
 void Init_RxMes(CanRxMsg *rx_msg);
 
 
+
+/***** 电机部分 ****************************************************/
+uint32_t Recv_CanID(void);
+uint32_t Send_CanID(void);
 
 #endif
 

@@ -8,7 +8,10 @@ Date       : 完成日期
 History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包 括 修 改 日 期 、 修 改
 者及修改内容简述。
 *****************************************************************************/
+#include "main.h"
 #include "bsp_spi.h"
+#include "TMC_Api.h"
+
 
 
 
@@ -26,109 +29,277 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
  * @output  : NULL
  * @return  : NULL
  */
-void SPI1_Configure(void)
+void SPI2_Configure(void)
 {
+ 	GPIO_InitTypeDef GPIO_InitStructure;
 	SPI_InitTypeDef  SPI_InitStructure;
-	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	
-	//使能SPI时钟
-	RCC_APB2PeriphClockCmd(FLASH_SPI_CLK, ENABLE);
 
-	//使能SPI引脚相关的时钟
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
-
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE); 
-	
-	//JLink引脚与SPI引脚重叠，需要禁止Jlink的引脚功能
-    GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE); 
-	GPIO_PinRemapConfig(GPIO_Remap_SPI1, ENABLE); 
-
-
-	//配置SPI的CS引脚
-	GPIO_InitStructure.GPIO_Pin = FLASH_SPI_CS_PIN;
+	RCC_APB2PeriphClockCmd(	RCC_APB2Periph_GPIOB, ENABLE );//PORTB时钟使能 
+	RCC_APB1PeriphClockCmd(	USE_SPI_CLK,  ENABLE );//SPI2时钟使能 	
+ 
+	GPIO_InitStructure.GPIO_Pin = USE_SPI_SCK_PIN | USE_SPI_MISO_PIN | USE_SPI_MOSI_PIN;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;  //PB13/14/15复用推挽输出 
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_Init(GPIOB, &GPIO_InitStructure);//初始化GPIOB
 
-	//配置SPI的SCK、MISO、MOSI引脚
-	GPIO_InitStructure.GPIO_Pin = FLASH_SPI_SCK_PIN | FLASH_SPI_MISO_PIN | FLASH_SPI_MOSI_PIN;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	
-	//停止信号 FLASH: CS引脚高电平
-	FLASH_SPI_CS_HIGH();
-	
-	//SPI 模式配置
-	//FLASH芯片 支持SPI模式0及模式3，据此设置CPOL CPHA
-	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
-	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;
-	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;
-	SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;
-	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;
-	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;
-	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;
-	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;
-	SPI_InitStructure.SPI_CRCPolynomial = 7;
-	SPI_Init(FLASH_SPIx, &SPI_InitStructure);
-	
-	//使能 SPI
-	SPI_Cmd(FLASH_SPIx, ENABLE);
+ 	GPIO_SetBits(GPIOB, USE_SPI_SCK_PIN|USE_SPI_MISO_PIN|USE_SPI_MOSI_PIN);  //PB13/14/15上拉
+
+	SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;  //设置SPI单向或者双向的数据模式:SPI设置为双线双向全双工
+	SPI_InitStructure.SPI_Mode = SPI_Mode_Master;		//设置SPI工作模式:设置为主SPI
+	SPI_InitStructure.SPI_DataSize = SPI_DataSize_8b;		//设置SPI的数据大小:SPI发送接收8位帧结构
+	SPI_InitStructure.SPI_CPOL = SPI_CPOL_High;		//串行同步时钟的空闲状态为高电平
+	SPI_InitStructure.SPI_CPHA = SPI_CPHA_2Edge;	//串行同步时钟的第二个跳变沿（上升或下降）数据被采样
+	SPI_InitStructure.SPI_NSS = SPI_NSS_Soft;		//NSS信号由硬件（NSS管脚）还是软件（使用SSI位）管理:内部NSS信号有SSI位控制
+	SPI_InitStructure.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_32;		//定义波特率预分频的值:波特率预分频值为256
+	SPI_InitStructure.SPI_FirstBit = SPI_FirstBit_MSB;	//指定数据传输从MSB位还是LSB位开始:数据传输从MSB位开始
+	SPI_InitStructure.SPI_CRCPolynomial = 7;	//CRC值计算的多项式
+	SPI_Init(USE_SPIx, &SPI_InitStructure);  //根据SPI_InitStruct中指定的参数初始化外设SPIx寄存器
+ 
+	SPI_Cmd(USE_SPIx, ENABLE); //使能SPI外设
 }
 
 
 
 
-
-
-
-
-
+/***********************************************************
+*
+*	SPI TMC
+*
+************************************************************/
 /*
- * @function: SPI_TIMEOUT_UserCallback
- * @details : 等待超时回调函数
- * @input   : NULL
- * @output  : NULL
- * @return  : NULL
+ * TMC Chip，Spi CS High
  */
-static uint16_t SPI_TIMEOUT_UserCallback(uint16_t errorCode)
+void TMC_Spi_CS_High(TMC_e eTMC)
 {
-	//等待超时后的处理,输出错误信息
-	FLASH_ERROR("SPI 等待超时!errorCode = %d", errorCode);
-	
-	return errorCode;
+	switch(eTMC)
+	{
+		case TMC_0:
+		{
+			TMC0_SPI_CS_HIGH;
+		}
+		break;
+		case TMC_1:
+		{
+			TMC1_SPI_CS_HIGH;
+		}
+		break;
+		case TMC_2:
+		{
+			TMC2_SPI_CS_HIGH;
+		}
+		break;
+		case TMC_3:
+		{
+			
+		}
+		break;
+		case TMC_4:
+		{
+			
+		}
+		break;
+		case TMC_5:
+		{
+			
+		}
+		break;
+		default:break;
+
+	}
 }
 
 
 /*
- * @function: SPI_SendRecvByte
- * @details : 读写公共函数
- * @input   : 1.SPIx：SPI端口号。
-              2.byte：要发送的数据。
- * @output  : NULL
- * @return  : 返回接收到的数据
+ *	TMC Chip，Spi CS Low
  */
-uint8_t SPI_SendRecvByte(SPI_TypeDef* spi, uint8_t byte)
+void TMC_Spi_CS_Low(TMC_e eTMC)
+{
+	switch(eTMC)
+	{
+		case TMC_0:
+		{
+			TMC0_SPI_CS_LOW;
+		}
+		break;
+		case TMC_1:
+		{
+			TMC1_SPI_CS_LOW;
+		}
+		break;
+		case TMC_2:
+		{
+			TMC2_SPI_CS_LOW;
+		}
+		break;
+		case TMC_3:
+		{
+			
+		}
+		break;
+		case TMC_4:
+		{
+			
+		}
+		break;
+		case TMC_5:
+		{
+			
+		}
+		break;
+		default:break;
+
+	}
+}
+
+
+
+/*
+ * SPI Read Write Data API
+ */
+uint8_t SPI_ReadWriteData(SPI_TypeDef* ptSpi, uint8_t ucData)
 {
 	uint32_t   SPITimeout = SPIT_LONG_TIMEOUT;    
-	
-	
+		
 	//等待发送缓冲区为空，TXE事件
-	while(SPI_I2S_GetFlagStatus(spi, SPI_I2S_FLAG_TXE) == RESET)
+	while(SPI_I2S_GetFlagStatus(ptSpi, SPI_I2S_FLAG_TXE) == RESET)
 	{
-		if((SPITimeout--) == 0) return SPI_TIMEOUT_UserCallback(1);
+		if((SPITimeout--) == 0) return 0;
 	}
 	//写入数据寄存器，把要写入的数据写入发送缓冲区
-	SPI_I2S_SendData(spi, byte);
+	SPI_I2S_SendData(ptSpi, ucData);
 
 	
 	//等待接收缓冲区非空，RXNE事件
 	SPITimeout = SPIT_FLAG_TIMEOUT;
-	while(SPI_I2S_GetFlagStatus(spi, SPI_I2S_FLAG_RXNE) == RESET)
+	while(SPI_I2S_GetFlagStatus(ptSpi, SPI_I2S_FLAG_RXNE) == RESET)
 	{
-		if((SPITimeout--) == 0) return SPI_TIMEOUT_UserCallback(1);
+		if((SPITimeout--) == 0) return 0;
 	}
 	//读取数据寄存器，获取接收缓冲区数据
-	return SPI_I2S_ReceiveData(spi);
+	return SPI_I2S_ReceiveData(ptSpi);
 }
+
+
+
+/*
+ * TMC SPI Read Write Data API
+ */
+uint8_t TMC_SPI_ReadWriteData(uint8_t ucData)
+{	
+	SPI_ReadWriteData(USE_SPIx, ucData);
+}
+
+
+
+
+/*
+ * SPI Read Int
+ */
+int32_t TMC_SPI_ReadInt(TMC_e eTMC, uint8_t ucAddr)
+{
+	int32_t lValue = 0;
+	uint8_t ucTempAddr = 0;
+
+	TMC_Spi_CS_Low(eTMC);
+
+	ucTempAddr = TMC_ADDRESS(ucAddr);
+	lValue = TMC_SPI_ReadWriteData(ucAddr);
+	lValue <<= 8;
+	lValue |= TMC_SPI_ReadWriteData(TMC_SPI_INVALID_VALUE);
+	lValue <<= 8;
+	lValue |= TMC_SPI_ReadWriteData(TMC_SPI_INVALID_VALUE);
+	lValue <<= 8;
+	lValue |= TMC_SPI_ReadWriteData(TMC_SPI_INVALID_VALUE);
+
+	TMC_Spi_CS_High(eTMC);
+	return lValue;
+}
+
+/*
+ * SPI  Write Int
+ */
+void TMC_SPI_WriteInt(TMC_e eTMC, uint8_t ucAddr, uint32_t ulValue)
+{
+	TMC_Spi_CS_Low(eTMC);
+
+	TMC_SPI_ReadWriteData(ucAddr | 0x80);
+	TMC_SPI_ReadWriteData(0xFF & (ulValue >> 24));
+	TMC_SPI_ReadWriteData(0xFF & (ulValue >> 16));
+	TMC_SPI_ReadWriteData(0xFF & (ulValue >> 8));
+	TMC_SPI_ReadWriteData(0xFF & (ulValue >> 0));
+
+	TMC_Spi_CS_High(eTMC);
+}
+
+
+
+/*
+ * SPI Read Write Array
+ */
+void TMC_SPI_ReadWriteArr(TMC_e eTMC, uint8_t *pucaData, uint16_t ucLen)
+{
+	uint16_t i = 0;
+
+	TMC_Spi_CS_Low(eTMC);
+	for(i = 0; i < ucLen; i++)
+	{
+		pucaData[i] = TMC_SPI_ReadWriteData(pucaData[i]);
+	}
+	TMC_Spi_CS_High(eTMC);
+}
+
+
+
+
+/***********************************************************
+*
+*	SPI2 EEPROM
+*
+************************************************************/
+
+/*
+ * SPI Read Write Data API
+ */
+uint8_t EEPROM_SPI_ReadWriteData(uint8_t ucData)
+{
+	SPI_ReadWriteData(USE_SPIx, ucData);
+
+}
+
+
+
+
+/*
+ * SPI Read Array
+ */
+void EEPROM_SPI_ReadArr(uint8_t *pucaData, uint16_t ucLen)
+{
+	uint16_t i = 0;
+
+	for(i = 0; i < ucLen; i++)
+	{
+		 pucaData[i] = EEPROM_SPI_ReadWriteData(0);
+	}
+}
+
+
+
+/*
+ * SPI Write Array
+ */
+void EEPROM_SPI_WriteArr(uint8_t *pucaData, uint16_t ucLen)
+{
+	uint16_t i = 0;
+
+	for(i = 0; i < ucLen; i++)
+	{
+		 EEPROM_SPI_ReadWriteData(pucaData[i]);
+	}
+}
+
+
+
+
+
+
+

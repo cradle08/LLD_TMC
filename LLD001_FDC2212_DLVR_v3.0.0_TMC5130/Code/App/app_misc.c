@@ -304,3 +304,4 @@ uint8_t MotorMoveUpAndDown(void)
 	
 	return (ret);
 }
+

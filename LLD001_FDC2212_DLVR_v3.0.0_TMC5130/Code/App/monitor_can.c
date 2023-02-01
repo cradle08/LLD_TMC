@@ -15,7 +15,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 //
 #include "event.h"
-
+#include "param.h"
 
 //定义变量---------------------------------------------------------------------//
 struct tagMonCan    MonCan;
@@ -119,8 +119,9 @@ void CAN_ParaInit(void)
  */
 uint8_t CAN_MonInit(void)
 {
+	extern __IO GlobalParam_t g_tGlobalParam; 
 	uint8_t     ret = FALSE;
-	uint16_t    can_id = 0, can_id_motor;
+	uint16_t    can_id = 0, can_id_motor = 0;
 	uint8_t     bps = 0;
 	uint8_t     offset = 0;
 	
@@ -141,15 +142,15 @@ uint8_t CAN_MonInit(void)
 		can_id = CAN_ID_MIM;
 	}
 		
-	//设置Can ID（电机部分）
-	can_id_motor = CAN_ID_MIM_MOTOR + offset;
-	if((can_id_motor < CAN_ID_MIM_MOTOR) || (can_id_motor > CAN_ID_MAX_MOTOR))
-	{
-		//默认通信地址
-		can_id_motor = CAN_ID_MIM_MOTOR;
-	}
-	MonCan.Confg.ModuleID_Motor = can_id_motor;
-	MonCan.Confg.BroadcastID_Motor = CAN_BROADCAST_ID_MOTOR;
+//	//设置Can ID（电机部分）
+//	g_tGlobalParam.ulRecvCanID = CAN_ID_MIM_MOTOR + offset;
+//	if((can_id_motor < CAN_ID_MIM_MOTOR) || (can_id_motor > CAN_ID_MAX_MOTOR))
+//	{
+//		//默认通信地址
+//		can_id_motor = CAN_ID_MIM_MOTOR;
+//	}
+//	g_tGlobalParam.ulRecvCanID = can_id_motor;
+//	//MonCan.Confg.BroadcastID_Motor = CAN_BROADCAST_ID_MOTOR;
 	
 	
 	//设置Can波特率模式
@@ -216,6 +217,7 @@ uint8_t CAN_MonInit(void)
  */
 uint8_t CanIRQRecv(void)
 {
+	extern __IO GlobalParam_t 	 g_tGlobalParam;
 	uint8_t     ret = FALSE;
 	uint8_t     index = 0;
 	uint8_t     rly1 = FALSE;
@@ -240,7 +242,7 @@ uint8_t CanIRQRecv(void)
 		rly2 = TRUE;
 		MonCan.ReceBroadcastFinish = TRUE;	
 	}
-	else if(((rx_msg.StdId == MonCan.Confg.BroadcastID_Motor) || (rx_msg.StdId == MonCan.Confg.BroadcastID_Motor)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
+	else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 	{
 		//接收成功	
 		SysEvent_t *ptSysEvent = NULL;
@@ -1923,4 +1925,34 @@ void CanMonComStage(void)
 		break;
 	}
 }
+
+
+
+
+
+/***** 电机部分 *************************************************************/
+/**
+  *  获取当前模块的接受 CAN ID号(Motor)
+  */
+uint32_t Recv_CanID(void)
+{
+	/* 存储在EEPROM中 */
+	
+	extern __IO GlobalParam_t 	 g_tGlobalParam;
+	return g_tGlobalParam.ulRecvCanID;
+}
+
+
+
+/**
+*  获取当前模块的发送 CAN ID号(Motor)
+  */
+uint32_t Send_CanID(void)
+{
+	/* 存储在EEPROM中 */
+	extern __IO GlobalParam_t 	 g_tGlobalParam;
+	return g_tGlobalParam.ulSendCanID;
+}
+
+
 

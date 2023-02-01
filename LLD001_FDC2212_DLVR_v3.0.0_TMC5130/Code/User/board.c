@@ -14,8 +14,8 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include <rthw.h>
 #include <rtthread.h>
 #include "include.h"
-#include "TMC2209.h"
-
+#include "TMC_Api.h"
+#include "event.h"
 
 
 //定义变量---------------------------------------------------------------------//
@@ -67,8 +67,10 @@ void rt_hw_board_init()
 
 	//硬件BSP初始化统统放在这里，比如LED，串口，LCD等
 	//外设初始化------------------------------------//
-	IWDG_Config(IWDG_Prescaler_64 ,625);         //IWDG 1s 超时溢出
+//	IWDG_Config(IWDG_Prescaler_64 ,625);         //IWDG 1s 超时溢出
 //	SWSysTimerInit();                            //软件系统定时
+	
+	GPIO_Config();
 	
 //	IIC1_Init(); 
 	IIC2_Init();                                 //IIC通信
@@ -77,21 +79,22 @@ void rt_hw_board_init()
 	
 //	USART1_Config();                             //串口配置
 //	USART2_Config();
-	
-	CAN_MonInit();
-	
 	ADCx_Init();
-	
-	GPIO_Config();
-	
-	
+
 	//电机初始化，在此初始化，串口出现问题，待查明原因。
-	TMC2209_Init();
+	SPI2_Configure();
 	
-	MotorTimerInit();
+	//电机通信消息队列初始化
+	SysEventInit();
 	
 	
 	GenDelay_nop(720000);
+	GenDelay_nop(720000);
+	GenDelay_nop(720000);
+	GenDelay_nop(720000);
+	
+	//CAN_MonInit();
+		
 	//用户初始化------------------------------------//
 	DipSWInit();
 	DipSWCheck();

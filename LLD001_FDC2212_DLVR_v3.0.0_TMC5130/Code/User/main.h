@@ -14,8 +14,9 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 #include "stm32f10x.h"
 #include "rtthread.h"
-
-
+#include "bsp_gpio.h"
+#include "public.h"
+#include "project_config.h"
 
 //宏定义----------------------------------------------------------------------//
 

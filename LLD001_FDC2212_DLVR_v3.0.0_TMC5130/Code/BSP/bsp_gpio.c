@@ -84,53 +84,27 @@ void GPIO_Config(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 				
-	/* TMC2209 */	
-	//SPREAD, PB3
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3;
+	/* TMC5130 */	
+	//TMC CS, PB3
+	GPIO_InitStructure.GPIO_Pin = TMC_SPI_CS_PIN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-//	GPIO_ResetBits(GPIOB, GPIO_Pin_3);
-	GPIO_SetBits(GPIOB, GPIO_Pin_3);
+	GPIO_Init(TMC_SPI_CS_PORT, &GPIO_InitStructure);
+	GPIO_SetBits(TMC_SPI_CS_PORT, TMC_SPI_CS_PIN);
 	
-	//DIR, PB4
-	GPIO_PinRemapConfig(GPIO_Remap_SWJ_NoJTRST, ENABLE); 
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+	//FLASH CS, PB12
+	GPIO_InitStructure.GPIO_Pin = EEPROM_SPI_CS_PIN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	GPIO_ResetBits(GPIOB, GPIO_Pin_4);
-	
+	GPIO_Init(EEPROM_SPI_CS_PORT, &GPIO_InitStructure);
+	GPIO_SetBits(EEPROM_SPI_CS_PORT, EEPROM_SPI_CS_PIN);
+//	
 	//EN, PA6
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6;
+	GPIO_InitStructure.GPIO_Pin = M0_EN_Pin;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	GPIO_SetBits(GPIOA, GPIO_Pin_6);
-	
-	
-//	#if TMC2209_HARDWARE_TEST
-//		//STEP, TIM3_CH2,PA7
-//		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
-//		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//		GPIO_Init(GPIOB, &GPIO_InitStructure);
-//		GPIO_ResetBits(GPIOA, GPIO_Pin_7);
-//		
-//		//LED0
-//		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
-//		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//		GPIO_Init(GPIOB, &GPIO_InitStructure);
-//		GPIO_ResetBits(GPIOB, GPIO_Pin_5);
-//	#else
-//		//STEP, TIM3_CH2,PB5
-//		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5;
-//		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//		GPIO_Init(GPIOB, &GPIO_InitStructure);
-//		GPIO_ResetBits(GPIOB, GPIO_Pin_5);
-//	#endif
+	GPIO_Init(M0_EN_GPIO_Port, &GPIO_InitStructure);
+	GPIO_SetBits(M0_EN_GPIO_Port, M0_EN_Pin);
 	
 	//CLK, MCO, PA8
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
@@ -139,11 +113,11 @@ void GPIO_Config(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);	
 	GPIO_ResetBits(GPIOA, GPIO_Pin_8);
 
-	//电机复位，检测光耦, PA15
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);	
+//	//电机复位，检测光耦, PA15
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+//	GPIO_Init(GPIOA, &GPIO_InitStructure);	
 	
 //	//选择EXTI的信号源
 //	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA, GPIO_PinSource15); 
