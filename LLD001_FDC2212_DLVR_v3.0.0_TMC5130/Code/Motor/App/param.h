@@ -5,8 +5,8 @@
 
 
 
-//参数初始化标志
-#define PARAM_INIT_FLAG				0xea05
+
+
 
 
 
@@ -105,6 +105,9 @@ ErrorType_e GlobalParam_Set_CanID(uint8_t ucRecvCanID, uint8_t SendCanID);
 /* 参数保存 */
 ErrorType_e Read_Global_Param(__IO GlobalParam_t *ptGlobalParam);
 ErrorType_e Save_Global_Param(__IO GlobalParam_t *ptGlobalParam);
+
+
+
 
 
 

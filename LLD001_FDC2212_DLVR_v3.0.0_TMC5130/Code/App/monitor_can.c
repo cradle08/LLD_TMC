@@ -177,9 +177,9 @@ uint8_t CAN_MonInit(void)
 		MonCan.Confg.BroadcastID = 0x7FE;
 		Init_RxMes(&MonCan.RxMsg);
 		
-		CAN_NVIC_Config();
 		CAN_GPIO_Config();
 		CAN_Config(CAN1, &MonCan.Confg);
+		CAN_NVIC_Config();
 	}
 	
 	

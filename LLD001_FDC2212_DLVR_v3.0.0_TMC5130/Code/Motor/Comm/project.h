@@ -25,7 +25,7 @@ extern "C" {
 
 
 //MCUµÄUUIDµØÖ·
-#define MCU_UUID_FLASH_ADDR							0x1FFFF7E8
+#define MCU_UUID_FLASH_ADDR							0x1FFFF7E8    //0x1FFFF7E0	//0x1FFFF7E8
 
 /*
 *

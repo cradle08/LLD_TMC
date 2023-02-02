@@ -24,6 +24,14 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  TMC_SPI_CS_PORT             	GPIOB
 
 
+//系统运行指示灯
+#define  SYS_LED_PIN					GPIO_Pin_6
+#define  SYS_LED_PORT             		GPIOB
+
+
+
+
+
 //宏定义----------------------------------------------------------------------//
 //FLASH 片选信号控制
 #define  EEPROM_CS_LOW            GPIO_ResetBits(EEPROM_SPI_CS_PORT, EEPROM_SPI_CS_PIN)
@@ -69,6 +77,14 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 //
 #define TMC5_ENABLE			
 #define TMC5_DISABLE	
+
+
+
+//系统指示灯
+#define SYS_LED_HIGH	GPIO_SetBits(SYS_LED_PORT, SYS_LED_PIN)
+#define SYS_LED_LOW		GPIO_ResetBits(SYS_LED_PORT, SYS_LED_PIN)
+#define SYS_LED_TRIGGER	{uint32_t ulOut = 0; ulOut = SYS_LED_PORT->ODR, SYS_LED_PORT->BSRR = ((ulOut & SYS_LED_PIN) << 16) | (~ulOut & SYS_LED_PIN);}
+
 
 
 //定义结构体--------------------------------------------------------------------//

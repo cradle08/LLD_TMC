@@ -58,12 +58,12 @@ void SWSysTimer(void* parameter)
 		Accumulation16(&SWSysTimeTick.PowerOnS);
 		Accumulation8(&CapSenPara.RdyTime);
 		
-		CAN_MonInit();
+//		CAN_MonInit();
 		
 //		StorageManStage();
 //		MemManStage(&StorageMan);
 		
-		MotorMoveUpAndDown();
+//		MotorMoveUpAndDown();
 		
 		
 		rt_thread_delay(1000);
@@ -119,7 +119,7 @@ void EPPROM_Data_Reset(void)
 	//保存轴参数
 	Save_Axis_Param_Default(&g_tAxisParamDefault);
 
-		Process_Param_SetDefault_Value(&g_tProcess);
+	Process_Param_SetDefault_Value(&g_tProcess);
 	//保存轴参数
 	Save_Process(&g_tProcess);
 }
@@ -161,7 +161,7 @@ void Motor_App_Init(void)
 	  g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;	
 	}
 
-//	EPPROM_Data_Reset();
+	//EPPROM_Data_Reset();
 	//Can初始化,ID
 	//Bsp_Can_Init(g_tGlobalParam.eCanBaud);
 	CAN_MonInit();
@@ -181,7 +181,6 @@ void Motor_App_Init(void)
 	{
 		//自动模式，自动执行
 		g_tProcess.eProcessStatus = EN_PROCESS_STATUS_EXEC;
-	  
 	}
 }
 

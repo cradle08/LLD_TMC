@@ -4,6 +4,7 @@
 #include "crc.h"
 #include "eeprom.h"
 #include "bsp_can.h"
+#include "monitor_can.h" 
 //#include "TMC_Process.h"
 
 //模块参数表
@@ -96,6 +97,7 @@ ErrorType_e Set_UpdateFlag(uint8_t ucFlag)
 */
 ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 {
+	extern struct tagMonCan    MonCan;
 	extern __IO GlobalParam_t g_tGlobalParam;
 	ErrorType_e eErrorType = ERROR_TYPE_SUCCESS;
 	uint8_t ucSaveFlag = 0;
@@ -185,9 +187,10 @@ ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 		//param had modified
 		g_tGlobalParam.usCrc = CRC16((uint8_t*)&g_tGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN-2);
 		eErrorType = Save_Global_Param(&g_tGlobalParam);
-		
-		//MCU_Reset();
-//@todo		Can_ReInit(g_tGlobalParam.eCanBaud);
+
+//		Can_ReInit(g_tGlobalParam.eCanBaud);		
+		CAN_Config(CAN1, &MonCan.Confg);
+		CAN_NVIC_Config();
 	}
 	
 	return eErrorType;
@@ -540,4 +543,9 @@ ErrorType_e Save_Global_Param(__IO GlobalParam_t *ptGlobalParam)
 
 	return eErrorType;
 }
+
+
+
+
+
 

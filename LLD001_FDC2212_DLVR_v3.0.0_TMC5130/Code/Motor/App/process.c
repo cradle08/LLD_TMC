@@ -90,12 +90,6 @@ void Reset_Factory(void)
 
 
 
-
-
-
-
-
-
 /*
  *  获取软硬件版本号
  */
@@ -623,7 +617,8 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		{
 			//设置IO状态
 //@todo			eError = Set_Out_IO(ptRecvFrame->ucType, ptRecvFrame->uData.ulData);
-			ptSendFrame->ucStatus = (uint8_t)eError;
+//@todo			ptSendFrame->ucStatus = (uint8_t)eError;
+			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
 		}
 		break;
 		case CMD_GET_INPUT_IO_STATUS:  //0x36
@@ -632,12 +627,13 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 //			uint16_t usOutState = 0, usInState = 0;
 			
 //@todo			ptSendFrame->ucStatus = Get_In_IO_One(ptRecvFrame->ucType, &ptSendFrame->uData.ucData[0]);
-
+			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
 		}
 		break;	
 		case CMD_GET_OUTPUT_IO_STATUS: //0x37
 		{
 //@todo			ptSendFrame->ucStatus = Get_Out_IO_One(ptRecvFrame->ucType, &ptSendFrame->uData.ucData[0]);
+			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
 		}
 		break;
 		

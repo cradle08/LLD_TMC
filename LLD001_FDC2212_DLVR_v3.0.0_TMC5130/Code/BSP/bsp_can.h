@@ -75,6 +75,7 @@ struct tagCanConfig
 //声明函数----------------------------------------------------------------------//
 void CAN_GPIO_Config(void);
 void CAN_NVIC_Config(void);
+void CAN_Filter_Config(CAN_TypeDef* can, struct tagCanConfig  *confg);
 void CAN_Config(CAN_TypeDef* can, struct tagCanConfig *confg);
 
 void Init_RxMes(CanRxMsg *rx_msg);

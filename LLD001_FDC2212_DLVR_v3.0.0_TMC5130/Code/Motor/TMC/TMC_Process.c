@@ -421,12 +421,12 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 
 	//参考点-复位参数
 	ptAxisParamDefault->lResetSpeedHigh[eTMC] 	= 3500;  //复位速度
-	ptAxisParamDefault->lResetSpeedLow[eTMC]  	= 1000;	 //复位速度  
+	ptAxisParamDefault->lResetSpeedLow[eTMC]  	= 1500;	 //复位速度  
 	ptAxisParamDefault->lResetAcc[eTMC]      	= 500;   //复位加速度
 	ptAxisParamDefault->lResetOff[eTMC]  		= 200;	 //复位偏移距离
 
 	//电流
-	ptAxisParamDefault->ucIRun[eTMC]	   = 128; //运行电流
+	ptAxisParamDefault->ucIRun[eTMC]	   = 65; //运行电流
 	ptAxisParamDefault->ucIHold[eTMC]	   = 8;  //保持电流
 	ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;   //电流降到IHold所需时间	
 
@@ -437,12 +437,12 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 
 	//六点速度参数，用于位置模式
 	ptAxisParamDefault->lVStart[eTMC] = 0;
-	ptAxisParamDefault->lA1[eTMC] 	  = 120000; 
+	ptAxisParamDefault->lA1[eTMC] 	  = 500000; 
 	ptAxisParamDefault->lV1[eTMC] 	  = 40000;
-	ptAxisParamDefault->lAMax[eTMC]   = 95000; 
-	ptAxisParamDefault->lVMax[eTMC]   = 61000;
-	ptAxisParamDefault->lDMax[eTMC]   = 95000; 
-	ptAxisParamDefault->lD1[eTMC] 	  = 120000; 
+	ptAxisParamDefault->lAMax[eTMC]   = 300000; 
+	ptAxisParamDefault->lVMax[eTMC]   = 65000;
+	ptAxisParamDefault->lDMax[eTMC]   = 300000; 
+	ptAxisParamDefault->lD1[eTMC] 	  = 500000; 
 	ptAxisParamDefault->lVStop[eTMC]  = 10;
 	//驱动器运行模式，用于位置模式
 	ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
