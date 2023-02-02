@@ -504,7 +504,6 @@ ErrorType_e Save_Global_Param(__IO GlobalParam_t *ptGlobalParam)
 	
 	//计数原始数据CRC
 	usWriteCrc = ptGlobalParam->usCrc;
-
 	
 	//读取参数	
 	do{

@@ -1018,7 +1018,6 @@ void LED_Shine(uint16_t usCount, uint32_t ulTime)
 	{
 		//÷∏ æµ∆…¡À∏
 //@todo		SYS_LED_TRIGGER;
-//@todo		MOTOR_LED_TRIGGER;
 		rt_thread_delay(ulTime);//HAL_Delay(ulTime);
 	}
 }

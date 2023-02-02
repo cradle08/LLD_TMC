@@ -104,9 +104,9 @@ uint16_t g_usHardWareVesion	= 0x0002;	//硬件版本号
 
 void EPPROM_Data_Reset(void)
 {
-	extern GlobalParam_t g_tGlobalParam;
-	extern Process_t g_tProcess;
-	extern  AxisParamDefault_t g_tAxisParamDefault;
+	extern __IO GlobalParam_t g_tGlobalParam;
+	extern __IO Process_t g_tProcess;
+	extern __IO AxisParamDefault_t g_tAxisParamDefault;
 	
 	
 	//第一次上电, 初始化，保存
@@ -131,8 +131,8 @@ void EPPROM_Data_Reset(void)
 void Motor_App_Init(void)
 {
 	uint32_t ulTick = 0;
-	extern GlobalParam_t g_tGlobalParam;
-	extern Process_t g_tProcess;
+	extern __IO GlobalParam_t g_tGlobalParam;
+	extern __IO Process_t g_tProcess;
 	extern __IO BoardStatus_t g_tBoardStatus;
 	
 	LED_Shine(4, 60);
@@ -161,7 +161,7 @@ void Motor_App_Init(void)
 	  g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;	
 	}
 
-	//EPPROM_Data_Reset();
+//	EPPROM_Data_Reset();
 	//Can初始化,ID
 	//Bsp_Can_Init(g_tGlobalParam.eCanBaud);
 	CAN_MonInit();
