@@ -17,6 +17,7 @@ extern "C" {
 /* 
 *  程序支持的，TMC步进电机模块类型
 */
+#define MODULE_TYPE_TMC_STEP_MOTOR_1161				0x00001161		//TMC步进电机模块, 单轴板,1.6A,01号板 --液体探测板单轴
 #define MODULE_TYPE_TMC_STEP_MOTOR_1301_Common		0x00001301		//TMC步进电机模块, 单轴板,3A,01号板 --通用单轴
 #define MODULE_TYPE_TMC_STEP_MOTOR_1601				0x00001601		//TMC步进电机模块, 单轴板,6A,01号板
 #define MODULE_TYPE_TMC_STEP_MOTOR_3301_Pipette		0x00003301		//TMC步进电机模块, 三轴板,3A,01号板 --移液器三轴

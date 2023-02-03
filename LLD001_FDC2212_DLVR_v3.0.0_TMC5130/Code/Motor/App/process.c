@@ -17,6 +17,8 @@
 #include "TMC5130.h"
 #include "TMC_Process.h"
 
+//
+#include "lld_param.h"
 
 
 //TMC状态
@@ -84,6 +86,9 @@ void Reset_Factory(void)
 	ClearAndSave_Default_Global_Params();
 	ClearAndSave_Default_Axis_Params();
 	ClearAndSave_Default_Process();
+	
+	//液面探测参数
+	ClearAndSave_Default_LLDParams();
 }
 
 
@@ -894,8 +899,22 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 			LED_Shine(6, 50);
 		}
 		break;
-		case CMD_TEST: // 0xFE
+		case 0xF0://液面探测参数 写
 		{
+			int32_t lValue = ptRecvFrame->uData.lData;
+			ptSendFrame->ucStatus = LLD_Param(TMC_WRITE, ptRecvFrame->ucType, &lValue);
+		}
+		break;
+		case 0xF1://液面探测参数 读
+		{
+			int32_t lValue = 0;
+			ptSendFrame->ucStatus = LLD_Param(TMC_READ, ptRecvFrame->ucType, &lValue);
+			ptSendFrame->uData.lData = lValue;
+		}
+		break;
+		case CMD_TEST: // 0xFE
+		{		
+			
 //			LOG_Info("Start ...");
 			if(0 == ptRecvFrame->ucType)
 			{
@@ -991,8 +1010,8 @@ void Event_Process(void)
 //			memmove((void*)&tRxMsg, (void*)&tSysEvent.tMsg.tMsgUsart, sizeof(MsgUsart_t));
 //            Handle_Usart_RxMsg(&tRxMsg);
 			
-			MsgUsart_t *ptRxMsg = (MsgUsart_t*)tSysEvent.tMsg.ucaDataBuf;
-			Handle_Usart_RxMsg(ptRxMsg);
+//			MsgUsart_t *ptRxMsg = (MsgUsart_t*)tSysEvent.tMsg.ucaDataBuf;
+//			Handle_Usart_RxMsg(ptRxMsg);
         }
         break;
         default:break;

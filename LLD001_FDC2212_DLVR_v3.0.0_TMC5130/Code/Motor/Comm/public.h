@@ -11,10 +11,13 @@ extern "C" {
 #define __IO	volatile
 
 
-//默认Can ID
-#define CAN_DEFAULT_RECV_ID		200		//默认接受CanID
-#define CAN_DEFAULT_SEND_ID		200		//默认发送CanID
+//液面探测  默认Can ID
+#define LLD_CAN_DEFAULT_RECV_ID		201		//默认接受CanID  0xC9
+#define LLD_CAN_DEFAULT_SEND_ID		201		//默认发送CanID
 
+//电机 默认Can ID
+#define CAN_DEFAULT_RECV_ID			200		//默认接受CanID  0xC8
+#define CAN_DEFAULT_SEND_ID			200		//默认发送CanID
 
 
 

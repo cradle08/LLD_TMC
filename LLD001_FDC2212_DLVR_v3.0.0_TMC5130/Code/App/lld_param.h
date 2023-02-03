@@ -2,7 +2,7 @@
 #define __LLD_PARAM_H__
 
 #include "main.h"
-
+#include "bsp_can.h"
 
 
 
@@ -12,11 +12,9 @@
 */
 typedef __packed struct {
 	uint32_t    ulInitFlag;			//初始化标志
-	/* Bank 0 */
-//	uint8_t 	ucUpdateFlag;				//0:不需要升级，1：需要升级
-	CanBaud_e	eCanBaud;					//CAN 波特率
-	uint32_t 	ulRecvCanID;				//接受CanID
-	uint32_t	ulSendCanID;				//发送CanID
+	struct tagCanConfig CanConfig;	//液面探测CAN配置参数
+	
+	//其他参数
 
 	//crc
 	uint16_t 	usCrc;				//CRC16 校验码
@@ -44,9 +42,8 @@ ErrorType_e Read_LLDParam(__IO LLDParam_t *ptLLDParam);
 ErrorType_e Save_LLDParam(__IO LLDParam_t *ptLLDParam);
 
 
-
-
-
+//修改液面探测can参数
+ErrorType_e LLD_Param(ReadWrite_e eReadWrite, uint8_t ucType, int32_t *plValue);
 
 /********* 液面探测 ***/
 

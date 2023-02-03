@@ -97,7 +97,6 @@ ErrorType_e Set_UpdateFlag(uint8_t ucFlag)
 */
 ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 {
-	extern struct tagMonCan    MonCan;
 	extern __IO GlobalParam_t g_tGlobalParam;
 	ErrorType_e eErrorType = ERROR_TYPE_SUCCESS;
 	uint8_t ucSaveFlag = 0;
@@ -189,7 +188,7 @@ ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 		eErrorType = Save_Global_Param(&g_tGlobalParam);
 
 //		Can_ReInit(g_tGlobalParam.eCanBaud);		
-		CAN_Config(CAN1, &MonCan.Confg);
+		CAN_Config(CAN1);
 		CAN_NVIC_Config();
 	}
 	

@@ -409,7 +409,7 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 	//第一次上电，初始化，保存
 	ptAxisParamDefault->ulInitFlag = PARAM_INIT_FLAG;
 	
-#if (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_1301_Common)
+#if (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_1301_Common) || (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_1161) 
 	/* 单轴 */		
 	
 	//编码器相关
@@ -2574,6 +2574,7 @@ ErrorType_e Save_Process(__IO Process_t *ptProccess)
 	uint16_t usWriteCrc = 0, usReadCrc = 0;
 	Process_t tProcess = {0};
 	
+	usWriteCrc = ptProccess->usCrc;
 	//保存
 	do{
 		//计数

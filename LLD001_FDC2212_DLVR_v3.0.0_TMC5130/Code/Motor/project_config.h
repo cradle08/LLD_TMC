@@ -21,15 +21,15 @@ extern "C" {
 /* 
 *  当前程序编译时，指定具体的模块类型
 */
-#define CURRENT_MODULE_TYPE		 	MODULE_TYPE_TMC_STEP_MOTOR_1301_Common	 
+#define CURRENT_MODULE_TYPE		 	MODULE_TYPE_TMC_STEP_MOTOR_1161	 
 #define CURRENT_USE_EEPROM_TYPE		EEPROM_TYPE_M95xxx
 
 
 
 //TMC数量，输入输出IO
 #define TMC_MODULE_END 			 1					//该模块使用芯片的数量：1片TMC芯片
-#define MODULE_MAX_OUT_IO_NUM	 1					//最大支持1个输出IO
-#define MODULE_MAX_IN_IO_NUM	 1					//最大支持1个出入IO
+#define MODULE_MAX_OUT_IO_NUM	 0					//最大支持1个输出IO
+#define MODULE_MAX_IN_IO_NUM	 0					//最大支持1个出入IO
 
 
 
@@ -40,7 +40,7 @@ extern "C" {
 /*
 *	App 起始地址定义
 */
-#if (CURRENT_MODULE_TYPE == MODULE_TYPE_TMC_STEP_MOTOR_3301_Pipette) //当前使用的MCU型号：STM32F103RCT6: 64k_SRAM + 256k_Flash
+#if (CURRENT_MODULE_TYPE == MODULE_TYPE_TMC_STEP_MOTOR_1161) //当前使用的MCU型号：STM32F103RCT6: 64k_SRAM + 256k_Flash
 	
 	//Bootloader 起始地址和长度定义
 	#define BOOT_LOADER_START_ADDR		0x8000000	//bootloader
@@ -52,6 +52,23 @@ extern "C" {
 	
 	//MCU内部flash一页大小
 	#define MCU_FLASH_ONE_PAGE_LEN		2048		//页大小	
+	
+	
+	
+#elif (CURRENT_MODULE_TYPE == MODULE_TYPE_TMC_STEP_MOTOR_3301_Pipette) //当前使用的MCU型号：STM32F103RCT6: 64k_SRAM + 256k_Flash
+	
+	//Bootloader 起始地址和长度定义
+	#define BOOT_LOADER_START_ADDR		0x8000000	//bootloader
+	#define BOOT_LOADER_MAX_LEN			0x8000		//32K
+	
+	//APP，起始地址和长度定义
+	#define APP_START_ADDR				0x800A000	//40KB  起始点
+	#define APP_MAX_LEN					0x36000		//216KB(256-40) 长度
+	
+	//MCU内部flash一页大小
+	#define MCU_FLASH_ONE_PAGE_LEN		2048		//页大小	
+	
+	
 	
 #elif (CURRENT_MODULE_TYPE == MODULE_TYPE_TMC_STEP_MOTOR_3311_Common) //当前使用的MCU型号：STM32F103RCT6: 64k_SRAM + 256k_Flash
 	//Bootloader 起始地址和长度定义

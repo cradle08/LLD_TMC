@@ -34,7 +34,7 @@ ALIGN(RT_ALIGN_SIZE)
 rt_uint8_t rt_wdog_stk[128];
 rt_uint8_t rt_SWSysTimer_stk[128];
 rt_uint8_t rt_SWTimer10ms_stk[512];
-rt_uint8_t rt_comm_monitor_stk[3072];
+rt_uint8_t rt_comm_monitor_stk[3328];
 
 
 

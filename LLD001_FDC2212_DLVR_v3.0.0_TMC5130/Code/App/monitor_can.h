@@ -15,7 +15,8 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "stm32f10x.h"
 #include "bsp_can.h" 
 #include "bsp_lib.h" 
-
+#include "param.h"
+#include "lld_param.h"
 
 
 
@@ -92,12 +93,6 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  CAN_ID_MAX                    208u
 
 
-//Can应用通信地址（电机部分）
-#define  CAN_ID_MIM_MOTOR              101u
-#define  CAN_ID_MAX_MOTOR              108u
-#define  CAN_BROADCAST_ID_MOTOR        0
-#define  CAN_MSG_DATA_LENGTH		   8
-
 //Can波特率模式
 #define  CAN_BPS_MODE_1M               0u
 #define  CAN_BPS_MODE_500K             1u
@@ -108,6 +103,15 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  CAN_QUEUE_LOOP_WIDTH          8u
 
 
+
+
+//Can应用通信地址（电机部分）
+#define  CAN_BROADCAST_ID_MOTOR        0
+#define  CAN_MSG_DATA_LENGTH		   8
+
+
+//Can应用通信地址（液面探测部分）
+#define  LLD_CAN_BROADCAST_ID_MOTOR        0x7FE
 
 
 
@@ -139,7 +143,7 @@ struct tagBroadcast
 struct tagMonCan
 {
 	//报文相关
-	struct tagCanConfig      Confg;
+//	struct tagCanConfig      Confg;
 	CanTxMsg    TxMsg;                                                         //发送缓冲区
 	CanRxMsg    RxMsg;                                                         //接收缓冲区
 	
@@ -176,6 +180,9 @@ uint8_t CanIRQRecv(void);
 uint8_t MonAnalyseCanMess(void);
 uint8_t MonSendCanMess(void);
 void CanMonComStage(void);
+
+
+
 
 
 #endif

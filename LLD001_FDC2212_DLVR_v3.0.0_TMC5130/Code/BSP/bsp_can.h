@@ -13,7 +13,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 #include "stm32f10x.h"
-
+#include "main.h"
 
 
 
@@ -49,20 +49,31 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 //                                            printf("<<-CAN-FUNC->> Func:%s@Line:%d\n",__func__,__LINE__);\
 //                                        }while(0)
 
+/*
+*	can 初始化参数
+*/
+typedef struct {
+	uint32_t  ulPrescaler;	//分频
+	uint32_t ulSeg1;	
+	uint32_t ulSeg2;
+	uint32_t ulSJW;
+
+} CanCfg_t;
+
+
+
+
 
 //定义结构体--------------------------------------------------------------------//
-struct tagCanConfig
+__packed struct tagCanConfig
 {
 	uint16_t    ModuleID;                                                      //本模块ID
 	uint16_t    ReplyID;                                                       //应答ID	
-	uint16_t    BroadcastID;                                                   //广播ID	
+//	uint16_t    BroadcastID;                                                   //广播ID	
 	
-//	uint16_t    ModuleID_Motor;                                                  //本模块ID  电机部分
-//	uint16_t    ReplyID_Motor;                                                   //应答ID	   电机部分
-//	uint16_t    BroadcastID_Motor;                                               //广播ID	   电机部分
-
+	CanBaud_e	eCanBaud;													   //波特率
 	//	uint16_t    Bps;                                                           //波特率
-	uint16_t    BpsMode;                                                       //波特率模式
+//	uint16_t    BpsMode;                                                       //波特率模式
 };
 
 
@@ -75,16 +86,25 @@ struct tagCanConfig
 //声明函数----------------------------------------------------------------------//
 void CAN_GPIO_Config(void);
 void CAN_NVIC_Config(void);
-void CAN_Filter_Config(CAN_TypeDef* can, struct tagCanConfig  *confg);
-void CAN_Config(CAN_TypeDef* can, struct tagCanConfig *confg);
+void CAN_Filter_Config(CAN_TypeDef* can);
+void CAN_Config(CAN_TypeDef* can);
 
 void Init_RxMes(CanRxMsg *rx_msg);
 
 
 
+/***** 液面探测部分 ****************************************************/
+uint32_t LLD_Recv_CanID(void);
+uint32_t LLD_Send_CanID(void);
+
 /***** 电机部分 ****************************************************/
 uint32_t Recv_CanID(void);
 uint32_t Send_CanID(void);
+
+
+
+
+
 
 #endif
 

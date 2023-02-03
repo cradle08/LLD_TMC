@@ -110,6 +110,70 @@ void CAN_ParaInit(void)
 }
 
 
+///*
+// * @function: CAN_MonInit
+// * @details : Can监控初始化
+// * @input   : NULL
+// * @output  : NULL
+// * @return  : NULL
+// */
+//uint8_t CAN_MonInit(void)
+//{
+//	extern __IO GlobalParam_t g_tGlobalParam; 
+//	uint8_t     ret = FALSE;
+//	uint16_t    can_id = 0, can_id_motor = 0;
+//	uint8_t     bps = 0;
+//	uint8_t     offset = 0;
+//	
+//	
+//	
+//	//寻找Can通信故障的原因，实测仍然出现通信故障。
+////	if(SWSysTimeTick.PowerOnS >= 5)
+////	{
+////		return (ret);
+////	}
+//	
+//	//设置Can ID
+//	offset = SoftSys.DipSW[0] & 0x07;
+//	can_id = CAN_ID_MIM + offset;
+//	if((can_id < CAN_ID_MIM) || (can_id > CAN_ID_MAX))
+//	{
+//		//默认通信地址
+//		can_id = CAN_ID_MIM;
+//	}
+//	
+//	//设置Can波特率模式
+//	offset = SoftSys.DipSW[0] & 0x08;
+//	if(0x00 == offset)
+//	{
+//		bps = CAN_BPS_MODE_1M;
+//	}
+//	else if(0x08 == offset)
+//	{
+//		bps = CAN_BPS_MODE_500K;
+//	}
+//	
+//	
+//	if((can_id != MonCan.Confg.ModuleID) || (bps != MonCan.Confg.BpsMode))
+//	{
+//		CAN_ITConfig(CAN1, CAN_IT_FMP0, DISABLE);
+//		
+//		CAN_ParaInit();
+//		QueueLoopClear(&MonCan.RxQueue);
+//		
+//		MonCan.Confg.BpsMode = bps;
+//		MonCan.Confg.ModuleID = can_id;
+//		MonCan.Confg.BroadcastID = 0x7FE;
+//		Init_RxMes(&MonCan.RxMsg);
+//		
+//		CAN_GPIO_Config();
+//		CAN_Config(CAN1, &MonCan.Confg);
+//		CAN_NVIC_Config();
+//	}
+//	return ret;
+//}
+
+
 /*
  * @function: CAN_MonInit
  * @details : Can监控初始化
@@ -121,70 +185,24 @@ uint8_t CAN_MonInit(void)
 {
 	extern __IO GlobalParam_t g_tGlobalParam; 
 	uint8_t     ret = FALSE;
-	uint16_t    can_id = 0, can_id_motor = 0;
-	uint8_t     bps = 0;
-	uint8_t     offset = 0;
+//	uint16_t    can_id = 0, can_id_motor = 0;
+//	uint8_t     bps = 0;
+//	uint8_t     offset = 0;
+
+	CAN_ITConfig(CAN1, CAN_IT_FMP0, DISABLE);
 	
+	CAN_ParaInit();
+	QueueLoopClear(&MonCan.RxQueue);
+
 	
-	
-	//寻找Can通信故障的原因，实测仍然出现通信故障。
-//	if(SWSysTimeTick.PowerOnS >= 5)
-//	{
-//		return (ret);
-//	}
-	
-	//设置Can ID
-	offset = SoftSys.DipSW[0] & 0x07;
-	can_id = CAN_ID_MIM + offset;
-	if((can_id < CAN_ID_MIM) || (can_id > CAN_ID_MAX))
-	{
-		//默认通信地址
-		can_id = CAN_ID_MIM;
-	}
-		
-//	//设置Can ID（电机部分）
-//	g_tGlobalParam.ulRecvCanID = CAN_ID_MIM_MOTOR + offset;
-//	if((can_id_motor < CAN_ID_MIM_MOTOR) || (can_id_motor > CAN_ID_MAX_MOTOR))
-//	{
-//		//默认通信地址
-//		can_id_motor = CAN_ID_MIM_MOTOR;
-//	}
-//	g_tGlobalParam.ulRecvCanID = can_id_motor;
-//	//MonCan.Confg.BroadcastID_Motor = CAN_BROADCAST_ID_MOTOR;
-	
-	
-	//设置Can波特率模式
-	offset = SoftSys.DipSW[0] & 0x08;
-	if(0x00 == offset)
-	{
-		bps = CAN_BPS_MODE_1M;
-	}
-	else if(0x08 == offset)
-	{
-		bps = CAN_BPS_MODE_500K;
-	}
-	
-	
-	if((can_id != MonCan.Confg.ModuleID) || (bps != MonCan.Confg.BpsMode))
-	{
-		CAN_ITConfig(CAN1, CAN_IT_FMP0, DISABLE);
-		
-		CAN_ParaInit();
-		QueueLoopClear(&MonCan.RxQueue);
-		
-		MonCan.Confg.BpsMode = bps;
-		MonCan.Confg.ModuleID = can_id;
-		MonCan.Confg.BroadcastID = 0x7FE;
-		Init_RxMes(&MonCan.RxMsg);
-		
-		CAN_GPIO_Config();
-		CAN_Config(CAN1, &MonCan.Confg);
-		CAN_NVIC_Config();
-	}
-	
+	CAN_GPIO_Config();
+	CAN_Config(CAN1);
+	CAN_NVIC_Config();
 	
 	return ret;
 }
+
+
 //uint8_t CAN_MonInit(void)
 //{
 //	uint8_t     ret = FALSE;
@@ -217,6 +235,7 @@ uint8_t CAN_MonInit(void)
  */
 uint8_t CanIRQRecv(void)
 {
+	extern __IO LLDParam_t g_tLLDParam;
 	extern __IO GlobalParam_t 	 g_tGlobalParam;
 	uint8_t     ret = FALSE;
 	uint8_t     index = 0;
@@ -230,13 +249,13 @@ uint8_t CanIRQRecv(void)
 	CAN_Receive(CAN1, CAN_FIFO0, &rx_msg);
 	
 	//比较ID
-	if((rx_msg.StdId == MonCan.Confg.ModuleID) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
+	if((rx_msg.StdId == g_tLLDParam.CanConfig.ModuleID) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 	{
 		//接收成功
 		rly1 = TRUE;
 		MonCan.ReceFinish = TRUE;
 	}
-	else if((rx_msg.StdId == MonCan.Confg.BroadcastID) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
+	else if((rx_msg.StdId == LLD_CAN_BROADCAST_ID_MOTOR) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 	{
 		//接收成功
 		rly2 = TRUE;
@@ -1294,6 +1313,7 @@ uint8_t MonReadSoftWareVerReply(struct tagMonCan *mon, uint8_t *buff)
 uint8_t MonRWpara(struct tagMonCan *mon, uint8_t err)
 {
 	uint8_t    ret = 0;
+	int32_t    lValue = 0;
 	
 	
 	//故障指令或操作码，不进行任何操作
@@ -1301,15 +1321,18 @@ uint8_t MonRWpara(struct tagMonCan *mon, uint8_t err)
 	{
 		return (err);
 	}
-	
-	
 	Storage.ParaNo = mon->RxMsg.Data[3];
 	
 	//上位机写操作
 	if(OPE_WRITE == mon->CanMess.OpeCode)
-	{		
+	{
+		lValue = ((mon->RxMsg.Data[7]<<24) | (mon->RxMsg.Data[6]<<16) | (mon->RxMsg.Data[5]<<8) |(mon->RxMsg.Data[4]));		
 		//赋值操作		
-		WriteUsePara(mon->RxMsg.Data, Storage.ParaNo);
+		//WriteUsePara(mon->RxMsg.Data, Storage.ParaNo);
+		LLD_Param(TMC_WRITE, Storage.ParaNo, &lValue);
+	}else{
+		//读取
+	
 	}
 	
 	
@@ -1614,10 +1637,10 @@ uint8_t MonFillSendBuff(struct tagMonCan *mon, uint8_t *buff)
 {
 	uint8_t    mailbox = 0;
 	
-	
+	extern __IO LLDParam_t g_tLLDParam;
 	
 	//填充报文
-	mon->TxMsg.StdId = mon->Confg.ModuleID;       //ID
+	mon->TxMsg.StdId = g_tLLDParam.CanConfig.ModuleID;//mon->Confg.ModuleID;       //ID
 	mon->TxMsg.ExtId = 0x00;
 	mon->TxMsg.IDE = CAN_ID_STD;                 //标准模式
 	mon->TxMsg.RTR = CAN_RTR_DATA;               //发送的是数据
@@ -1904,10 +1927,9 @@ void CanMonComStage(void)
 			else if(CAN_TxStatus_NoMailBox == reply)
 			{
 				//发送邮箱满
-				CAN_Config(CAN1, &MonCan.Confg);
+				//CAN_Config(CAN1, &MonCan.Confg);
+				CAN_Config(CAN1);
 			}
-			
-			
 			
 			
 			if((CAN_OPE_WAIT != reply)
@@ -1924,34 +1946,6 @@ void CanMonComStage(void)
 		}
 		break;
 	}
-}
-
-
-
-
-
-/***** 电机部分 *************************************************************/
-/**
-  *  获取当前模块的接受 CAN ID号(Motor)
-  */
-uint32_t Recv_CanID(void)
-{
-	/* 存储在EEPROM中 */
-	
-	extern __IO GlobalParam_t 	 g_tGlobalParam;
-	return g_tGlobalParam.ulRecvCanID;
-}
-
-
-
-/**
-*  获取当前模块的发送 CAN ID号(Motor)
-  */
-uint32_t Send_CanID(void)
-{
-	/* 存储在EEPROM中 */
-	extern __IO GlobalParam_t 	 g_tGlobalParam;
-	return g_tGlobalParam.ulSendCanID;
 }
 
 

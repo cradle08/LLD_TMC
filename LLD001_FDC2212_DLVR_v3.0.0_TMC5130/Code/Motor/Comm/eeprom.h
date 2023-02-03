@@ -8,8 +8,29 @@
 //参数初始化标志
 #define PARAM_INIT_FLAG				0xea05
 
+///*
+//* 
+//*	当前EPPROM容量64Kb=8KB
+//*/
+//#define GLOBAL_PARAM_SAVE_ADDR		320		//全局参数保存起始地址
+//#define GLOBAL_PARAM_SAVE_MAX_LEN	1024	//全局数最大保持长度
+
+////模块参数保存起始地址
+//#define AXIS_PARAM_SAVE_ADDR		(GLOBAL_PARAM_SAVE_ADDR+GLOBAL_PARAM_SAVE_MAX_LEN)
+//#define AXIS_ARAM_SAVE_MAX_LEN		1024    //模块参数最大保持长度
+
+////流程保存起始地址
+//#define PROCESS_SAVE_ADDR			(AXIS_PARAM_SAVE_ADDR+AXIS_ARAM_SAVE_MAX_LEN)	
+//#define PROCESS_SAVE_MAX_LEN		2048//3072	//流程最大保持长度
+
+
+////液面探测参数
+//#define LLD_PARAM_SAVE_ADDR			3584 //6144	//从第6k处开始	
+//#define LLD_PARAM_SAVE_MAX_LEN		1024	//长度
+
+
 /*
-*
+* 
 *	当前EPPROM容量64Kb=8KB
 */
 #define GLOBAL_PARAM_SAVE_ADDR		320		//全局参数保存起始地址
@@ -25,8 +46,12 @@
 
 
 //液面探测参数
-#define LLD_PARAM_SAVE_ADDR			6144	//从第6k处开始	
+#define LLD_PARAM_SAVE_ADDR			3584 //6144	//从第6k处开始	
 #define LLD_PARAM_SAVE_MAX_LEN		1024	//长度
+
+
+
+
 
 
 /*

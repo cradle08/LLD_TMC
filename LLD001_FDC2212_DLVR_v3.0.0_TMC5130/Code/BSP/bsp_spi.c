@@ -186,7 +186,7 @@ uint8_t SPI_ReadWriteData(SPI_TypeDef* ptSpi, uint8_t ucData)
  */
 uint8_t TMC_SPI_ReadWriteData(uint8_t ucData)
 {	
-	SPI_ReadWriteData(USE_SPIx, ucData);
+	return SPI_ReadWriteData(USE_SPIx, ucData);
 }
 
 
@@ -262,7 +262,7 @@ void TMC_SPI_ReadWriteArr(TMC_e eTMC, uint8_t *pucaData, uint16_t ucLen)
  */
 uint8_t EEPROM_SPI_ReadWriteData(uint8_t ucData)
 {
-	SPI_ReadWriteData(USE_SPIx, ucData);
+	return SPI_ReadWriteData(USE_SPIx, ucData);
 
 }
 

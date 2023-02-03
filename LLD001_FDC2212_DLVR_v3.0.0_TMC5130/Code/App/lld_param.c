@@ -18,7 +18,6 @@ __IO LLDParam_t g_tLLDParam = {0};
 ErrorType_e LLDParam_Init(void)
 {
 	return Read_LLDParam(&g_tLLDParam);
-	
 }
 
 
@@ -32,13 +31,13 @@ void LLDParam_SetDefault_Value(__IO LLDParam_t *ptLLDParam)
 	memset((void*)ptLLDParam, 0, sizeof(LLDParam_t));
 	
 	/* Bank 0 */
-	ptLLDParam->ulInitFlag  	  = PARAM_INIT_FLAG;
-	ptLLDParam->eCanBaud    	  = EN_CAN_BAUD_1000; 	   //波特率
-	ptLLDParam->ulRecvCanID    = CAN_DEFAULT_RECV_ID;   //默认接受CanID
-	ptLLDParam->ulSendCanID    = CAN_DEFAULT_SEND_ID;   //默认发送CanID
+	ptLLDParam->ulInitFlag  	   = PARAM_INIT_FLAG;
+	ptLLDParam->CanConfig.eCanBaud = EN_CAN_BAUD_1000; 	   //波特率
+	ptLLDParam->CanConfig.ModuleID = LLD_CAN_DEFAULT_RECV_ID;   //默认接受CanID
+	ptLLDParam->CanConfig.ReplyID  = LLD_CAN_DEFAULT_SEND_ID;   //默认发送CanID
 
 	//crc
-	ptLLDParam->usCrc       	  = CRC16((uint8_t*)ptLLDParam, -2);
+	ptLLDParam->usCrc       	   = CRC16((uint8_t*)ptLLDParam, LLD_PARAM_LEN-2);
 }
 
 
@@ -52,7 +51,6 @@ void ClearAndSave_Default_LLDParams(void)
 	LLDParam_SetDefault_Value(&g_tLLDParam);
 	//Param_Write(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)&g_tGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN);
 	Save_LLDParam(&g_tLLDParam);
-	
 }
 
 
@@ -80,13 +78,6 @@ void ClearAndSave_Default_LLDParams(void)
 
 
 
-
-
-
-
-
-
-
 /* 
 * 
 *  读取全局参数 
@@ -105,7 +96,7 @@ ErrorType_e Read_LLDParam(__IO LLDParam_t *ptLLDParam)
 		
 		//读取
 		memset((void*)ptLLDParam, 0, sizeof(LLDParam_t));
-		Param_Read(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)ptLLDParam, LLD_PARAM_LEN);
+		Param_Read(EN_SAVE_PARAM_TYPE_LLD_PARAM, (uint8_t*)ptLLDParam, LLD_PARAM_LEN);
 		usCrc = CRC16((uint8_t*)ptLLDParam, LLD_PARAM_LEN-2);
 		
 		//校验
@@ -162,11 +153,11 @@ ErrorType_e Save_LLDParam(__IO LLDParam_t *ptLLDParam)
 		
 		//写入
 		memmove((void*)&tLLDParam, (void*)ptLLDParam, sizeof(LLDParam_t));
-		Param_Write(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)&tLLDParam, LLD_PARAM_LEN);
+		Param_Write(EN_SAVE_PARAM_TYPE_LLD_PARAM, (uint8_t*)&tLLDParam, LLD_PARAM_LEN);
 			
 		//读取
 		memset((void*)&tLLDParam, 0, sizeof(LLDParam_t));
-		Param_Read(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)&tLLDParam, LLD_PARAM_LEN);
+		Param_Read(EN_SAVE_PARAM_TYPE_LLD_PARAM, (uint8_t*)&tLLDParam, LLD_PARAM_LEN);
 		usReadCrc = CRC16((uint8_t*)&tLLDParam, LLD_PARAM_LEN-2);
 		
 		//对比前后crc
@@ -190,6 +181,97 @@ ErrorType_e Save_LLDParam(__IO LLDParam_t *ptLLDParam)
 
 	return eErrorType;
 }
+
+
+
+
+
+//修改液面探测can参数
+ErrorType_e LLD_Param(ReadWrite_e eReadWrite, uint8_t ucType, int32_t *plValue)
+{
+	ErrorType_e eErrorType = ERROR_TYPE_SUCCESS;
+	uint8_t ucSaveFlag = 0;
+	
+	//
+	switch(ucType)
+	{
+		case 0://波特率
+		{
+			if(eReadWrite == TMC_READ)
+			{
+				*plValue = g_tLLDParam.CanConfig.eCanBaud;
+			}else if(eReadWrite == TMC_WRITE) {
+				//参数检查
+				if(*plValue >= EN_CAN_BAUD_END) return ERROR_TYPE_DATA;
+				if(g_tLLDParam.CanConfig.eCanBaud != *plValue)
+				{
+					g_tLLDParam.CanConfig.eCanBaud = (CanBaud_e)*plValue;
+					ucSaveFlag = 2;
+				}
+			}
+		}
+		break;
+		case 1: //模块Can ID，发送
+		{
+			if(eReadWrite == TMC_READ)
+			{
+				*plValue = g_tLLDParam.CanConfig.ModuleID;
+			}else if(eReadWrite == TMC_WRITE) {
+				//参数检查		
+				if(g_tLLDParam.CanConfig.ModuleID != *plValue)
+				{
+					g_tLLDParam.CanConfig.ModuleID = *plValue;
+					ucSaveFlag = 2;
+				}
+			}
+		}
+		break;
+		case 2://模块Can ID，接受
+		{
+			if(eReadWrite == TMC_READ)
+			{
+				*plValue = g_tLLDParam.CanConfig.ReplyID;
+			}else if(eReadWrite == TMC_WRITE) {
+				//参数检查			
+				if(g_tLLDParam.CanConfig.ReplyID != *plValue)
+				{
+					g_tLLDParam.CanConfig.ReplyID = *plValue;
+					ucSaveFlag = 1;
+				}
+			}
+		}
+		break;
+		default:
+		{
+			//Type Error
+			return ERROR_TYPE_TYPE;
+		}
+	}
+
+	//save modified param
+	if(1 == ucSaveFlag)
+	{
+		//param had modified
+		g_tLLDParam.usCrc = CRC16((uint8_t*)&g_tLLDParam, LLD_PARAM_LEN-2);
+		eErrorType = Save_LLDParam(&g_tLLDParam);
+	}
+	
+	//Re Init Can
+	if(ucSaveFlag == 2)
+	{			
+		//param had modified
+		g_tLLDParam.usCrc = CRC16((uint8_t*)&g_tLLDParam, LLD_PARAM_LEN-2);
+		eErrorType = Save_LLDParam(&g_tLLDParam);
+
+//		Can_ReInit(g_tGlobalParam.eCanBaud);		
+		CAN_Config(CAN1);
+		CAN_NVIC_Config();
+	}
+	
+	return eErrorType;
+
+}
+
 
 
 

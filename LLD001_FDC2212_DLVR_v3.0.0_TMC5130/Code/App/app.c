@@ -23,6 +23,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "project.h"
 #include "TMC_Process.h"
 #include "param.h"
+#include "lld_param.h"
 
 
 //定义变量---------------------------------------------------------------------//
@@ -122,6 +123,9 @@ void EPPROM_Data_Reset(void)
 	Process_Param_SetDefault_Value(&g_tProcess);
 	//保存轴参数
 	Save_Process(&g_tProcess);
+	
+	//
+	ClearAndSave_Default_LLDParams();
 }
 
 
@@ -130,12 +134,18 @@ void EPPROM_Data_Reset(void)
 //电机运用初始化
 void Motor_App_Init(void)
 {
-	uint32_t ulTick = 0;
+	uint32_t ulTemp = 0;
 	extern __IO GlobalParam_t g_tGlobalParam;
 	extern __IO Process_t g_tProcess;
 	extern __IO BoardStatus_t g_tBoardStatus;
 	
 	LED_Shine(4, 60);
+	
+	ulTemp = sizeof(LLDParam_t);
+	ulTemp = sizeof(GlobalParam_t);
+	ulTemp = sizeof(AxisParamDefault_t);
+	ulTemp = sizeof(Process_t);
+	
 
 	//全局值初始化
 	Global_Status_Init();
@@ -145,11 +155,19 @@ void Motor_App_Init(void)
 
 	//参数初始化
 	EEPROM_Init();
+		
+	//液面探测参数
+	if(ERROR_TYPE_EEPROM == LLDParam_Init())
+	{  
+		//读取数据异常
+		g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;
+	}
+	
 	//全局参数
 	if(ERROR_TYPE_EEPROM == Global_Param_Init())
 	{  
-	 //读取数据异常
-	 g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;
+		//读取数据异常
+		g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;
 	}
 	//Read_Global_Param2(&g_tGlobalParam);
 //	LOG_Info("Can: Baud=%d, RecvID=%d, SendID=%d", g_tGlobalParam.eCanBaud, g_tGlobalParam.ulRecvCanID, g_tGlobalParam.ulSendCanID);
@@ -157,8 +175,8 @@ void Motor_App_Init(void)
 	//默认轴参数
 	if(ERROR_TYPE_EEPROM == Axis_Param_Default_Init())
 	{
-	  //读取数据异常
-	  g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;	
+		//读取数据异常
+		g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;	
 	}
 
 	//EPPROM_Data_Reset();
@@ -172,8 +190,8 @@ void Motor_App_Init(void)
 	//流程初始化
 	if(ERROR_TYPE_EEPROM == Process_Init())
 	{
-	  //读取数据异常
-	  g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;
+		//读取数据异常
+		g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;
 	}
 
 	//流程自动执行
@@ -192,10 +210,10 @@ void Motor_App_Init(void)
  * @output  : NULL
  * @return  : NULL
  */
-uint32_t lT = 0;
+//uint32_t lT = 0;
 void CommMonitor(void* parameter)
 {
-	uint32_t i = 0, Tick = 0;
+//	uint32_t i = 0, Tick = 0;
 	Motor_App_Init();
 	
 //	lT = TMC5160_ReadInt(TMC_0, TMC5160_GCONF);
@@ -212,7 +230,7 @@ void CommMonitor(void* parameter)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
 		
-		CanMonComStage();
+//		CanMonComStage();
 		
 		//电机协议处理
 		Event_Process();
