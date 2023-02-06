@@ -253,7 +253,7 @@ void Param_Write(SaveParamType_e eType, __IO uint8_t *pucData, uint16_t usLen)
 		break;
 		case EN_SAVE_PARAM_TYPE_LLD_PARAM:
 		{
-			EEPROM_Write(PROCESS_SAVE_ADDR, pucData, usLen);
+			EEPROM_Write(LLD_PARAM_SAVE_ADDR, pucData, usLen);
 		}
 		break;
 		default:break;

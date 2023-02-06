@@ -99,8 +99,8 @@ void SWTimer10ms(void* parameter)
 
 
 /*** 电机部分版本号 ***/
-uint16_t g_usSoftVersion 	= 0x0101;	//软件版本号
-uint16_t g_usHardWareVesion	= 0x0002;	//硬件版本号
+uint16_t g_usSoftVersion 	= 0x0102;	//软件版本号
+uint16_t g_usHardWareVesion	= 0x0010;	//硬件版本号
 
 
 void EPPROM_Data_Reset(void)
@@ -130,21 +130,21 @@ void EPPROM_Data_Reset(void)
 
 
 
-
+uint32_t ulTemp = 0;
 //电机运用初始化
 void Motor_App_Init(void)
 {
-	uint32_t ulTemp = 0;
+//	uint32_t ulTemp = 0;
 	extern __IO GlobalParam_t g_tGlobalParam;
 	extern __IO Process_t g_tProcess;
 	extern __IO BoardStatus_t g_tBoardStatus;
 	
 	LED_Shine(4, 60);
 	
-	ulTemp = sizeof(LLDParam_t);
-	ulTemp = sizeof(GlobalParam_t);
-	ulTemp = sizeof(AxisParamDefault_t);
-	ulTemp = sizeof(Process_t);
+	ulTemp = sizeof(LLDParam_t);	//0x0B=11
+	ulTemp = sizeof(GlobalParam_t); //0x291=657
+	ulTemp = sizeof(AxisParamDefault_t); //0x54=84
+	ulTemp = sizeof(Process_t); //0x8FA=2298
 	
 
 	//全局值初始化
@@ -230,7 +230,7 @@ void CommMonitor(void* parameter)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
 		
-//		CanMonComStage();
+		CanMonComStage();
 		
 		//电机协议处理
 		Event_Process();

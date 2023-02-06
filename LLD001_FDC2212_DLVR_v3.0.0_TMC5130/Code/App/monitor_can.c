@@ -1332,7 +1332,7 @@ uint8_t MonRWpara(struct tagMonCan *mon, uint8_t err)
 		LLD_Param(TMC_WRITE, Storage.ParaNo, &lValue);
 	}else{
 		//读取
-	
+		LLD_Param(TMC_READ, Storage.ParaNo, &lValue);
 	}
 	
 	
