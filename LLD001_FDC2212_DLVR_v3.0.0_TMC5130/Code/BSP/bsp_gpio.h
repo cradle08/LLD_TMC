@@ -24,9 +24,9 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  TMC_SPI_CS_PORT             	GPIOB
 
 
-//系统运行指示灯
-#define  SYS_LED_PIN					GPIO_Pin_6
-#define  SYS_LED_PORT             		GPIOB
+////系统运行指示灯
+//#define  SYS_LED_PIN					GPIO_Pin_6
+//#define  SYS_LED_PORT             		GPIOB
 
 
 

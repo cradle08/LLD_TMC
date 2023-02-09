@@ -157,50 +157,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>1587</LineNumber>
+          <LineNumber>160</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134237368</Address>
+          <Address>134238764</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Code\App\monitor_can.c</Filename>
+          <Filename>..\Code\App\app.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\LLD001\../Code/App/monitor_can.c\1587</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>1890</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134249504</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Code\Motor\TMC\TMC_Process.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\LLD001\../Code/Motor/TMC/TMC_Process.c\1890</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>420</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134231562</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Code\Motor\App\process.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\LLD001\../Code/Motor/App/process.c\420</Expression>
+          <Expression>\\LLD001\../Code/App/app.c\160</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -303,31 +271,6 @@
           <count>19</count>
           <WinNumber>1</WinNumber>
           <ItemText>tLLDParam</ItemText>
-        </Ww>
-        <Ww>
-          <count>20</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>g_tGlobalParam</ItemText>
-        </Ww>
-        <Ww>
-          <count>21</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>tProcess</ItemText>
-        </Ww>
-        <Ww>
-          <count>22</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>usCrc</ItemText>
-        </Ww>
-        <Ww>
-          <count>23</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>ptProcess</ItemText>
-        </Ww>
-        <Ww>
-          <count>24</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>ulTemp</ItemText>
         </Ww>
       </WatchWindow1>
       <WatchWindow2>

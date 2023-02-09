@@ -29,7 +29,7 @@
 #include "monitor_can.h" 
 #include "monitor_usart.h" 
 #include "gpio.h"
-
+#include "TMC_Process.h"
 
 
 /** @addtogroup STM32F10x_StdPeriph_Template
@@ -142,11 +142,22 @@ void DebugMon_Handler(void)
   */
 void SysTick_Handler(void)
 {
+	uint32_t ulTick = rt_tick_get();
+	
     //进入中断
     rt_interrupt_enter();
 
     //更新时基
     rt_tick_increase();
+
+	//执行流程处理
+	Process_Handle(ulTick);
+	  
+	//异常检测
+//	Period_Error_Check(ulTick);
+	  
+	//电机复位处理
+    Motor_Reset_Handle(ulTick);
 
     //离开中断
     rt_interrupt_leave();

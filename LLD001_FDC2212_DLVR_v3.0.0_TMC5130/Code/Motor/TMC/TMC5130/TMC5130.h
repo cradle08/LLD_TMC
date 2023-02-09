@@ -17,19 +17,26 @@
 #define DEFAULT_FULL_STEP_PER_ROUND		200		  						//每转全步数，默认200
 #define DEFAULT_MICRO_STEP_RESULTION	TMC_MICRO_STEP_RESOLUTION_256	//默认256细分
 
-//驱动频率
-#define DEFAULT_TMC_CLK					16000000	//16M
+//驱动频率clk
+#define TMC_DRIVER_CLK_12M					12000000	//12M
+#define TMC_DRIVER_CLK_16M					16000000	//16M
+#define TMC_DRIVER_CLK_EFAULT				TMC_DRIVER_CLK_16M	
 
 //速度，微步和寄存器数据转换关系. Page_133
 #define V_CHANGE_CONST_16M				1.048576	//V[ustep]=V[5160]*(Fclk_16M/2/2^23) => V[5160] = V[ustep]*2*2^23/Fcllk_16M				
 #define V_CHANGE_CONST_12M				1.398101	//V[ustep]=V[5160]*(Fclk_12M/2/2^23) => V[5160] = V[ustep]*2*2^23/Fcllk_12M				
-#define V_CHANGE_CONST					V_CHANGE_CONST_16M
 
 //加速度，微步和寄存器数据转换关系. Page_133
 #define A_CHANGE_CONST_16M				0.008590	//A[ustep]=A[5160]*(Fclk_16M^2/(512*256)/2^24) => A[5160] = A[ustep]*(512*256)*2^24/Fcllk_16M^2				
 #define A_CHANGE_CONST_12M				0.015271	//A[ustep]=A[5160]*(Fclk_12M^2/(512*256)/2^24) => A[5160] = A[ustep]*(512*256)*2^24/Fcllk_12M^2
-#define A_CHANGE_CONST					A_CHANGE_CONST_16M
 
+#if (TMC_DRIVER_CLK_EFAULT == TMC_DRIVER_CLK_16M)
+	#define A_CHANGE_CONST					A_CHANGE_CONST_16M
+	#define V_CHANGE_CONST					V_CHANGE_CONST_16M
+#else 
+	#define A_CHANGE_CONST					A_CHANGE_CONST_12M
+	#define V_CHANGE_CONST					V_CHANGE_CONST_12M
+#endif
 
 //设置电流值和实际配置值，倍数关系， Real = Set/8
 #define CURRENT_CHANGE_CONST			8

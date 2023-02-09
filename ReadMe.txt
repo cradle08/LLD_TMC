@@ -50,29 +50,3 @@ LLD液面探测反馈信号:
 
 
 
-
-
-/*************************测试平台*********************************/
-STM32F103ZET6, 64k_RAM, 512_Flash
-
-UART1:(链接TMC)
-UART_RX：PA10
-UART_TX：PA9
-
-UART2：（调试）
-RX: PD6
-TX: PD5
-
-SPI2: (链接FLASH)
-SPI_MOSI: PB15
-SPI_MISO: PB14
-SPI_CLK: PB13
-SPI_CS: PB13 --->PB8
-
-SPREAD: PB3
-
-DIR: PB4
-STEP:PB5 ---> PA7、PC7
-EN: PA6
-
-CLK:PA8 --->*

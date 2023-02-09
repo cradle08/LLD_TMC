@@ -452,7 +452,7 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 
 	//参考点复位
 	ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
-	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
+	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 1; //左限位极性，高有效
 	ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向		
 			
 #elif (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_3301_Pipette)

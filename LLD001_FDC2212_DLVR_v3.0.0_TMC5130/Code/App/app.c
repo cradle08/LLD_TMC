@@ -230,6 +230,9 @@ void CommMonitor(void* parameter)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
 		
+		
+		
+		
 		CanMonComStage();
 		
 		//电机协议处理

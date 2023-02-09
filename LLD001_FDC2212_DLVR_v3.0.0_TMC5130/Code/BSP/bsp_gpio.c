@@ -114,11 +114,27 @@ void GPIO_Config(void)
 	GPIO_SetBits(M0_EN_GPIO_Port, M0_EN_Pin);
 	
 	//CLK, MCO, PA8
+#if 1
+	//PA8输出低，使用TMC5130内部时钟
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);	
 	GPIO_ResetBits(GPIOA, GPIO_Pin_8);
+
+#else
+	//使用通过PA8输出MCO,使用单片机晶振--HSE，16M
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);	
+	GPIO_ResetBits(GPIOA, GPIO_Pin_8);		
+	//时钟选择
+	RCC_MCOConfig(RCC_MCO_HSE);
+		
+#endif
+
+
 
 //	//电机复位，检测光耦, PA15
 //	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
