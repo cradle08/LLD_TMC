@@ -36,10 +36,11 @@ rt_uint8_t rt_SWSysTimer_stk[128];
 rt_uint8_t rt_SWTimer10ms_stk[512];
 rt_uint8_t rt_comm_monitor_stk[3328];
 
+#if USE_OS_QUEUE 
 //消息队列控制模块
 struct rt_messagequeue can_msg_queue; 
 rt_uint8_t msg_buffer[512] = {0};
-
+#endif
 
 //定义函数---------------------------------------------------------------------//
 /*
@@ -59,7 +60,18 @@ int main(void)
 	//线程优先级设置为0~6时，实时性很好，优先级>=7时，实时性特别差，原因未知。
 	//在rtconfig.h配置文件中，线程最大优先级设置为8级（默认值为8，即#define RT_THREAD_PRIORITY_MAX 8），
 	//并且系统空闲线程被设置为最低优先级（默认值7），当有用户线程也设置为7时，实时性就会变差。
+
+	//查看mcu时钟
+	RCC_ClocksTypeDef tSysClk = {0};
+	RCC_GetClocksFreq(&tSysClk);
 	
+#if USE_OS_QUEUE 	
+	//	//消息队列初始化
+	if(RT_EOK != rt_mq_init(&can_msg_queue, "canmsg", &msg_buffer[0], sizeof(CanRxMsg)+8, sizeof(msg_buffer), RT_IPC_FLAG_FIFO))
+	{
+		return 0; //Error
+	}
+#endif
 	
 	//看门狗
 	rt_thread_init(&wdog_tcb,                                        // 线程控制块

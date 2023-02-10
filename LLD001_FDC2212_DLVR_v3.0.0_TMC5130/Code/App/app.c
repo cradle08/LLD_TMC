@@ -219,33 +219,32 @@ void CommMonitor(void* parameter)
 	CanRxMsg    rx_msg;
 
 	Motor_App_Init();
-//	while(1)
-//	{
-//		//BSP_UartCommStage(&ModbusMon.Usart);
-//		memset(&rx_msg, 0, sizeof(CanRxMsg));
-//		if(rt_mq_recv(&can_msg_queue, &rx_msg, sizeof(CanRxMsg), RT_WAITING_FOREVER) == RT_EOK)
-//		{
-//			//比较ID
-//			if(((rx_msg.StdId == g_tLLDParam.CanConfig.ModuleID) || ((rx_msg.StdId == LLD_CAN_BROADCAST_ID_MOTOR))) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
-//			{			
-//				//CanMonComStage();
-//			}
-//			else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
-//			{
-//				Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)rx_msg.Data;
-//				Handle_Can_RxMsg(ptRxMsg);
-//			}
-//		}
-//		//CanMonComStage();
-//		//电机协议处理
-//		//Event_Process();
-//		rt_thread_delay(2);
-//	}
 	
+#if USE_OS_QUEUE
+	while(1)
+	{
+		//BSP_UartCommStage(&ModbusMon.Usart);
+		memset(&rx_msg, 0, sizeof(CanRxMsg));
+		if(rt_mq_recv(&can_msg_queue, &rx_msg, sizeof(CanRxMsg), RT_WAITING_FOREVER) == RT_EOK)
+		{
+			//比较ID
+			if(((rx_msg.StdId == g_tLLDParam.CanConfig.ModuleID) || ((rx_msg.StdId == LLD_CAN_BROADCAST_ID_MOTOR))) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
+			{			
+				//CanMonComStage();
+			}
+			else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
+			{
+				Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)rx_msg.Data;
+				Handle_Can_RxMsg(ptRxMsg);
+			}
+		}
+		//CanMonComStage();
+		//电机协议处理
+		//Event_Process();
+		rt_thread_delay(2);
+	}
 	
-	
-
-	
+#else	
 	while(1)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
@@ -255,5 +254,6 @@ void CommMonitor(void* parameter)
 
 		rt_thread_delay(2);
 	}
+#endif
 	
 }

@@ -114,7 +114,7 @@ void GPIO_Config(void)
 	GPIO_SetBits(M0_EN_GPIO_Port, M0_EN_Pin);
 	
 	//CLK, MCO, PA8
-#if 1
+#if 0
 	//PA8输出低，使用TMC5130内部时钟
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
