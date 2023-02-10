@@ -293,8 +293,7 @@ uint8_t CanIRQRecv(void)
 //			;
 //		}
 	}
-	
-	
+
 	return ret;
 }
 
@@ -302,6 +301,30 @@ uint8_t CanIRQRecv(void)
 
 
 
+
+///*
+// * @function: CanIRQRecv
+// * @details : 接收报文。
+// * @input   : NULL
+// * @output  : NULL
+// * @return  : 接收报文的结果，0：失败；1：成功。
+// */
+//uint8_t CanIRQRecv(void)
+//{
+//	extern __IO LLDParam_t g_tLLDParam;
+//	extern __IO GlobalParam_t 	 g_tGlobalParam;
+//	struct rt_messagequeue can_msg_queue;
+//	//uint8_t     ret = FALSE;
+//	CanRxMsg    rx_msg;
+//	
+//	//从邮箱中读出报文
+//	CAN_Receive(CAN1, CAN_FIFO0, &rx_msg);
+//	
+//	//加入到消息丢列
+//	rt_mq_send(&can_msg_queue, &rx_msg, sizeof(CanRxMsg));
+
+//	return TRUE;
+//}
 
 
 

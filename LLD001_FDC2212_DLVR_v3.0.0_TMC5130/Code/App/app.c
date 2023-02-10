@@ -213,67 +213,47 @@ void Motor_App_Init(void)
 //uint32_t lT = 0;
 void CommMonitor(void* parameter)
 {
-//	uint32_t i = 0, Tick = 0;
+		extern struct rt_messagequeue can_msg_queue;
+	extern __IO LLDParam_t g_tLLDParam;
+	extern __IO GlobalParam_t 	 g_tGlobalParam;
+	CanRxMsg    rx_msg;
+
 	Motor_App_Init();
+//	while(1)
+//	{
+//		//BSP_UartCommStage(&ModbusMon.Usart);
+//		memset(&rx_msg, 0, sizeof(CanRxMsg));
+//		if(rt_mq_recv(&can_msg_queue, &rx_msg, sizeof(CanRxMsg), RT_WAITING_FOREVER) == RT_EOK)
+//		{
+//			//比较ID
+//			if(((rx_msg.StdId == g_tLLDParam.CanConfig.ModuleID) || ((rx_msg.StdId == LLD_CAN_BROADCAST_ID_MOTOR))) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
+//			{			
+//				//CanMonComStage();
+//			}
+//			else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
+//			{
+//				Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)rx_msg.Data;
+//				Handle_Can_RxMsg(ptRxMsg);
+//			}
+//		}
+//		//CanMonComStage();
+//		//电机协议处理
+//		//Event_Process();
+//		rt_thread_delay(2);
+//	}
 	
-//	lT = TMC5160_ReadInt(TMC_0, TMC5160_GCONF);
-//	TMC5160_WriteInt(TMC_0, TMC5160_IHOLD_IRUN, 0x00070903);
-//	TMC5160_WriteInt(TMC_0, TMC5160_GCONF, 0x00000000 | 1<<4);
-//	
-//	lT = TMC5160_ReadInt(TMC_0, TMC5160_GCONF);
-//	lT = TMC5160_ReadInt(TMC_0, TMC5160_CHOPCONF);
-//	lT = TMC5160_ReadInt(TMC_0, TMC5160_PWMCONF);
-//	
-//	TMC_Rotate(TMC_0, 0, 12800);
+	
+	
+
 	
 	while(1)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
-		
-		
-		
-		
 		CanMonComStage();
-		
 		//电机协议处理
 		Event_Process();
-		
-		
-		
-		
-		
-//		TMC2209_WriteInt(0x10,0x00070903); //IHOLD_IRUN: IHOLD=3, IRUN=0C=600MA电流, IHOLDDELAY=7
-//		Tick = rt_tick_get();
-//		while(i < Tick+5000)
-//		{
-//			TMC2209_STEP_HIGH;
-//			Delay_US(10);
-//			TMC2209_STEP_LOW;
-//			Delay_US(10);
-//			
-//			i = rt_tick_get();
-//		}
-//		rt_thread_delay(5000);
-		
-		
-//		//手动产生方波
-//		//TMC2209_WriteInt(0x10,0x00070903); //IHOLD_IRUN: IHOLD=3, IRUN=0C=600MA电流, IHOLDDELAY=7
-//		//TMC2209_WriteInt(0x10,0x00071403);
-//		TMC2209_WriteInt(0x10,0x00070903); //0-31
-//		Tick = rt_tick_get();
-//		while(i < Tick+5000)
-//		{
-//			TMC2209_STEP_HIGH;
-//			Delay_US(10);
-//			TMC2209_STEP_LOW;
-//			Delay_US(10);
-//			
-//			i = rt_tick_get();
-//		}
-////		rt_thread_delay(5000);
-		
-		
-		
+
 		rt_thread_delay(2);
 	}
+	
 }

@@ -36,6 +36,9 @@ rt_uint8_t rt_SWSysTimer_stk[128];
 rt_uint8_t rt_SWTimer10ms_stk[512];
 rt_uint8_t rt_comm_monitor_stk[3328];
 
+//消息队列控制模块
+struct rt_messagequeue can_msg_queue; 
+rt_uint8_t msg_buffer[512] = {0};
 
 
 //定义函数---------------------------------------------------------------------//
