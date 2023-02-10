@@ -230,7 +230,7 @@ void CommMonitor(void* parameter)
 			//比较ID
 			if(((rx_msg.StdId == g_tLLDParam.CanConfig.ModuleID) || ((rx_msg.StdId == LLD_CAN_BROADCAST_ID_MOTOR))) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 			{			
-				//CanMonComStage();
+				CanMonComStage();
 			}
 			else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 			{

@@ -237,6 +237,21 @@ uint8_t CAN_MonInit(void)
 uint8_t CanIRQRecv(void)
 {
 #if USE_OS_QUEUE 	
+		//使用系统消息丢列
+	extern __IO LLDParam_t g_tLLDParam;
+	extern __IO GlobalParam_t 	 g_tGlobalParam;
+	struct rt_messagequeue can_msg_queue;
+	//uint8_t     ret = FALSE;
+	CanRxMsg    rx_msg;
+	
+	//从邮箱中读出报文
+	CAN_Receive(CAN1, CAN_FIFO0, &rx_msg);
+	
+	//加入到消息丢列
+	rt_mq_send(&can_msg_queue, &rx_msg, sizeof(CanRxMsg));
+
+	return TRUE;
+#else
 	extern __IO LLDParam_t g_tLLDParam;
 	extern __IO GlobalParam_t 	 g_tGlobalParam;
 	uint8_t     ret = FALSE;
@@ -297,22 +312,6 @@ uint8_t CanIRQRecv(void)
 	}
 
 	return ret;
-	
-#else
-	//使用系统消息丢列
-	extern __IO LLDParam_t g_tLLDParam;
-	extern __IO GlobalParam_t 	 g_tGlobalParam;
-	struct rt_messagequeue can_msg_queue;
-	//uint8_t     ret = FALSE;
-	CanRxMsg    rx_msg;
-	
-	//从邮箱中读出报文
-	CAN_Receive(CAN1, CAN_FIFO0, &rx_msg);
-	
-	//加入到消息丢列
-	rt_mq_send(&can_msg_queue, &rx_msg, sizeof(CanRxMsg));
-
-	return TRUE;
 #endif
 }
 
