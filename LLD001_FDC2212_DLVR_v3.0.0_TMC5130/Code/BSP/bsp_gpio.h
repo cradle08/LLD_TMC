@@ -20,13 +20,13 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  EEPROM_SPI_CS_PORT             GPIOB
 
 //TMC CS(NSS)引脚 片选选普通GPIO即可
-#define  TMC_SPI_CS_PIN              	GPIO_Pin_5
+#define  TMC_SPI_CS_PIN              	GPIO_Pin_3
 #define  TMC_SPI_CS_PORT             	GPIOB
 
 
-////系统运行指示灯
-//#define  SYS_LED_PIN					GPIO_Pin_6
-//#define  SYS_LED_PORT             		GPIOB
+//系统运行指示灯
+#define  SYS_LED_PIN					GPIO_Pin_4
+#define  SYS_LED_PORT             		GPIOB
 
 
 

@@ -135,7 +135,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>ST-LINKIII-KEIL_SWO</Key>
-          <Name>-U36FF6D065648343838100643 -O206 -SF1000 -C0 -A0 -I0 -HNlocalhost -HP7184 -P1 -N00("ARM CoreSight SW-DP (ARM Core") -D00(1BA01477) -L00(0) -TO131090 -TC10000000 -TT10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_128.FLM -FS08000000 -FL020000 -FP0($$Device:STM32F103C8$Flash\STM32F10x_128.FLM)</Name>
+          <Name>-U250B0207A215303030303032 -O206 -SF800 -C0 -A0 -I0 -HNlocalhost -HP7184 -P1 -N00("ARM CoreSight SW-DP (ARM Core") -D00(1BA01477) -L00(0) -TO131090 -TC10000000 -TT10000000 -TP21 -TDS8000 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD20000000 -FC1000 -FN1 -FF0STM32F10x_128.FLM -FS08000000 -FL020000 -FP0($$Device:STM32F103C8$Flash\STM32F10x_128.FLM)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -157,9 +157,25 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>231</LineNumber>
+          <LineNumber>420</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134227264</Address>
+          <Address>134231238</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\Code\Motor\App\process.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\\../Code/Motor/App/process.c\420</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>168</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134236404</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -168,14 +184,14 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\Code\App\app.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\LLD001\../Code/App/app.c\231</Expression>
+          <Expression>\\LLD001\../Code/App/app.c\168</Expression>
         </Bp>
         <Bp>
-          <Number>1</Number>
+          <Number>2</Number>
           <Type>0</Type>
-          <LineNumber>251</LineNumber>
+          <LineNumber>266</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134223282</Address>
+          <Address>134223284</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -184,39 +200,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\Code\App\monitor_can.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\LLD001\../Code/App/monitor_can.c\251</Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>160</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134238628</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Code\App\app.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\LLD001\../Code/App/app.c\160</Expression>
+          <Expression>\\LLD001\../Code/App/monitor_can.c\266</Expression>
         </Bp>
         <Bp>
           <Number>3</Number>
           <Type>0</Type>
-          <LineNumber>227</LineNumber>
+          <LineNumber>1167</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134227240</Address>
+          <Address>134244748</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>..\Code\App\app.c</Filename>
+          <Filename>..\Code\Motor\TMC\TMC5130\TMC5130.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\LLD001\../Code/App/app.c\227</Expression>
+          <Expression>\\LLD001\../Code/Motor/TMC/TMC5130/TMC5130.c\1167</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -320,6 +320,31 @@
           <WinNumber>1</WinNumber>
           <ItemText>tLLDParam</ItemText>
         </Ww>
+        <Ww>
+          <count>20</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>tSysClk,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>21</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ptRecvFrame</ItemText>
+        </Ww>
+        <Ww>
+          <count>22</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>rx_msg</ItemText>
+        </Ww>
+        <Ww>
+          <count>23</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>tSysEvent</ItemText>
+        </Ww>
+        <Ww>
+          <count>24</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ptRxMsg</ItemText>
+        </Ww>
       </WatchWindow1>
       <WatchWindow2>
         <Ww>
@@ -390,12 +415,18 @@
       <pszMrulep></pszMrulep>
       <pSingCmdsp></pSingCmdsp>
       <pMultCmdsp></pMultCmdsp>
+      <SystemViewers>
+        <Entry>
+          <Name>System Viewer\RCC</Name>
+          <WinId>35905</WinId>
+        </Entry>
+      </SystemViewers>
       <DebugDescription>
         <Enable>1</Enable>
         <EnableFlashSeq>0</EnableFlashSeq>
         <EnableLog>0</EnableLog>
         <Protocol>2</Protocol>
-        <DbgClock>1000000</DbgClock>
+        <DbgClock>800000</DbgClock>
       </DebugDescription>
     </TargetOption>
   </Target>

@@ -61,11 +61,11 @@ void GPIO_Config(void)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
 	
 	//系统运行指示灯
-//	GPIO_InitStructure.GPIO_Pin = SYS_LED_PIN;
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
-//	GPIO_Init(SYS_LED_PORT, &GPIO_InitStructure);
-//	GPIO_SetBits(SYS_LED_PORT, SYS_LED_PIN);
+	GPIO_InitStructure.GPIO_Pin = SYS_LED_PIN;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(SYS_LED_PORT, &GPIO_InitStructure);
+	GPIO_SetBits(SYS_LED_PORT, SYS_LED_PIN);
 	
 	/* 其他，输入输出 */
 	//检测光电传感器的输出信号(限位光耦?), PB0
@@ -114,7 +114,7 @@ void GPIO_Config(void)
 	GPIO_SetBits(M0_EN_GPIO_Port, M0_EN_Pin);
 	
 	//CLK, MCO, PA8
-#if 0
+#if 1
 	//PA8输出低，使用TMC5130内部时钟
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;

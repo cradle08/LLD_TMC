@@ -81,6 +81,7 @@ void SWSysTimer(void* parameter)
  */
 void SWTimer10ms(void* parameter)
 {
+	static uint32_t s_ulTick = 0;
 	while(1)
 	{
 		//同时使用IIC1和IIC2接口进行通信，发现有相互干扰现象。
@@ -92,7 +93,14 @@ void SWTimer10ms(void* parameter)
 		DipSWCheck();
 		TempNTC();
 		
+		//系统指示灯闪耀
+		if(s_ulTick - rt_tick_get() >= 100) 
+		{
+			SYS_LED_TRIGGER;
+		}
 		rt_thread_delay(10);
+		s_ulTick++;
+
 	}
 }
 
@@ -248,7 +256,7 @@ void CommMonitor(void* parameter)
 	while(1)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
-		CanMonComStage();
+//		CanMonComStage();
 		//电机协议处理
 		Event_Process();
 

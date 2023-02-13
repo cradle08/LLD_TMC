@@ -1000,7 +1000,7 @@ void Event_Process(void)
 //            Can_RxMsg_t tRxMsg = {0};
 //			memmove((void*)&tRxMsg, (void*)tSysEvent.tMsg.ucaDataBuf, sizeof(Can_RxMsg_t));
 //            Handle_Can_RxMsg(&tRxMsg);
-			Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)tSysEvent.tMsg.ucaDataBuf;
+			Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)&tSysEvent.tMsg.tMsgCan;
 			Handle_Can_RxMsg(ptRxMsg);
         }
         break;
