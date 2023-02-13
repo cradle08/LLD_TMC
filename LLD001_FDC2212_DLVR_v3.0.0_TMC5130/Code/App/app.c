@@ -94,12 +94,12 @@ void SWTimer10ms(void* parameter)
 		TempNTC();
 		
 		//系统指示灯闪耀
-		if(s_ulTick - rt_tick_get() >= 100) 
+		if(rt_tick_get() - s_ulTick >= 1000) 
 		{
 			SYS_LED_TRIGGER;
+			s_ulTick = rt_tick_get();
 		}
 		rt_thread_delay(10);
-		s_ulTick++;
 
 	}
 }
@@ -256,7 +256,7 @@ void CommMonitor(void* parameter)
 	while(1)
 	{
 //		BSP_UartCommStage(&ModbusMon.Usart);
-//		CanMonComStage();
+		CanMonComStage();
 		//电机协议处理
 		Event_Process();
 
