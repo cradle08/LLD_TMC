@@ -158,8 +158,8 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 //事件处理
 void Event_Process(void);
 
-
-
+//急停
+ErrorType_e Urgent_Stop(TMC_e eTMC);
 
 //LED 闪耀
 void LED_Shine(uint16_t usCount, uint32_t ulTime);

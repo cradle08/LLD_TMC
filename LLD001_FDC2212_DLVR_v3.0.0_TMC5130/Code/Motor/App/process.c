@@ -388,6 +388,60 @@ ErrorType_e MissStep_Handle(TMC_e eTMC)
 
 
 
+/*
+*	急停处理
+*/
+ErrorType_e Urgent_Stop(TMC_e eTMC)
+{
+	uint32_t ulValue = 0, ulStatus = 0, ulXActual = 0;
+	uint8_t ucValid = 0, ucPolarity = 0;
+
+	//备份SWMODE的值
+	ulValue = TMC_ReadInt(eTMC, TMC5160_SWMODE);
+
+	/* 触发急停 */
+	ucValid = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT);
+	ucPolarity = TMC5160_FIELD_READ(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_L_MASK, TMC5160_POL_STOP_L_SHIFT);
+	if(0 == ucValid && 0 == ucPolarity)
+	{
+		//高有效，此刻为无效状态 ==》即，左限位为低电平
+		ulStatus =  0x05; 
+	}else if(0 == ucValid && 1 == ucPolarity){
+		//高有效，此刻为有效状态 ==》即，左限位为高电平
+		ulStatus = 0x01;
+	}else if(1 == ucValid && 0 == ucPolarity){
+		//低有效，此刻为无效状态 ==》即，左限位为高电平
+		ulStatus = 0x01;
+	}else if(1 == ucValid && 1 == ucPolarity){
+		//低有效，此刻为有效状态 ==》即，左限位为低电平
+		ulStatus = 0x05;
+	}
+	//TMC_WriteInt(eTMC, TMC5160_SWMODE, ulStatus);
+	TMC_WriteInt(eTMC, TMC5160_SWMODE, 0x03);
+
+	//急停，后处理
+	TMC_WriteInt(eTMC, TMC5160_VMAX, 0);
+	ulXActual = TMC_ReadInt(eTMC, TMC5160_XACTUAL);
+	TMC_WriteInt(eTMC, TMC5160_XTARGET, ulXActual);
+
+	//恢复SWMODE的值
+	TMC_WriteInt(eTMC, TMC5160_SWMODE, ulValue);
+
+	//复位状态下，急停
+	if(g_tTMCStatus.ucMotorResetStartFlag != 0)
+	{
+		//
+		g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_FAIL;
+		
+		//设置模式--位置模式
+		TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC_MODE_POSITION);
+		
+		//恢复速度设置
+		TMC_SetPMode_V(eTMC, 2);
+	}
+}
+
+
 
 
 /*
@@ -530,7 +584,11 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 //			g_tBoardStatus.ucMotor_ResetStatus[eTMC] = 1;
 		}
 		break;
-		
+		case CMD_URGENT_STOP:   //0x15
+		{
+			Urgent_Stop(eTMC);
+		}
+		break;		
 		
 		/**********************/
 		case CMD_MCU_REST:  //0x20

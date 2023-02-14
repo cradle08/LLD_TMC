@@ -26,6 +26,7 @@ extern "C" {
 #define CMD_MOVE_POSITION_WITH_ENC		0x12	//move position  with enc
 #define CMD_STOP						0x13 	//stop
 #define CMD_MOTOR_RESET					0x14	//motor reset
+#define CMD_URGENT_STOP                 0x15
 
 //
 #define CMD_MCU_REST					0x20	//mcu reset
