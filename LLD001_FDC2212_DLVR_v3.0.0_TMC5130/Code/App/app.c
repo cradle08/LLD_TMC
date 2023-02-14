@@ -221,7 +221,7 @@ void Motor_App_Init(void)
 //uint32_t lT = 0;
 void CommMonitor(void* parameter)
 {
-		extern struct rt_messagequeue can_msg_queue;
+	extern struct rt_messagequeue can_msg_queue;
 	extern __IO LLDParam_t g_tLLDParam;
 	extern __IO GlobalParam_t 	 g_tGlobalParam;
 	CanRxMsg    rx_msg;
@@ -238,7 +238,7 @@ void CommMonitor(void* parameter)
 			//比较ID
 			if(((rx_msg.StdId == g_tLLDParam.CanConfig.ModuleID) || ((rx_msg.StdId == LLD_CAN_BROADCAST_ID_MOTOR))) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 			{			
-				CanMonComStage();
+				//CanMonComStage();
 			}
 			else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 			{
@@ -246,10 +246,6 @@ void CommMonitor(void* parameter)
 				Handle_Can_RxMsg(ptRxMsg);
 			}
 		}
-		//CanMonComStage();
-		//电机协议处理
-		//Event_Process();
-		rt_thread_delay(2);
 	}
 	
 #else	

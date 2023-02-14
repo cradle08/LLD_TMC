@@ -35,7 +35,7 @@ extern "C" {
 
 
 //1：使用系统消息丢列，0：不使用
-#define USE_OS_QUEUE	0
+#define USE_OS_QUEUE	1
 
 
 /*

@@ -1032,7 +1032,7 @@ void LED_Shine(uint16_t usCount, uint32_t ulTime)
 	for(uint16_t i = 0; i < usCount; i++)
 	{
 		//Ö¸Ê¾µÆÉÁË¸
-//@todo		SYS_LED_TRIGGER;
+		SYS_LED_TRIGGER;
 		rt_thread_delay(ulTime);//HAL_Delay(ulTime);
 	}
 }

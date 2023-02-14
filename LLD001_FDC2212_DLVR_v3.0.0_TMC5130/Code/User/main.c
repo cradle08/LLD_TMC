@@ -34,7 +34,7 @@ ALIGN(RT_ALIGN_SIZE)
 rt_uint8_t rt_wdog_stk[128];
 rt_uint8_t rt_SWSysTimer_stk[128];
 rt_uint8_t rt_SWTimer10ms_stk[512];
-rt_uint8_t rt_comm_monitor_stk[3328];
+rt_uint8_t rt_comm_monitor_stk[3072]; //3328
 
 #if USE_OS_QUEUE 
 //消息队列控制模块

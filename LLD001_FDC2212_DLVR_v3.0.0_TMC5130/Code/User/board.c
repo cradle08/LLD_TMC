@@ -84,9 +84,10 @@ void rt_hw_board_init()
 	//电机初始化，在此初始化，串口出现问题，待查明原因。
 	SPI2_Configure();
 	
+#if !USE_OS_QUEUE
 	//电机通信消息队列初始化
 	SysEventInit();
-	
+#endif	
 	
 	GenDelay_nop(720000);
 	GenDelay_nop(720000);
