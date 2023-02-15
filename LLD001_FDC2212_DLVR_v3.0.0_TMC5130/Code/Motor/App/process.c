@@ -394,28 +394,28 @@ ErrorType_e MissStep_Handle(TMC_e eTMC)
 ErrorType_e Urgent_Stop(TMC_e eTMC)
 {
 	uint32_t ulValue = 0, ulStatus = 0, ulXActual = 0;
-	uint8_t ucValid = 0, ucPolarity = 0;
+//	uint8_t ucValid = 0, ucPolarity = 0;
 
 	//备份SWMODE的值
 	ulValue = TMC_ReadInt(eTMC, TMC5160_SWMODE);
 
 	/* 触发急停 */
-	ucValid = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT);
-	ucPolarity = TMC5160_FIELD_READ(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_L_MASK, TMC5160_POL_STOP_L_SHIFT);
-	if(0 == ucValid && 0 == ucPolarity)
-	{
-		//高有效，此刻为无效状态 ==》即，左限位为低电平
-		ulStatus =  0x05; 
-	}else if(0 == ucValid && 1 == ucPolarity){
-		//高有效，此刻为有效状态 ==》即，左限位为高电平
-		ulStatus = 0x01;
-	}else if(1 == ucValid && 0 == ucPolarity){
-		//低有效，此刻为无效状态 ==》即，左限位为高电平
-		ulStatus = 0x01;
-	}else if(1 == ucValid && 1 == ucPolarity){
-		//低有效，此刻为有效状态 ==》即，左限位为低电平
-		ulStatus = 0x05;
-	}
+//	ucValid = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT);
+//	ucPolarity = TMC5160_FIELD_READ(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_L_MASK, TMC5160_POL_STOP_L_SHIFT);
+//	if(0 == ucValid && 0 == ucPolarity)
+//	{
+//		//高有效，此刻为无效状态 ==》即，左限位为低电平
+//		ulStatus =  0x05; 
+//	}else if(0 == ucValid && 1 == ucPolarity){
+//		//高有效，此刻为有效状态 ==》即，左限位为高电平
+//		ulStatus = 0x01;
+//	}else if(1 == ucValid && 0 == ucPolarity){
+//		//低有效，此刻为无效状态 ==》即，左限位为高电平
+//		ulStatus = 0x01;
+//	}else if(1 == ucValid && 1 == ucPolarity){
+//		//低有效，此刻为有效状态 ==》即，左限位为低电平
+//		ulStatus = 0x05;
+//	}
 	//TMC_WriteInt(eTMC, TMC5160_SWMODE, ulStatus);
 	TMC_WriteInt(eTMC, TMC5160_SWMODE, 0x03);
 
