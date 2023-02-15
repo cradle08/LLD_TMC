@@ -1,0 +1,2026 @@
+﻿//20220829
+[
+  {
+    "Name": "RX",
+    "Simulated": false, 
+    "AxisType": 1,
+    "CanIndex": 2,
+    "No": 0,
+    "FrameId": 1,
+    "EncoderId": 3,
+    "Setting": [
+      { //编码器分辨率 set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 255
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 64
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 120000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 95000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 61000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 95000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 120000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 115000, //107000
+    "MmToPlusExpression": "200 * 64 / 109.9871588",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 109.9871588"
+  },
+  {
+    "Name": "RY1",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 1,
+    "FrameId": 3,
+    "EncoderId": 3,
+    "Setting": [
+      { //编码器分辨率 set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 120
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 80000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 600000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 128000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 600000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 800000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -16000,
+    "SoftLimitMax": 171000, //122581,
+    "MmToPlusExpression": "200 * 64 / 11.64 / Math.PI",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 11.64 / Math.PI"
+  },
+  {
+    "Name": "RY2",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 1,
+    "FrameId": 5,
+    "EncoderId": 3,
+    "Setting": [
+      { //编码器分辨率 set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 120
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 80000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 600000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 128000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 600000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 800000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -16000,
+    "SoftLimitMax": 171000, //122581,
+    "MmToPlusExpression": "200 * 64 / 11.64 / Math.PI",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 11.64 / Math.PI"
+  },
+  {
+    "Name": "RY3",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 1,
+    "FrameId": 7,
+    "EncoderId": 3,
+    "Setting": [
+      { //编码器分辨率 set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 120
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 80000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 600000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 128000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 600000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 800000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -16000,
+    "SoftLimitMax": 171000, //122581,
+    "MmToPlusExpression": "200 * 64 / 11.64 / Math.PI",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 11.64 / Math.PI"
+  },
+  {
+    "Name": "RY4",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 1,
+    "FrameId": 9,
+    "EncoderId": 3,
+    "Setting": [
+      { //编码器分辨率 set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 120
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 80000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 600000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 128000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 600000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 800000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -16000,
+    "SoftLimitMax": 171000, //122581,
+    "MmToPlusExpression": "200 * 64 / 11.64 / Math.PI",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 11.64 / Math.PI"
+  },
+  {
+    "Name": "RY5",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 1,
+    "FrameId": 11,
+    "EncoderId": 3,
+    "Setting": [
+      { //set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 120
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 80000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 600000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 128000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 600000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 800000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -16000,
+    "SoftLimitMax": 171000, //122581,
+    "MmToPlusExpression": "200 * 64 / 11.64 / Math.PI",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 11.64 / Math.PI"
+  },
+  {
+    "Name": "RY6",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 1,
+    "FrameId": 13,
+    "EncoderId": 3,
+    "Setting": [
+      { //set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 120
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 80000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 600000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 128000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 600000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 800000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -16000,
+    "SoftLimitMax": 171000, //122581,
+    "MmToPlusExpression": "200 * 64 / 11.64 / Math.PI",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 11.64 / Math.PI"
+  },
+  {
+    "Name": "RY7",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 1,
+    "FrameId": 15,
+    "EncoderId": 3,
+    "Setting": [
+      { //set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 120
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 80000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 600000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 128000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 600000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 800000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 64,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -16000,
+    "SoftLimitMax": 171000, //122581,
+    "MmToPlusExpression": "200 * 64 / 11.64 / Math.PI",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 11.64 / Math.PI"
+  },
+  {
+    "Name": "RY8",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 1,
+    "FrameId": 17,
+    "EncoderId": 3,
+    "Setting": [
+      { //set Prescaler for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 100
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 120
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 80000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 600000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 128000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 600000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 800000
+      }
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 64,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -16000,
+    "SoftLimitMax": 171000, //122581
+    "MmToPlusExpression": "200 * 64 / 11.64 / Math.PI",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 11.64 / Math.PI"
+  },
+  {
+    "Name": "RZ1",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 0,
+    "FrameId": 3,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 720
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 80
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 30
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1200000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 243200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1200000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 900000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / 10.16",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 10.16"
+  },
+  {
+    "Name": "RZ2",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 0,
+    "FrameId": 5,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 720
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 80
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 30
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1200000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 243200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1200000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 900000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 128,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / 10.16",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 10.16"
+  },
+  {
+    "Name": "RZ3",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 0,
+    "FrameId": 7,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 720
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 80
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 30
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1200000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 243200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1200000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 900000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / 10.16",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 10.16"
+  },
+  {
+    "Name": "RZ4",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 0,
+    "FrameId": 9,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 720
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 80
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 30
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1200000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 243200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1200000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 900000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 128,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / 10.16",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 10.16"
+  },
+  {
+    "Name": "RZ5",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 0,
+    "FrameId": 11,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 720
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 80
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 30
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1200000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 243200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1200000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 900000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / 10.16",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 10.16"
+  },
+  {
+    "Name": "RZ6",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 0,
+    "FrameId": 13,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 720
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 80
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 30
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1200000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 243200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1200000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 900000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / 10.16",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 10.16"
+  },
+  {
+    "Name": "RZ7",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 0,
+    "FrameId": 15,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 720
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 80
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 30
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1200000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 243200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1200000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 900000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / 10.16",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 10.16"
+  },
+  {
+    "Name": "RZ8",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 0,
+    "FrameId": 17,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 720
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 80
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 30
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 900000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1200000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 243200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1200000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 900000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 100,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / 10.16",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 10.16"
+  },
+  {
+    "Name": "RP1",
+    "Simulated": false,
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 0,
+    "FrameId": 101,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current， //修改前：65+8） / 8 * 3.1A/32 = 0.871875A，修改后（135+8）/8* 1.64A /32= 0.87125A
+        "Type": 32,
+        "Value": 135     
+      },
+      { //保持电流峰值 set standby current peak current， //修改前：（15+8）/ 8 * 3.1A/32 = 0.19375A, 修改后（30+8）/8* 1.64A /32= 0.205A  
+        "Type": 33,
+        "Value": 30  
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 300000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 65000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 300000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 500000
+      },
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -15200,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / Math.PI /5.08/3.57/3.57",
+    "MmToPlusOfSpeedExpression": "200 * 64 / Math.PI /5.08/3.57/3.57"
+  },
+  {
+    "Name": "RP2",
+    "Simulated": false,
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 0,
+    "FrameId": 103,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current， //修改前：65+8） / 8 * 3.1A/32 = 0.871875A，修改后（135+8）/8* 1.64A /32= 0.87125A
+        "Type": 32,
+        "Value": 135     
+      },
+      { //保持电流峰值 set standby current peak current， //修改前：（15+8）/ 8 * 3.1A/32 = 0.19375A, 修改后（30+8）/8* 1.64A /32= 0.205A  
+        "Type": 33,
+        "Value": 30     
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 300000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 65000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 300000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 500000
+      },
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -15200,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / Math.PI /5.08/3.57/3.57",
+    "MmToPlusOfSpeedExpression": "200 * 64 / Math.PI /5.08/3.57/3.57"
+  },
+  {
+    "Name": "RP3",
+    "Simulated": false,
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 0,
+    "FrameId": 105,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current， //修改前：65+8） / 8 * 3.1A/32 = 0.871875A，修改后（135+8）/8* 1.64A /32= 0.87125A
+        "Type": 32,
+        "Value": 135     
+      },
+      { //保持电流峰值 set standby current peak current， //修改前：（15+8）/ 8 * 3.1A/32 = 0.19375A, 修改后（30+8）/8* 1.64A /32= 0.205A  
+        "Type": 33,
+        "Value": 30  
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 300000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 65000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 300000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 500000
+      },
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -15200,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / Math.PI/5.08/3.57/3.57",
+    "MmToPlusOfSpeedExpression": "200 * 64 / Math.PI /5.08/3.57/3.57"
+  },
+  {
+    "Name": "RP4",
+    "Simulated": false, 
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 0,
+    "FrameId": 107,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current， //修改前：65+8） / 8 * 3.1A/32 = 0.871875A，修改后（135+8）/8* 1.64A /32= 0.87125A
+        "Type": 32,
+        "Value": 135     
+      },
+      { //保持电流峰值 set standby current peak current， //修改前：（15+8）/ 8 * 3.1A/32 = 0.19375A, 修改后（30+8）/8* 1.64A /32= 0.205A  
+        "Type": 33,
+        "Value": 30  
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 300000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 65000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 300000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 500000
+      },
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -15200,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / Math.PI/5.08/3.57/3.57",
+    "MmToPlusOfSpeedExpression": "200 * 64 / Math.PI /5.08/3.57/3.57"
+  },
+  {
+    "Name": "RP5",
+    "Simulated": false,
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 0,
+    "FrameId": 109,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current， //修改前：65+8） / 8 * 3.1A/32 = 0.871875A，修改后（135+8）/8* 1.64A /32= 0.87125A
+        "Type": 32,
+        "Value": 135     
+      },
+      { //保持电流峰值 set standby current peak current， //修改前：（15+8）/ 8 * 3.1A/32 = 0.19375A, 修改后（30+8）/8* 1.64A /32= 0.205A  
+        "Type": 33,
+        "Value": 30  
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 300000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 65000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 300000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 500000
+      },
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -15200,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / Math.PI/5.08/3.57/3.57",
+    "MmToPlusOfSpeedExpression": "200 * 64 / Math.PI /5.08/3.57/3.57"
+  },
+  {
+    "Name": "RP6",
+    "Simulated": false,
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 0,
+    "FrameId": 111,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current， //修改前：65+8） / 8 * 3.1A/32 = 0.871875A，修改后（135+8）/8* 1.64A /32= 0.87125A
+        "Type": 32,
+        "Value": 135     
+      },
+      { //保持电流峰值 set standby current peak current， //修改前：（15+8）/ 8 * 3.1A/32 = 0.19375A, 修改后（30+8）/8* 1.64A /32= 0.205A  
+        "Type": 33,
+        "Value": 30  
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 300000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 65000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 300000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 500000
+      },
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -15200,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / Math.PI/5.08/3.57/3.57",
+    "MmToPlusOfSpeedExpression": "200 * 64 / Math.PI /5.08/3.57/3.57"
+  },
+  {
+    "Name": "RP7",
+    "Simulated": false, 
+    "AxisType": 1,
+    "CanIndex": 0,
+    "No": 0,
+    "FrameId": 113,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current， //修改前：65+8） / 8 * 3.1A/32 = 0.871875A，修改后（135+8）/8* 1.64A /32= 0.87125A
+        "Type": 32,
+        "Value": 135     
+      },
+      { //保持电流峰值 set standby current peak current， //修改前：（15+8）/ 8 * 3.1A/32 = 0.19375A, 修改后（30+8）/8* 1.64A /32= 0.205A  
+        "Type": 33,
+        "Value": 30  
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 300000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 65000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 300000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 500000
+      },
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -15200,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / Math.PI/5.08/3.57/3.57",
+    "MmToPlusOfSpeedExpression": "200 * 64 / Math.PI /5.08/3.57/3.57"
+  },
+  {
+    "Name": "RP8",
+    "Simulated": false, 
+    "AxisType": 1,
+    "CanIndex": 1,
+    "No": 0,
+    "FrameId": 115,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 3200
+      },
+      { //运行电流峰值 set run current  peak current， //修改前：65+8） / 8 * 3.1A/32 = 0.871875A，修改后（135+8）/8* 1.64A /32= 0.87125A
+        "Type": 32,
+        "Value": 135     
+      },
+      { //保持电流峰值 set standby current peak current， //修改前：（15+8）/ 8 * 3.1A/32 = 0.19375A, 修改后（30+8）/8* 1.64A /32= 0.205A  
+        "Type": 33,
+        "Value": 30  
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 40000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 300000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 65000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 300000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 500000
+      },
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -15200,
+    "SoftLimitMax": 239000,
+    "MmToPlusExpression": "200 * 64 / Math.PI/5.08/3.57/3.57",
+    "MmToPlusOfSpeedExpression": "200 * 64 / Math.PI /5.08/3.57/3.57"
+  },
+  {
+    "Name": "RG",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 2,
+    "No": 0,
+    "FrameId": 57,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 90
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 1500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1000000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 200000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1000000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 1500000
+      }
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 70000,
+    "MmToPlusExpression": "200 * 64 * 20 / (16 * Math.PI)",
+    "MmToPlusOfSpeedExpression": "200 * 64 * 20 / (16 * Math.PI)"
+  },
+  {
+    "Name": "RGR",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 2,
+    "No": 0,
+    "FrameId": 55,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1500
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 3500
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 90
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 1500000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 150000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 1000000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 200000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 1000000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 1500000
+      }
+    ],
+    "IfCheckDeviation": false,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": -2000,
+    "SoftLimitMax": 80000,
+    "MmToPlusExpression": "12800 * 20 / 360",
+    "MmToPlusOfSpeedExpression": "12800 * 20 / 360"
+  },
+  {
+    "Name": "RGY",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 2,
+    "No": 0,
+    "FrameId": 51,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 400
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 5000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 77
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 40
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 600000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 50000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 350000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 85000
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 350000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 600000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 93000,
+    "MmToPlusExpression": "200 * 64 / (19.100 * Math.PI)",
+    "MmToPlusOfSpeedExpression": "200 * 64 / (19.100 * Math.PI)"
+  },
+  {
+    "Name": "RGZ",
+    "Simulated": false, //
+    "AxisType": 1,
+    "CanIndex": 2,
+    "No": 0,
+    "FrameId": 53,
+    "EncoderId": 3,
+    "Setting": [
+      { //set resolution for the encoder
+        "Type": 4,
+        "Value": 1000
+      },
+      { //复位低速 set reference switch low speed
+        "Type": 16,
+        "Value": 1000
+      },
+      { //复位高速  set reference search high speed
+        "Type": 17,
+        "Value": 15000
+      },
+      { //复位偏移距离 set reference search distance
+        "Type": 18,
+        "Value": 200
+      },
+      { //运行电流峰值 set run current  peak current
+        "Type": 32,
+        "Value": 150
+      },
+      { //保持电流峰值 set standby current peak current
+        "Type": 33,
+        "Value": 70
+      },
+      { //步进细分 set microstep resolution 
+        "Type": 35,
+        "Value": 64
+      },
+      { // A1
+        "Type": 49,
+        "Value": 1000000
+      },
+      { //V1
+        "Type": 50,
+        "Value": 70000
+      },
+      { //AMAX
+        "Type": 51,
+        "Value": 700000
+      },
+      { //VMAX
+        "Type": 52,
+        "Value": 115200
+      },
+      { //DMAX
+        "Type": 53,
+        "Value": 700000
+      },
+      { //D1
+        "Type": 54,
+        "Value": 1000000
+      }
+    ],
+    "IfCheckDeviation": true,
+    "AllowedDeviation": 120,
+    "WaitTimeout": "00:01:30",
+    "SoftLimitMin": 0,
+    "SoftLimitMax": 200000,
+    "MmToPlusExpression": "200 * 64 / 6.35",
+    "MmToPlusOfSpeedExpression": "200 * 64 / 6.35"
+  }
+]

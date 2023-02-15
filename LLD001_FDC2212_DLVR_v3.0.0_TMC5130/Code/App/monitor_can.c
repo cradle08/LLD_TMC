@@ -240,7 +240,7 @@ uint8_t CanIRQRecv(void)
 		//使用系统消息丢列
 	extern __IO LLDParam_t g_tLLDParam;
 	extern __IO GlobalParam_t 	 g_tGlobalParam;
-	struct rt_messagequeue can_msg_queue;
+	extern struct rt_messagequeue can_msg_queue;
 	//uint8_t     ret = FALSE;
 	CanRxMsg    rx_msg;
 	
