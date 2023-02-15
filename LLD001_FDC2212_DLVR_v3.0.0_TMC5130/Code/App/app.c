@@ -242,8 +242,10 @@ void CommMonitor(void* parameter)
 			}
 			else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 			{
-				Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)rx_msg.Data;
-				Handle_Can_RxMsg(ptRxMsg);
+				Can_RxMsg_t tRxMsg = {0};
+				memmove((void*)tRxMsg.ucaRxData, (void*)rx_msg.Data, 8);
+				tRxMsg.ulRecvCanID = rx_msg.StdId;
+				Handle_Can_RxMsg(&tRxMsg);
 			}
 		}
 	}

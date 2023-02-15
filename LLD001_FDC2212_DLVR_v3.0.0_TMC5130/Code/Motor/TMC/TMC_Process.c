@@ -2880,7 +2880,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 				TMC_Reset(eTMC, TMC_REF_LEFT);  //TMC_REF_RIGHT   TMC_REF_LEFT
 			}
 			break;
-			case CMD_URGENT_STOP:
+			case CMD_URGENT_STOP: //0x15
 			{
 				//¼±Í£
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
