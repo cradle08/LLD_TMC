@@ -1,17 +1,17 @@
 /*
-**  ÊÂ¼ş¹ÜÀíÄ£¿é :
+**  äº‹ä»¶ç®¡ç†æ¨¡å— :
 **
-**      ÊÂ¼ş¹ÜÀíÄ£¿éÊÇÏµÍ³ºËĞÄµÄ·ÖÄ£¿é£¬ÈÎÎñÊÇ½«ÏµÍ³ÖĞËù·¢ÉúµÄ¸÷ÖÖÊÂ¼ş
-**  Ìá½»¸øÓÃ»§½çÃæ´¦ÀíÄ£¿é¡£ÏµÍ³ÊÂ¼şÓĞ¶àÖÖÀàĞÍ£¬Ã¿ÖÖÀàĞÍ°üº¬Ò»ÀàÏà¹ØÊÂ
-**  ¼ş¡£ÎªÁË¼ò»¯ÊÂ¼ş½Ó¿ÚµÄ³ÌĞòÉè¼Æ£¬¶Ô¸÷ÀàÏµÍ³ÊÂ¼ş½¨Á¢Í³Ò»µÄÊÂ¼şÊı¾İ½á
-**  ¹¹£¬²¢ÓÉÊÂ¼ş¹ÜÀíÄ£¿é½øĞĞ¹ÜÀí¡£
+**      äº‹ä»¶ç®¡ç†æ¨¡å—æ˜¯ç³»ç»Ÿæ ¸å¿ƒçš„åˆ†æ¨¡å—ï¼Œä»»åŠ¡æ˜¯å°†ç³»ç»Ÿä¸­æ‰€å‘ç”Ÿçš„å„ç§äº‹ä»¶
+**  æäº¤ç»™ç”¨æˆ·ç•Œé¢å¤„ç†æ¨¡å—ã€‚ç³»ç»Ÿäº‹ä»¶æœ‰å¤šç§ç±»å‹ï¼Œæ¯ç§ç±»å‹åŒ…å«ä¸€ç±»ç›¸å…³äº‹
+**  ä»¶ã€‚ä¸ºäº†ç®€åŒ–äº‹ä»¶æ¥å£çš„ç¨‹åºè®¾è®¡ï¼Œå¯¹å„ç±»ç³»ç»Ÿäº‹ä»¶å»ºç«‹ç»Ÿä¸€çš„äº‹ä»¶æ•°æ®ç»“
+**  æ„ï¼Œå¹¶ç”±äº‹ä»¶ç®¡ç†æ¨¡å—è¿›è¡Œç®¡ç†ã€‚
 **
-**  ±¾ÎÄ¼ş¶¨ÒåÒÔÏÂÄÚÈİ :
+**  æœ¬æ–‡ä»¶å®šä¹‰ä»¥ä¸‹å†…å®¹ :
 **
-**      * ÏµÍ³ÊÂ¼şÀàĞÍ
-**      * ¹ÊÕÏÊÂ¼ş³ö´íÂë
-**      * ÊÂ¼şÊı¾İ½á¹¹
-**      * ÊÂ¼ş¹ÜÀíAPIº¯ÊıÔ­ĞÍ
+**      * ç³»ç»Ÿäº‹ä»¶ç±»å‹
+**      * æ•…éšœäº‹ä»¶å‡ºé”™ç 
+**      * äº‹ä»¶æ•°æ®ç»“æ„
+**      * äº‹ä»¶ç®¡ç†APIå‡½æ•°åŸå‹
 */
 
 #ifndef __EVENT_H__
@@ -19,18 +19,18 @@
 
 #include "main.h"
 #include "stdlib.h"
+#include <string.h>
 
 
 
-
-//´®¿Úbuffer³¤¶È
+//ä¸²å£bufferé•¿åº¦
 #define DATA_BUF_LEN	  8
 #define USART_BUFFER_LEN  10
 #define CAN_BUFFER_LEN    8
 
 
 
-//¿ª¹Ø£¬È«¾ÖÖĞ¶Ï
+//å¼€å…³ï¼Œå…¨å±€ä¸­æ–­
 #define EVENT_USE_OS	0
 #if EVENT_USE_OS
 #define ENABLE_EVENT_IRQ	__enable_irq()
@@ -41,7 +41,7 @@
 #endif
 
 /*
-*	ÏûÏ¢¶ÓÁĞ£¬ÀàĞÍ
+*	æ¶ˆæ¯é˜Ÿåˆ—ï¼Œç±»å‹
 */
 typedef enum {
 	MSG_TYPE_NULL	= 0,
@@ -57,10 +57,10 @@ typedef enum {
 
 
 
-//°´¼üÊÂ¼ş ÏûÏ¢½á¹¹Ìå
+//æŒ‰é”®äº‹ä»¶ æ¶ˆæ¯ç»“æ„ä½“
 typedef struct KEY_ET
 {
-	uint8_t ucflag;		//ÊÇ·ñ³¤°´¼ü
+	uint8_t ucflag;		//æ˜¯å¦é•¿æŒ‰é”®
 	uint8_t ucKeyValue;
 	
 }MsgKey_t;
@@ -68,75 +68,75 @@ typedef struct KEY_ET
 
 
 /* 
-*  ¶¨Ê±ÊÂ¼ş,ÏûÏ¢½á¹¹Ìå
+*  å®šæ—¶äº‹ä»¶,æ¶ˆæ¯ç»“æ„ä½“
 */
 typedef struct {
-	uint8_t  ucIndex;	//¶¨Ê±Æ÷ÀàĞÍ
+	uint8_t  ucIndex;	//å®šæ—¶å™¨ç±»å‹
 	uint16_t usCount;
 	
 }MsgTimer_t;
 
 
 /*
-*	CANÊÂ¼ş,ÏûÏ¢½á¹¹Ìå
+*	CANäº‹ä»¶,æ¶ˆæ¯ç»“æ„ä½“
 */
 typedef struct {
-	uint32_t 	ulRecvCanID;		//½ÓÊÜcanid
-//	uint8_t 	ucType;				//ÏûÏ¢×ÓÀà±ğ
-	uint8_t 	ucaBuffer[CAN_BUFFER_LEN]; //ÏûÏ¢buffer
+	uint32_t 	ulRecvCanID;		//æ¥å—canid
+//	uint8_t 	ucType;				//æ¶ˆæ¯å­ç±»åˆ«
+	uint8_t 	ucaBuffer[CAN_BUFFER_LEN]; //æ¶ˆæ¯buffer
 	
 }MsgCan_t;
 
 
 
 /*
-*	´®¿ÚÊÂ¼ş,ÏûÏ¢½á¹¹Ìå
+*	ä¸²å£äº‹ä»¶,æ¶ˆæ¯ç»“æ„ä½“
 */
 typedef struct {
-	uint8_t 	ucIndex;		//´®¿ÚºÅ
-	uint8_t 	ucaBuffer[USART_BUFFER_LEN]; //ÏûÏ¢buffer
-	uint16_t	usLen; //ÏûÏ¢³¤¶È
+	uint8_t 	ucIndex;		//ä¸²å£å·
+	uint8_t 	ucaBuffer[USART_BUFFER_LEN]; //æ¶ˆæ¯buffer
+	uint16_t	usLen; //æ¶ˆæ¯é•¿åº¦
 	
 }MsgUsart_t;
 
 
 
 /*
-*	ÀÏ»¯ÊÂ¼ş£¬ĞÅÏ¢½á¹¹Ìå
+*	è€åŒ–äº‹ä»¶ï¼Œä¿¡æ¯ç»“æ„ä½“
 */
 typedef struct {
-	uint8_t  ucIndex;		//ÀÏ»¯Ñ¡Ïî
+	uint8_t  ucIndex;		//è€åŒ–é€‰é¡¹
 	
 }Aging_t;
 
 
 
 
-// ÏµÍ³ÊÂ¼şÊı¾İ½á¹¹¶¨Òå£º
+// ç³»ç»Ÿäº‹ä»¶æ•°æ®ç»“æ„å®šä¹‰ï¼š
 typedef struct SysEvent{
-    MsgType_e			eMsgType;       //ÊÂ¼şÀàĞÍ
+    MsgType_e			eMsgType;       //äº‹ä»¶ç±»å‹
     union
     {
-        MsgKey_t		tMsgKey;  		//°´¼ü
-		MsgTimer_t		tMsgTimer;		//¶¨Ê±Æ÷ÊÂ¼ş
-		MsgUsart_t		tMsgUsart;		//´®¿ÚÏûÏ¢
-		MsgCan_t		tMsgCan;		//CANÏûÏ¢
-		Aging_t			tAging;			//ÀÏ»¯ÊÂ¼ş
-		uint8_t			ucaDataBuf[DATA_BUF_LEN];	//Êı¾İbuffer
+        MsgKey_t		tMsgKey;  		//æŒ‰é”®
+		MsgTimer_t		tMsgTimer;		//å®šæ—¶å™¨äº‹ä»¶
+		MsgUsart_t		tMsgUsart;		//ä¸²å£æ¶ˆæ¯
+		MsgCan_t		tMsgCan;		//CANæ¶ˆæ¯
+		Aging_t			tAging;			//è€åŒ–äº‹ä»¶
+		uint8_t			ucaDataBuf[DATA_BUF_LEN];	//æ•°æ®buffer
     }tMsg;
-    struct SysEvent   *ptNext;  // ÏÂÒ»¸öÊÂ¼ş
+    struct SysEvent   *ptNext;  // ä¸‹ä¸€ä¸ªäº‹ä»¶
 	
 } SysEvent_t;
 
 
 
-// ÊÂ¼ş¹ÜÀíÄ£¿éAPIº¯ÊıÔ­ĞÍ£º
-void SysEventInit(void);                 // ÊÂ¼ş¹ÜÀíÄ£¿é³õÊ¼»¯
-SysEvent_t * SysEventAlloc(void) ;         // ·ÖÅäÒ»¸öÊÂ¼ş»º´æ
-void newSysEventAlloc(SysEvent_t **e);     // ·ÖÅäÒ»¸öÊÂ¼ş»º´æ
-void SysEventFree(SysEvent_t *e);          // ÊÍ·ÅÒ»¸öÊÂ¼ş»º´æ
-SysEvent_t * SysEventGet(void);            // È¡ÏÂÒ»¸öÏµÍ³ÊÂ¼ş
-void SysEventPut(SysEvent_t *e, int pri);  // reentrant; // ÏµÍ³ÊÂ¼şÑ¹Èë¶ÓÁĞ
+// äº‹ä»¶ç®¡ç†æ¨¡å—APIå‡½æ•°åŸå‹ï¼š
+void SysEventInit(void);                 // äº‹ä»¶ç®¡ç†æ¨¡å—åˆå§‹åŒ–
+SysEvent_t * SysEventAlloc(void) ;         // åˆ†é…ä¸€ä¸ªäº‹ä»¶ç¼“å­˜
+void newSysEventAlloc(SysEvent_t **e);     // åˆ†é…ä¸€ä¸ªäº‹ä»¶ç¼“å­˜
+void SysEventFree(SysEvent_t *e);          // é‡Šæ”¾ä¸€ä¸ªäº‹ä»¶ç¼“å­˜
+SysEvent_t * SysEventGet(void);            // å–ä¸‹ä¸€ä¸ªç³»ç»Ÿäº‹ä»¶
+void SysEventPut(SysEvent_t *e, int pri);  // reentrant; // ç³»ç»Ÿäº‹ä»¶å‹å…¥é˜Ÿåˆ—
 
 
 

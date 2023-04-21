@@ -16,17 +16,17 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //FLASH CS(NSS)引脚 片选选普通GPIO即可
-#define  EEPROM_SPI_CS_PIN              GPIO_Pin_12
-#define  EEPROM_SPI_CS_PORT             GPIOB
+#define  EEPROM_SPI_CS_PIN             GPIO_Pin_12
+#define  EEPROM_SPI_CS_PORT            GPIOB
 
 //TMC CS(NSS)引脚 片选选普通GPIO即可
-#define  TMC_SPI_CS_PIN              	GPIO_Pin_3
-#define  TMC_SPI_CS_PORT             	GPIOB
+#define  TMC_SPI_CS_PIN                GPIO_Pin_3
+#define  TMC_SPI_CS_PORT               GPIOB
 
 
 //系统运行指示灯
-#define  SYS_LED_PIN					GPIO_Pin_4
-#define  SYS_LED_PORT             		GPIOB
+#define  SYS_LED_PIN                   GPIO_Pin_4
+#define  SYS_LED_PORT                  GPIOB
 
 
 
@@ -34,12 +34,12 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 //宏定义----------------------------------------------------------------------//
 //FLASH 片选信号控制
-#define  EEPROM_CS_LOW            GPIO_ResetBits(EEPROM_SPI_CS_PORT, EEPROM_SPI_CS_PIN)
-#define  EEPROM_CS_HIGH           GPIO_SetBits(EEPROM_SPI_CS_PORT, EEPROM_SPI_CS_PIN)
+#define  EEPROM_CS_LOW                 GPIO_ResetBits(EEPROM_SPI_CS_PORT, EEPROM_SPI_CS_PIN)
+#define  EEPROM_CS_HIGH                GPIO_SetBits(EEPROM_SPI_CS_PORT, EEPROM_SPI_CS_PIN)
 
 //TMC 片选信号控制
-#define  TMC0_SPI_CS_LOW            GPIO_ResetBits(TMC_SPI_CS_PORT, TMC_SPI_CS_PIN)
-#define  TMC0_SPI_CS_HIGH           GPIO_SetBits(TMC_SPI_CS_PORT, TMC_SPI_CS_PIN)
+#define  TMC0_SPI_CS_LOW               GPIO_ResetBits(TMC_SPI_CS_PORT, TMC_SPI_CS_PIN)
+#define  TMC0_SPI_CS_HIGH              GPIO_SetBits(TMC_SPI_CS_PORT, TMC_SPI_CS_PIN)
 
 //
 #define TMC1_SPI_CS_HIGH	//HAL_GPIO_WritePin(SPI1_M1_CS_GPIO_Port, SPI1_M1_CS_Pin, GPIO_PIN_SET)
@@ -56,12 +56,12 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //FLASH CS(NSS)引脚 片选选普通GPIO即可
-#define  M0_EN_Pin              	GPIO_Pin_6
-#define  M0_EN_GPIO_Port            GPIOA
+#define  M0_EN_Pin              	   GPIO_Pin_6
+#define  M0_EN_GPIO_Port               GPIOA
 
 //Motor En
-#define TMC0_ENABLE			GPIO_ResetBits(M0_EN_GPIO_Port, M0_EN_Pin)
-#define TMC0_DISABLE		GPIO_SetBits(M0_EN_GPIO_Port, M0_EN_Pin)
+#define TMC0_ENABLE			           GPIO_ResetBits(M0_EN_GPIO_Port, M0_EN_Pin)
+#define TMC0_DISABLE		           GPIO_SetBits(M0_EN_GPIO_Port, M0_EN_Pin)
 //
 #define TMC1_ENABLE			//HAL_GPIO_WritePin(M1_EN_GPIO_Port, M1_EN_Pin, GPIO_PIN_RESET)
 #define TMC1_DISABLE		//HAL_GPIO_WritePin(M1_EN_GPIO_Port, M1_EN_Pin, GPIO_PIN_SET)
@@ -81,9 +81,13 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //系统指示灯
-#define SYS_LED_HIGH	GPIO_SetBits(SYS_LED_PORT, SYS_LED_PIN)
-#define SYS_LED_LOW		GPIO_ResetBits(SYS_LED_PORT, SYS_LED_PIN)
-#define SYS_LED_TRIGGER	{uint32_t ulOut = 0; ulOut = SYS_LED_PORT->ODR, SYS_LED_PORT->BSRR = ((ulOut & SYS_LED_PIN) << 16) | (~ulOut & SYS_LED_PIN);}
+#define	 digitalHi(reg, pin)           {reg->BSRR = pin;}	
+#define  digitalLo(reg, pin)           {reg->BRR = pin;}
+#define  digitalToggle(reg, pin)       {reg->ODR ^= pin;}
+
+#define  SYS_LED_HIGH                  digitalHi(SYS_LED_PORT, SYS_LED_PIN)
+#define  SYS_LED_LOW                   digitalLo(SYS_LED_PORT, SYS_LED_PIN)
+#define  SYS_LED_TRIGGER               digitalToggle(SYS_LED_PORT, SYS_LED_PIN)
 
 
 

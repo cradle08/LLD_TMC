@@ -131,6 +131,16 @@ uint8_t Can_Send_Msg(SendFrame_t *ptSendFrame)
 	TxMsg.Data[0] = ptSendFrame->ucMsgID;
 	memmove((void*)TxMsg.Data, (void*)ptSendFrame, 8);
 	
+//	TxMsg.Data[0] = ptSendFrame->ucMsgID;
+//	TxMsg.Data[1] = ptSendFrame->ucStatus;
+//	TxMsg.Data[2] = ptSendFrame->ucCmd;
+//	TxMsg.Data[3] = ptSendFrame->ucType;
+//	TxMsg.Data[4] = ptSendFrame->uData[0];
+//	TxMsg.Data[5] = ptSendFrame->uData[1];
+//	TxMsg.Data[6] = ptSendFrame->uData[2];
+//	TxMsg.Data[7] = ptSendFrame->uData[3];
+	
+	
 	//发送报文
 	mailbox = CAN_Transmit(CAN1, &TxMsg);
 	return(mailbox);
@@ -171,7 +181,10 @@ uint8_t Can_Send_Msg(SendFrame_t *ptSendFrame)
 */
 uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg)
 {
-	Can_TxMsg_t tTxMsg = {0};
+	uint8_t      reply = CAN_TxStatus_Ok;
+	Can_TxMsg_t  tTxMsg = {0};
+	
+	
 	
 	MsgType_e eMsgType = MSG_TYPE_CAN;
 	//获取接收的数据
@@ -202,10 +215,11 @@ uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg)
 	if(0 == Handle_RxMsg(eMsgType, ptRecvFrame, ptSendFrame))
 	{	
 		//应答消息
-		Can_Send_Msg(ptSendFrame);
+		reply = Can_Send_Msg(ptSendFrame);
 	}
-
-	return 0;
+	
+	
+	return reply;
 }
 
 

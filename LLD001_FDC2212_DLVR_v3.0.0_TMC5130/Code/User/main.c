@@ -22,6 +22,8 @@ struct rt_thread wdog_tcb;
 struct rt_thread SWSysTimer_tcb;
 struct rt_thread SWTimer10ms_tcb;
 struct rt_thread comm_monitor_tcb;
+struct rt_thread motor_tcb;
+
 
 
 
@@ -31,16 +33,13 @@ struct rt_thread comm_monitor_tcb;
 
 //定义线程栈时要求按RT_ALIGN_SIZE个字节对齐
 ALIGN(RT_ALIGN_SIZE)
-rt_uint8_t rt_wdog_stk[128];
-rt_uint8_t rt_SWSysTimer_stk[128];
-rt_uint8_t rt_SWTimer10ms_stk[256];
-rt_uint8_t rt_comm_monitor_stk[2560]; //3072
+rt_uint8_t rt_wdog_stk[160];
+rt_uint8_t rt_SWSysTimer_stk[160];
+rt_uint8_t rt_SWTimer10ms_stk[512];
+rt_uint8_t rt_comm_monitor_stk[1536];   //配置参数，至少需要1068字节
+rt_uint8_t rt_motor_stk[1024];
 
-#if USE_OS_QUEUE 
-//消息队列控制模块
-struct rt_messagequeue can_msg_queue; 
-rt_uint8_t msg_buffer[512] = {0};
-#endif
+
 
 //定义函数---------------------------------------------------------------------//
 /*
@@ -65,13 +64,6 @@ int main(void)
 	RCC_ClocksTypeDef tSysClk = {0};
 	RCC_GetClocksFreq(&tSysClk);
 	
-#if USE_OS_QUEUE 	
-	//	//消息队列初始化
-	if(RT_EOK != rt_mq_init(&can_msg_queue, "canmsg", &msg_buffer[0], sizeof(CanRxMsg)+8, sizeof(msg_buffer), RT_IPC_FLAG_FIFO))
-	{
-		return 0; //Error
-	}
-#endif
 	
 	//看门狗
 	rt_thread_init(&wdog_tcb,                                        // 线程控制块
@@ -80,7 +72,7 @@ int main(void)
 	               RT_NULL,                                          // 线程入口函数参数
 	               &rt_wdog_stk[0],                                  // 线程栈起始地址
 	               sizeof(rt_wdog_stk),                              // 线程栈大小
-	               0,                                                // 线程的优先级
+	               2,                                                // 线程的优先级
 	               5);                                               // 线程时间片(心跳时间tick)
 	rt_thread_startup(&wdog_tcb);                                    // 启动线程，开启调度
 	
@@ -119,5 +111,17 @@ int main(void)
 	               5,                                                // 线程的优先级
 	               5);                                               // 线程时间片(心跳时间tick)
 	rt_thread_startup(&comm_monitor_tcb);                            // 启动线程，开启调度
+	
+	
+	//电机控制
+	rt_thread_init(&motor_tcb,                                       // 线程控制块
+	               "motor",                                          // 线程名字
+	               MotorDrive,                                       // 线程入口函数
+	               RT_NULL,                                          // 线程入口函数参数
+	               &rt_motor_stk[0],                                 // 线程栈起始地址
+	               sizeof(rt_motor_stk),                             // 线程栈大小
+	               0,                                                // 线程的优先级
+	               5);                                               // 线程时间片(心跳时间tick)
+	rt_thread_startup(&motor_tcb);                                   // 启动线程，开启调度
 }
 /*********************************************END OF FILE**********************/

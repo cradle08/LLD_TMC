@@ -8,6 +8,10 @@ extern "C" {
 
 #include "main.h"
 
+
+#include "project.h"
+
+	
 //调试功能
 #define MGIM_DEBUG		0
 
@@ -27,15 +31,15 @@ extern "C" {
 
 
 //TMC数量，输入输出IO
-#define TMC_MODULE_END 			 1					//该模块使用芯片的数量：1片TMC芯片
-#define MODULE_MAX_OUT_IO_NUM	 0					//最大支持1个输出IO
-#define MODULE_MAX_IN_IO_NUM	 0					//最大支持1个出入IO
+#define TMC_MODULE_END 			 	1		//该模块使用芯片的数量：1片TMC芯片
+#define MODULE_MAX_OUT_IO_NUM	 	1		//最大支持1个输出IO
+#define MODULE_MAX_IN_IO_NUM	 	0		//最大支持1个出入IO
+#define MODULE_MAX_BANK_NUM	 	 	4		//全局参数块，个数
 
 
 
 
-//1：使用系统消息丢列，0：不使用
-#define USE_OS_QUEUE	1
+
 
 
 /*

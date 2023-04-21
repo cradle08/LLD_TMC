@@ -193,11 +193,12 @@ uint8_t CAN_MonInit(void)
 	
 	CAN_ParaInit();
 	QueueLoopClear(&MonCan.RxQueue);
-
+	Init_RxMes(&MonCan.RxMsg);
 	
+	CAN_NVIC_Config();
 	CAN_GPIO_Config();
 	CAN_Config(CAN1);
-	CAN_NVIC_Config();
+	
 	
 	return ret;
 }
@@ -226,7 +227,6 @@ uint8_t CAN_MonInit(void)
 
 
 
-
 /*
  * @function: CanIRQRecv
  * @details : 接收报文。
@@ -236,22 +236,6 @@ uint8_t CAN_MonInit(void)
  */
 uint8_t CanIRQRecv(void)
 {
-#if USE_OS_QUEUE 	
-		//使用系统消息丢列
-	extern __IO LLDParam_t g_tLLDParam;
-	extern __IO GlobalParam_t 	 g_tGlobalParam;
-	extern struct rt_messagequeue can_msg_queue;
-	//uint8_t     ret = FALSE;
-	CanRxMsg    rx_msg;
-	
-	//从邮箱中读出报文
-	CAN_Receive(CAN1, CAN_FIFO0, &rx_msg);
-	
-	//加入到消息丢列
-	rt_mq_send(&can_msg_queue, &rx_msg, sizeof(CanRxMsg));
-
-	return TRUE;
-#else
 	extern __IO LLDParam_t g_tLLDParam;
 	extern __IO GlobalParam_t 	 g_tGlobalParam;
 	uint8_t     ret = FALSE;
@@ -310,9 +294,9 @@ uint8_t CanIRQRecv(void)
 //			;
 //		}
 	}
-
+	
+	
 	return ret;
-#endif
 }
 
 
@@ -1343,11 +1327,13 @@ uint8_t MonRWpara(struct tagMonCan *mon, uint8_t err)
 	//上位机写操作
 	if(OPE_WRITE == mon->CanMess.OpeCode)
 	{
-		lValue = ((mon->RxMsg.Data[7]<<24) | (mon->RxMsg.Data[6]<<16) | (mon->RxMsg.Data[5]<<8) |(mon->RxMsg.Data[4]));		
+		lValue = ((mon->RxMsg.Data[4]<<24) | (mon->RxMsg.Data[5]<<16) | (mon->RxMsg.Data[6]<<8) |(mon->RxMsg.Data[7]));		
 		//赋值操作		
 		//WriteUsePara(mon->RxMsg.Data, Storage.ParaNo);
 		LLD_Param(TMC_WRITE, Storage.ParaNo, &lValue);
-	}else{
+	}
+	else
+	{
 		//读取
 		LLD_Param(TMC_READ, Storage.ParaNo, &lValue);
 	}
@@ -1429,8 +1415,7 @@ uint8_t CheckFrame(struct tagMonCan *mon)
 		&& (INS_R_SOFTWARE_NAME != mon->CanMess.Ins)
 		&& (INS_R_SOFTWARE_VER != mon->CanMess.Ins)
 	
-		&& (INS_W_PARA != mon->CanMess.Ins)
-		&& (INS_R_PARA != mon->CanMess.Ins))
+		&& (INS_RW_PARA != mon->CanMess.Ins))
 	{
 		ret = ERR_CAN_INS;
 	}
@@ -1585,6 +1570,7 @@ uint8_t MonAnalyseCanMess(void)
 		break;
 		
 		
+		
 		case INS_R_SOFTWARE_NAME:
 		{
 			reply = MonReadSoftWareName(&MonCan, err);
@@ -1599,17 +1585,13 @@ uint8_t MonAnalyseCanMess(void)
 		
 		
 		
-		case INS_W_PARA:
+		case INS_RW_PARA:
 		{
 			reply = MonRWpara(&MonCan, err);
 		}
 		break;
 		
-		case INS_R_PARA:
-		{
-			reply = MonRWpara(&MonCan, err);
-		}
-		break;
+		
 		
 		
 		default:
@@ -1808,6 +1790,8 @@ uint8_t MonSendCanMess(void)
 		}
 		break;
 		
+		
+		
 		case INS_R_SOFTWARE_NAME:
 		{
 			reply = MonReadSoftWareNameReply(&MonCan, buff);
@@ -1821,18 +1805,12 @@ uint8_t MonSendCanMess(void)
 		break;
 		
 		
-		
-		case INS_W_PARA:
+		case INS_RW_PARA:
 		{
 			reply = MonRWparaReply(&MonCan, buff);
 		}
 		break;
 		
-		case INS_R_PARA:
-		{
-			reply = MonRWparaReply(&MonCan, buff);
-		}
-		break;
 		
 		
 		default:

@@ -13,6 +13,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 #include "stm32f10x.h"
+#include "TMC_Process.h"
 
 
 
@@ -56,13 +57,20 @@ struct tagSoftSys
 //采集数据相关
 struct tagMotorCtr
 {
-	uint8_t    Dir;
-	uint8_t    TrigPWM;
-	uint8_t    RunState;
+	ProcessStatus_e          s_eProcessStatus;
+	Data4Byte_u              s_uResult;
+	uint8_t     s_ucIndex;                                                     //需跳转的标签
+	uint8_t     s_ucFlag;	                                                   //执行下条指令标志
+	uint32_t    s_ulTick;	                                                   //Tick滴答计时
 	
-	uint32_t   TarPulse;
-	uint32_t   CurPulse;
-	uint32_t   RunPulse;
+	
+	
+	ErrorType_e              eError;
+	SubProcess_t             tSubProcess;
+	TMC_e                    eTMC;
+	uint8_t     ucType;
+	int32_t     lValue;
+	uint32_t    ulValue;
 };
 
 
@@ -78,8 +86,6 @@ extern struct tagMotorCtr   MotorCtr;
 uint8_t ReadSoftWareNameIns(uint8_t *buf, uint8_t num);
 uint8_t ReadSoftWareName(uint8_t *buf, uint8_t num);
 uint8_t ReadSoftWareVer(uint8_t *buf, uint8_t num);
-uint8_t MotorMoveUpAndDownTest(void);
-uint8_t MotorMoveUpAndDown(void);
 
 
 #endif

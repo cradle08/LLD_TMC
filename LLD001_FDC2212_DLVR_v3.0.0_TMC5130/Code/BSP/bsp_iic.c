@@ -16,7 +16,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //定义变量---------------------------------------------------------------------//
-static __IO uint32_t  I2CTimeout = I2CT_LONG_TIMEOUT; 
+//static __IO uint32_t  I2CTimeout = I2CT_LONG_TIMEOUT; 
 
 
 
@@ -229,8 +229,9 @@ static uint32_t I2C_TIMEOUT_UserCallback(uint8_t errorCode)
  */
 uint32_t I2C_Mem_Write(I2C_TypeDef* I2Cx, uint16_t DevAddress, uint8_t* pBuffer, uint8_t WriteAddr, uint8_t NumByteToWrite)
 {
-	I2CTimeout = I2CT_LONG_TIMEOUT;
-
+	uint32_t   I2CTimeout = I2CT_LONG_TIMEOUT;
+	
+	
 	while(I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSY))   
 	{
 		if((I2CTimeout--) == 0) return I2C_TIMEOUT_UserCallback(4);
@@ -307,8 +308,9 @@ uint32_t I2C_Mem_Write(I2C_TypeDef* I2Cx, uint16_t DevAddress, uint8_t* pBuffer,
  */
 uint32_t I2C_Mem_Read(I2C_TypeDef* I2Cx, uint16_t DevAddress, uint8_t* pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead)
 {
-	I2CTimeout = I2CT_LONG_TIMEOUT;
-
+	uint32_t   I2CTimeout = I2CT_LONG_TIMEOUT;
+	
+	
 	//*((u8 *)0x4001080c) |=0x80; 
 	while(I2C_GetFlagStatus(I2Cx, I2C_FLAG_BUSY))
 	{
@@ -428,7 +430,7 @@ uint32_t I2C_Mem_Read(I2C_TypeDef* I2Cx, uint16_t DevAddress, uint8_t* pBuffer, 
  */
 uint32_t I2C_Mem_Read2(I2C_TypeDef* I2Cx, uint16_t DevAddress, uint8_t* pBuffer, uint8_t ReadAddr, uint16_t NumByteToRead)
 {
-	I2CTimeout = I2CT_LONG_TIMEOUT;
+	uint32_t   I2CTimeout = I2CT_LONG_TIMEOUT;
 	
 	
 	//*((u8 *)0x4001080c) |=0x80; 
@@ -509,7 +511,7 @@ uint32_t I2C_Mem_Read2(I2C_TypeDef* I2Cx, uint16_t DevAddress, uint8_t* pBuffer,
  */
 uint32_t I2C_CheckDevice(I2C_TypeDef* I2Cx, uint16_t DevAddress, uint8_t rw)
 {
-	I2CTimeout = I2CT_LONG_TIMEOUT;
+	uint32_t   I2CTimeout = I2CT_LONG_TIMEOUT;
 	
 	
 	//*((u8 *)0x4001080c) |=0x80; 

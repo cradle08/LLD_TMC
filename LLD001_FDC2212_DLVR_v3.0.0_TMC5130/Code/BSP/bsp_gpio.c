@@ -59,11 +59,13 @@ void GPIO_Config(void)
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO, ENABLE);                       //PB3/PB4/PA15默认作为调试端口使用，要将其用作GPIO需要进行复用，因此要先开启复用时钟。
 	
-	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);
-	//GPIO_PinRemapConfig(GPIO_Remap_SWJ_NoJTRST, ENABLE); 
-	//GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);
+	
+	//PB3、PB4作为普通引脚
+	GPIO_PinRemapConfig(GPIO_Remap_SWJ_JTAGDisable, ENABLE);                   //JTAG-DP Disabled and SW-DP Enabled 
+//	GPIO_PinRemapConfig(GPIO_Remap_SWJ_NoJTRST, ENABLE);                       //Full SWJ Enabled (JTAG-DP + SW-DP) but without JTRST
+//	GPIO_PinRemapConfig(GPIO_Remap_SWJ_Disable, ENABLE);                       //Full SWJ Disabled (JTAG-DP + SW-DP)，JTAG、SWD都无法仿真
 	
 	
 	//系统运行指示灯
@@ -73,12 +75,15 @@ void GPIO_Config(void)
 	GPIO_Init(SYS_LED_PORT, &GPIO_InitStructure);
 	GPIO_SetBits(SYS_LED_PORT, SYS_LED_PIN);
 	
+
+	
 	/* 其他，输入输出 */
 	//检测光电传感器的输出信号(限位光耦?), PB0
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);		
+	
 	
 	//MCU输出液面探测信号, PB1
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1;
@@ -89,13 +94,16 @@ void GPIO_Config(void)
 	/* 拨码开关 */
 	//GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
 	//PC13=SW1,PC14=SW2,PC15=SW3,
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-	//SW4=PA7
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+//	RCC_LSEConfig(RCC_LSE_OFF);    //关闭外部低速时钟,PC14,PC15用作普通IO
+//	BKP_TamperPinCmd(DISABLE);     // 关闭入侵检测功能,PC13用作普通IO
+//	
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
+//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+//	GPIO_Init(GPIOC, &GPIO_InitStructure);
+//	//SW4=PA7
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+//	GPIO_Init(GPIOA, &GPIO_InitStructure);
 				
 	/* TMC5130 */	
 	//TMC CS, PB3
@@ -120,7 +128,7 @@ void GPIO_Config(void)
 	GPIO_SetBits(M0_EN_GPIO_Port, M0_EN_Pin);
 	
 	//CLK, MCO, PA8
-#if 1
+#if 0
 	//PA8输出低，使用TMC5130内部时钟
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;

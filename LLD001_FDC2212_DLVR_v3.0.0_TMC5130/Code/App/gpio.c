@@ -566,9 +566,11 @@ int16_t GetTemperature(struct tagADValue* objdev)
  * @output  : NULL
  * @return  : NULL
  */
-//#define    TEMP_DIS_NUM    150
-//int16_t    TempDataDis[TEMP_DIS_NUM] = {0};
-//int16_t    temp_offset = 300;
+#ifdef TEMP_DEBUG
+#define    TEMP_DIS_NUM    150
+int16_t    TempDataDis[TEMP_DIS_NUM] = {0};
+int16_t    temp_offset = 300;
+#endif
 uint8_t TempNTC(void)
 {
 	uint8_t    ret = FALSE;
@@ -590,9 +592,10 @@ uint8_t TempNTC(void)
 		TempSensor[TEMP_PIPE_IN].AirPump.Value = temp_dis;
 		
 		
-		//Debug
-//		temp_dis = temp_dis - temp_offset;
-//		SmoothPipeline16(TempDataDis, temp_dis, TEMP_DIS_NUM);
+#ifdef TEMP_DEBUG
+		temp_dis = temp_dis - temp_offset;
+		SmoothPipeline16(TempDataDis, temp_dis, TEMP_DIS_NUM);
+#endif
 		
 		
 		//滑动平均滤波

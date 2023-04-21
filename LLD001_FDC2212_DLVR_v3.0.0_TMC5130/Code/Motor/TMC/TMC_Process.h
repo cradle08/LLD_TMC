@@ -14,14 +14,14 @@
 #include "param.h"
 #include "TMC5130_Constants.h"
 
-//Ä¬ÈÏCan ID
-#define CAN_DEFAULT_RECV_ID		200		//Ä¬ÈÏ½ÓÊÜCanID
-#define CAN_DEFAULT_SEND_ID		200		//Ä¬ÈÏ·¢ËÍCanID
+//é»˜è®¤Can ID
+#define CAN_DEFAULT_RECV_ID		200		//é»˜è®¤æ¥å—CanID
+#define CAN_DEFAULT_SEND_ID		200		//é»˜è®¤å‘é€CanID
 
-//×ÓÁ÷³Ì×î´ó²ÎÊı¸öÊı
+//å­æµç¨‹æœ€å¤§å‚æ•°ä¸ªæ•°
 #define SUB_PROCESS_MAX_PARAM_NUM	4
 
-//Ò»¸öÁ÷³Ì×î¶àÖ§³ÖÃüÁî¸öÊı
+//ä¸€ä¸ªæµç¨‹æœ€å¤šæ”¯æŒå‘½ä»¤ä¸ªæ•°
 #define SUB_PROCESS_MAX_CMD_NUM		127
 
 
@@ -37,62 +37,62 @@
 
 
 /*
-*	Ğè±£´æµÄÖá²ÎÊı--Ä¬ÈÏÖµ
+*	éœ€ä¿å­˜çš„è½´å‚æ•°--é»˜è®¤å€¼
 */
 typedef __packed struct {	
 	
-	uint32_t    ulInitFlag;	 //³õÊ¼»¯±êÖ¾
+	uint32_t    ulInitFlag;	 //åˆå§‹åŒ–æ ‡å¿—
 	/*
 	*  lEncConstValue = lFullSteppPerRound*usMicroStepResultion/usEncResultion/4 ==> lEncConstValue
 	*/
-	//±àÂëÆ÷
-	uint16_t usEncResultion[TMC_MODULE_END];	 //±àÂëÆ÷·Ö±æÂÊ
-	int32_t	 lEncDiff_Threshold[TMC_MODULE_END]; //±àÂëÆ÷¼ì²âÊ§²½£¬ãĞÖµ
-	uint8_t  ucEncCountDirect[TMC_MODULE_END];	 //±àÂëÆ÷¼ÆÊı·½Ïò
-	int32_t  lEncConstValue[TMC_MODULE_END];	 //±àÂëÆ÷³£Êı--¼ÆËã»ñÈ¡
+	//ç¼–ç å™¨
+	uint16_t usEncResultion[TMC_MODULE_END];	 //ç¼–ç å™¨åˆ†è¾¨ç‡
+	int32_t	 lEncDiff_Threshold[TMC_MODULE_END]; //ç¼–ç å™¨æ£€æµ‹å¤±æ­¥ï¼Œé˜ˆå€¼
+	uint8_t  ucEncCountDirect[TMC_MODULE_END];	 //ç¼–ç å™¨è®¡æ•°æ–¹å‘
+	int32_t  lEncConstValue[TMC_MODULE_END];	 //ç¼–ç å™¨å¸¸æ•°--è®¡ç®—è·å–
 	
 	
-	//²Î¿¼µã-¸´Î»²ÎÊı
-	int32_t	lResetSpeedHigh[TMC_MODULE_END];	//¸´Î»¸ßËÙ	
-	int32_t	lResetSpeedLow[TMC_MODULE_END];		//¸´Î»µÍËÙ	
-	int32_t lResetAcc[TMC_MODULE_END];			//¸´Î»¼ÓËÙ¶È
-	int32_t	lResetOff[TMC_MODULE_END];			//¸´Î»Æ«ÒÆ¾àÀë
+	//å‚è€ƒç‚¹-å¤ä½å‚æ•°
+	int32_t	lResetSpeedHigh[TMC_MODULE_END];	//å¤ä½é«˜é€Ÿ	
+	int32_t	lResetSpeedLow[TMC_MODULE_END];		//å¤ä½ä½é€Ÿ	
+	int32_t lResetAcc[TMC_MODULE_END];			//å¤ä½åŠ é€Ÿåº¦
+	int32_t	lResetOff[TMC_MODULE_END];			//å¤ä½åç§»è·ç¦»
 	
-	//µçÁ÷
-	uint8_t ucIRun[TMC_MODULE_END];		  //ÔËĞĞµçÁ÷
-	uint8_t ucIHold[TMC_MODULE_END];	  //±£³ÖµçÁ÷
-	uint8_t ucIHoldDelay[TMC_MODULE_END]; //µçÁ÷½µµ½IHoldËùĞèÊ±¼ä
+	//ç”µæµ
+	uint8_t ucIRun[TMC_MODULE_END];		  //è¿è¡Œç”µæµ
+	uint8_t ucIHold[TMC_MODULE_END];	  //ä¿æŒç”µæµ
+	uint8_t ucIHoldDelay[TMC_MODULE_END]; //ç”µæµé™åˆ°IHoldæ‰€éœ€æ—¶é—´
 
-	//²½½øÏ¸·Ö¡¢Ã»×ªÈ«²½Êı
-	uint16_t   usMicroStepResultion[TMC_MODULE_END];	//Î¢²½Ï¸·Ö
-	uint16_t   usFullStepPerRound[TMC_MODULE_END];		//È«²½Ã¿×ª£¬ Í¨ÓÃ²½½øµç»úÎª200 	
+	//æ­¥è¿›ç»†åˆ†ã€æ²¡è½¬å…¨æ­¥æ•°
+	uint16_t   usMicroStepResultion[TMC_MODULE_END];	//å¾®æ­¥ç»†åˆ†
+	uint16_t   usFullStepPerRound[TMC_MODULE_END];		//å…¨æ­¥æ¯è½¬ï¼Œ é€šç”¨æ­¥è¿›ç”µæœºä¸º200 	
 
 
-	//ÁùµãËÙ¶È²ÎÊı£¬ÓÃÓÚÎ»ÖÃÄ£Ê½
-	int32_t lVStart[TMC_MODULE_END];	//Æô¶¯ËÙ¶È
-	int32_t lA1[TMC_MODULE_END];		//µÚÒ»¶Î¼ÓËÙ¶È
-	int32_t lV1[TMC_MODULE_END];		//»»µ²ËÙ¶È
-	int32_t lAMax[TMC_MODULE_END];		//µÚ¶ş¶Î¼ÓËÙ¶È
-	int32_t lVMax[TMC_MODULE_END];		//×î´óËÙ¶È
-	int32_t lDMax[TMC_MODULE_END];		//µÚÒ»¶Î¼õËÙ¶È
-	int32_t lD1[TMC_MODULE_END];		//µÚ¶ş¶Î¼õËÙ¶È
-	int32_t lVStop[TMC_MODULE_END];		//Í£Ö¹ËÙ¶È
+	//å…­ç‚¹é€Ÿåº¦å‚æ•°ï¼Œç”¨äºä½ç½®æ¨¡å¼
+	int32_t lVStart[TMC_MODULE_END];	//å¯åŠ¨é€Ÿåº¦
+	int32_t lA1[TMC_MODULE_END];		//ç¬¬ä¸€æ®µåŠ é€Ÿåº¦
+	int32_t lV1[TMC_MODULE_END];		//æ¢æŒ¡é€Ÿåº¦
+	int32_t lAMax[TMC_MODULE_END];		//ç¬¬äºŒæ®µåŠ é€Ÿåº¦
+	int32_t lVMax[TMC_MODULE_END];		//æœ€å¤§é€Ÿåº¦
+	int32_t lDMax[TMC_MODULE_END];		//ç¬¬ä¸€æ®µå‡é€Ÿåº¦
+	int32_t lD1[TMC_MODULE_END];		//ç¬¬äºŒæ®µå‡é€Ÿåº¦
+	int32_t lVStop[TMC_MODULE_END];		//åœæ­¢é€Ÿåº¦
 	
 
-	//Çı¶¯Æ÷ÔËĞĞÄ£Ê½
-	uint8_t	ucMode[TMC_MODULE_END];		//0:Î»ÖÃÄ£Ê½¡£1¡¢2ËÙ¶ÈÄ£Ê½£¬3¡¢±£³ÖÄ£Ê½
+	//é©±åŠ¨å™¨è¿è¡Œæ¨¡å¼
+	uint8_t	ucMode[TMC_MODULE_END];		//0:ä½ç½®æ¨¡å¼ã€‚1ã€2é€Ÿåº¦æ¨¡å¼ï¼Œ3ã€ä¿æŒæ¨¡å¼
 	
-	//ËÙ¶È²ÎÊı¡¢ÓÃÓÚËÙ¶ÈÄ£Ê½
-	int32_t lAMax_VMode[TMC_MODULE_END];	//µÚ¶ş¶Î¼ÓËÙ¶È
-	int32_t lVMax_VMode[TMC_MODULE_END];	//×î´óËÙ¶È
+	//é€Ÿåº¦å‚æ•°ã€ç”¨äºé€Ÿåº¦æ¨¡å¼
+	int32_t lAMax_VMode[TMC_MODULE_END];	//ç¬¬äºŒæ®µåŠ é€Ÿåº¦
+	int32_t lVMax_VMode[TMC_MODULE_END];	//æœ€å¤§é€Ÿåº¦
 
-	//²Î¿¼µã¸´Î»
-	uint8_t ucRighLimitPolarity[TMC_MODULE_END]; //ÓÒÏŞÎ»¼«ĞÔ£¬¸ßÓĞĞ§
-	uint8_t ucLeftLimitPolarity[TMC_MODULE_END]; //×óÏŞÎ»¼«ĞÔ£¬¸ßÓĞĞ§
-	uint8_t ucRotateDirect[TMC_MODULE_END];		 //Ğı×ª·½Ïò
+	//å‚è€ƒç‚¹å¤ä½
+	uint8_t ucRighLimitPolarity[TMC_MODULE_END]; //å³é™ä½ææ€§ï¼Œé«˜æœ‰æ•ˆ
+	uint8_t ucLeftLimitPolarity[TMC_MODULE_END]; //å·¦é™ä½ææ€§ï¼Œé«˜æœ‰æ•ˆ
+	uint8_t ucRotateDirect[TMC_MODULE_END];		 //æ—‹è½¬æ–¹å‘
 	
-	//Ğ£ÑéÖµ
-	uint16_t 	usCrc;							//CRC16 Ğ£ÑéÂë
+	//æ ¡éªŒå€¼
+	uint16_t 	usCrc;							//CRC16 æ ¡éªŒç 
 
 } AxisParamDefault_t;
 
@@ -101,7 +101,7 @@ typedef __packed struct {
 
 
 /*
-*	±È½Ï»òÌø×ª  ÀàĞÍ
+*	æ¯”è¾ƒæˆ–è·³è½¬  ç±»å‹
 */
 typedef enum 
 {
@@ -122,7 +122,7 @@ typedef enum
 
 
 /*
-*	¼ÆËãÀàĞÍ  
+*	è®¡ç®—ç±»å‹  
 */
 typedef enum 
 {
@@ -135,8 +135,8 @@ typedef enum
 	EN_CALC_OR,				//logical or
 	EN_CALC_XOR,			//logical exor
 	EN_CALC_NOT,			//tlogical invert
-	EN_CALC_RIGHT_LIFT,		//ÓÒÎ»ÒÆ
-	EN_CALC_LEFT_LIFT,		//×óÎ»ÒÆ
+	EN_CALC_RIGHT_LIFT,		//å³ä½ç§»
+	EN_CALC_LEFT_LIFT,		//å·¦ä½ç§»
 	
 } Calc_e;
 
@@ -145,7 +145,7 @@ typedef enum
 
 
 /*
-*	×ÓÁ÷³ÌÀàĞÍÃ¶¾Ù
+*	å­æµç¨‹ç±»å‹æšä¸¾
 */
 typedef enum 
 {
@@ -160,7 +160,7 @@ typedef enum
 
 
 /*
-*	×ÓÁ÷³ÌÀàĞÍÃ¶¾Ù
+*	å­æµç¨‹ç±»å‹æšä¸¾
 */
 typedef enum 
 {
@@ -174,14 +174,15 @@ typedef enum
 
 
 /*
-*	Á÷³ÌÔËĞĞ×´Ì¬Ã¶¾Ù
+*	æµç¨‹è¿è¡ŒçŠ¶æ€æšä¸¾
 */
 typedef enum 
 {
-	EN_PROCESS_STATUS_READY    = 0,		//¾ÍĞ÷
-	EN_PROCESS_STATUS_EXEC, 			//ÕıÔÚÖ´ĞĞ
-	EN_PROCESS_STATUS_STOP, 			//Í£Ö¹
-	EN_PROCESS_STATUS_CLEAR, 			//Çå³ı
+	EN_PROCESS_STATUS_READY    = 0,		//å°±ç»ª
+	EN_PROCESS_STATUS_EXEC, 			//æ­£åœ¨æ‰§è¡Œ
+	EN_PROCESS_STATUS_STOP, 			//åœæ­¢
+	EN_PROCESS_STATUS_CLEAR, 			//æ¸…é™¤
+	EN_PROCESS_STATUS_FINISHED,			//æ‰§è¡Œå®Œæˆ
 	EN_PROCESS_STATUS_END
 	
 } ProcessStatus_e;
@@ -189,44 +190,44 @@ typedef enum
 
 
 /*
-*	×ÓÁ÷³Ì¶¨Òå, Ö¸Áî£º¿ÉÀí½âÎªº¯Êı½Ó¿Ú£¨API£©£¬²ÎÊı£º¿ÉÀí½âÎªº¯Êı²ÎÊı£¨×î¶àËÄ¸ö²ÎÊı£©
+*	å­æµç¨‹å®šä¹‰, æŒ‡ä»¤ï¼šå¯ç†è§£ä¸ºå‡½æ•°æ¥å£ï¼ˆAPIï¼‰ï¼Œå‚æ•°ï¼šå¯ç†è§£ä¸ºå‡½æ•°å‚æ•°ï¼ˆæœ€å¤šå››ä¸ªå‚æ•°ï¼‰
 */
 typedef __packed struct 
 {
-	uint8_t	ucCmd;									//Ö¸Áî
-	uint8_t ucParamNum;								//²ÎÊı¸öÊı
-	Data4Byte_u uParam[SUB_PROCESS_MAX_PARAM_NUM];	//Êı¾İ
+	uint8_t	ucCmd;									//æŒ‡ä»¤
+	uint8_t ucParamNum;								//å‚æ•°ä¸ªæ•°
+	Data4Byte_u uParam[SUB_PROCESS_MAX_PARAM_NUM];	//æ•°æ®
 	
 } SubProcess_t;
 
 
 
 /*
-*	Á÷³Ì¶¨Òå
+*	æµç¨‹å®šä¹‰
 */
 typedef __packed struct 
 {
-	uint32_t 		ulInitFlag;								//³õÊ¼»¯±êÖ¾
-	uint32_t		ulExecNum;								//Õû¸ö´óÁ÷³ÌÁ÷³Ì£¬Ö´ĞĞµÄ´ÎÊı£¬ 0£º±íÊ¾ÎŞÊı´Î£¬
-	ProcessStatus_e eProcessStatus;							//Á÷³Ì×´Ì¬
-	uint8_t 		ucSubProcessNum;					    //×ÓÁ÷³ÌÓĞĞ§¸öÊı
-	SubProcess_t 	taSubProcess[SUB_PROCESS_MAX_CMD_NUM];  //×ÓÁ÷³ÌÊı×é
-	uint16_t 		usCrc;									//CRC16 Ğ£ÑéÂë
+	uint32_t 		ulInitFlag;								//åˆå§‹åŒ–æ ‡å¿—
+	uint32_t		ulExecNum;								//æ•´ä¸ªå¤§æµç¨‹æµç¨‹ï¼Œæ‰§è¡Œçš„æ¬¡æ•°ï¼Œ 0ï¼šè¡¨ç¤ºæ— æ•°æ¬¡ï¼Œ
+	ProcessStatus_e eProcessStatus;							//æµç¨‹çŠ¶æ€
+	uint8_t 		ucSubProcessNum;					    //å­æµç¨‹æœ‰æ•ˆä¸ªæ•°
+	SubProcess_t 	taSubProcess[SUB_PROCESS_MAX_CMD_NUM];  //å­æµç¨‹æ•°ç»„
+	uint16_t 		usCrc;									//CRC16 æ ¡éªŒç 
 	
 } Process_t;
 
 
 
 /*
-*	Á÷³Ì¿ØÖÆ£¬¼ÆÊıÆ÷ĞÅÏ¢
+*	æµç¨‹æ§åˆ¶ï¼Œè®¡æ•°å™¨ä¿¡æ¯
 */
 #define PROCESS_TIME_COUNT_NUM	4
 typedef __packed struct 
 {
-	uint8_t 		ulStartFlag[PROCESS_TIME_COUNT_NUM];		//Æô¶¯±êÖ¾
-	uint8_t 		ulTriggerFlag[PROCESS_TIME_COUNT_NUM];		//´¥·¢±êÖ¾
-	uint32_t		ulStartTick[PROCESS_TIME_COUNT_NUM];		//Æô¶¯Ê±¿ÌTick
-	uint32_t		ulThreshTick[PROCESS_TIME_COUNT_NUM];		//ãĞÖµTick
+	uint8_t 		ulStartFlag[PROCESS_TIME_COUNT_NUM];		//å¯åŠ¨æ ‡å¿—
+	uint8_t 		ulTriggerFlag[PROCESS_TIME_COUNT_NUM];		//è§¦å‘æ ‡å¿—
+	uint32_t		ulStartTick[PROCESS_TIME_COUNT_NUM];		//å¯åŠ¨æ—¶åˆ»Tick
+	uint32_t		ulThreshTick[PROCESS_TIME_COUNT_NUM];		//é˜ˆå€¼Tick
 	
 } ProtcessTimeCount_t;
 
@@ -234,33 +235,33 @@ typedef __packed struct
 
 
 
-//·Ç¶ÂÈû¸´Î»
+//éå µå¡å¤ä½
 uint8_t Motor_Reset_Handle(uint32_t ulTick);
 
-//¸üĞÂ±àÂëÆ÷³£Êı(²»±£´æ)
+//æ›´æ–°ç¼–ç å™¨å¸¸æ•°(ä¸ä¿å­˜)
 ErrorType_e UpdateAndSave_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *ptAxisParamDefault);
 
-//¸üĞÂ±£´æ±àÂëÆ÷³£Êı
+//æ›´æ–°ä¿å­˜ç¼–ç å™¨å¸¸æ•°
 ErrorType_e Update_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *ptAxisParamDefault, uint8_t ucValidFlag);
 
-//Çå³ıEEPROM±£´æµÄÖá²ÎÊı
+//æ¸…é™¤EEPROMä¿å­˜çš„è½´å‚æ•°
 void ClearAndSave_Default_Axis_Params(void);
 
-//Çå³ıEEPROM±£´æµÄÁ÷³Ì
+//æ¸…é™¤EEPROMä¿å­˜çš„æµç¨‹
 void ClearAndSave_Default_Process(void);
 
-//Öá²ÎÊı³õÊ¼»¯
+//è½´å‚æ•°åˆå§‹åŒ–
 ErrorType_e Axis_Param_Default_Init(void);
 void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefault);
 
-//¼Ä´æÆ÷³õÊ¼»¯
+//å¯„å­˜å™¨åˆå§‹åŒ–
 void ShadowRegister_Init(__IO AxisParamDefault_t *ptAxisParamDefault);
 
-/* Öá²ÎÊı */
-//ÉèÖÃ/»ñÈ¡Öá²ÎÊı
+/* è½´å‚æ•° */
+//è®¾ç½®/è·å–è½´å‚æ•°
 ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData);
 ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData);
-//Çå³ıEEPROM±£´æµÄÖá²ÎÊı
+//æ¸…é™¤EEPROMä¿å­˜çš„è½´å‚æ•°
 void ClearAndSave_Default_Axis_Params(void);
 //
 ErrorType_e Read_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault);
@@ -268,27 +269,27 @@ ErrorType_e Save_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 
 
 
-/* ²ÎÊı±£´æ */
+/* å‚æ•°ä¿å­˜ */
 ErrorType_e Read_Global_Param(__IO GlobalParam_t *ptGlobalParam);
 ErrorType_e Save_Global_Param(__IO GlobalParam_t *ptGlobalParam);
 
 
 
-/* ×Ô¶¨ÒåÁ÷³Ì */
-//¹ı³Ì²ÎÊı³õÊ¼»¯
+/* è‡ªå®šä¹‰æµç¨‹ */
+//è¿‡ç¨‹å‚æ•°åˆå§‹åŒ–
 void Process_Param_SetDefault_Value(__IO Process_t *ptProcess);
-//Çå³ıEEPROM±£´æµÄÁ÷³Ì
+//æ¸…é™¤EEPROMä¿å­˜çš„æµç¨‹
 void ClearAndSave_Default_Process(void);
-//Á÷³Ì³õÊ¼»¯  
+//æµç¨‹åˆå§‹åŒ–  
 ErrorType_e Process_Init(void);
 
-//ÉèÖÃÁ÷³Ì
+//è®¾ç½®æµç¨‹
 ErrorType_e Set_Process(RecvFrame_t *ptRecvFrame);
-//¶ÁÈ¡Á÷³Ì
+//è¯»å–æµç¨‹
 ErrorType_e Get_Process(uint8_t ucIndex, SubProcess_t *ptSendFrame);
-//Á÷³Ì--¿ØÖÆ
+//æµç¨‹--æ§åˆ¶
 ErrorType_e Exec_Process_Ctrl(uint8_t ucType);
-//Á÷³Ì¶ÁĞ´
+//æµç¨‹è¯»å†™
 ErrorType_e Read_Process(__IO Process_t *ptProcess);
 ErrorType_e Save_Process(__IO Process_t *ptProccess);
 void Clear_Process(void);
@@ -296,9 +297,9 @@ void Del_Process(void);
 void Exec_Process(void);
 void Stop_Process(void );
 
-//Ö´ĞĞÁ÷³Ì--Çå³ıºÍ¿ØÖÆ
+//æ‰§è¡Œæµç¨‹--æ¸…é™¤å’Œæ§åˆ¶
 ErrorType_e Exec_Process_Clear_Or_Save(uint8_t ucType);
-//Ö´ĞĞÁ÷³Ì--¿ØÖÆ
+//æ‰§è¡Œæµç¨‹--æ§åˆ¶
 ErrorType_e Process_Handle(uint32_t ulTicks);
 
 

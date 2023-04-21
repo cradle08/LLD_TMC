@@ -357,6 +357,8 @@ uint8_t MotorTimerPWMStop(void)
 	TIM_Cmd(TIM3, DISABLE);
 	
 	TIM3->CNT = 0;
+	
+	return (0);
 }
 
 /*********************************************END OF FILE**********************/

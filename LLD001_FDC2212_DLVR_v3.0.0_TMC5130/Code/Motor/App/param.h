@@ -5,8 +5,13 @@
 
 
 
+//å‚æ•°åˆå§‹åŒ–æ ‡å¿—
+#define PARAM_INIT_FLAG				0xea05
+
+
+
 /*
- * È«¾Ö±äÁ¿£¬ÇøÓòID
+ * å…¨å±€å˜é‡ï¼ŒåŒºåŸŸID
  */
 typedef enum {
 	BANK_0 = 0,	//
@@ -20,18 +25,18 @@ typedef enum {
 
 
 /*
-*	Ä£¿é²ÎÊıÀàĞÍ
+*	æ¨¡å—å‚æ•°ç±»å‹
 */
 typedef enum {
-	EN_MODULE_PARAM_TYPE_CanBaud		= 0,	//²¨ÌØÂÊ
+	EN_MODULE_PARAM_TYPE_CanBaud		= 0,	//æ³¢ç‰¹ç‡
 	EN_MODULE_PARAM_TYPE_RECV_CanID,
 	EN_MODULE_PARAM_TYPE_SEND_CanID,
 	EN_MODULE_PARAM_TYPE_ProcessAutoExecMode,
 	
 	
-//	EN_MODULE_PARAM_TYPE_ResetHighSpeed,		//¸´Î»£¬¸ßËÙ
-//	EN_MODULE_PARAM_TYPE_ResetLowSpeed,			//¸´Î»£¬µÍËÙ
-//	EN_MODULE_PARAM_TYPE_ResetOff,				//¸´Î»£¬Æ«ÒÆÖµ
+//	EN_MODULE_PARAM_TYPE_ResetHighSpeed,		//å¤ä½ï¼Œé«˜é€Ÿ
+//	EN_MODULE_PARAM_TYPE_ResetLowSpeed,			//å¤ä½ï¼Œä½é€Ÿ
+//	EN_MODULE_PARAM_TYPE_ResetOff,				//å¤ä½ï¼Œåç§»å€¼
 
 } ModuleParamType_e;
 
@@ -40,31 +45,31 @@ typedef enum {
 
 
 /*
-*	Ä£¿é²ÎÊı±í£¬ Õû¸öÈ«¾Ö²ÎÊıÖĞ£¬µ±Ç°ucaUserVar1²¿·Ö²»ĞèÒª±£´æµ½EEPROMÖĞ£¬ÆäËû²¿·Ö¶¼ĞèÒª±£´æµ½EEPROMÖĞ
+*	æ¨¡å—å‚æ•°è¡¨ï¼Œ æ•´ä¸ªå…¨å±€å‚æ•°ä¸­ï¼Œå½“å‰ucaUserVar1éƒ¨åˆ†ä¸éœ€è¦ä¿å­˜åˆ°EEPROMä¸­ï¼Œå…¶ä»–éƒ¨åˆ†éƒ½éœ€è¦ä¿å­˜åˆ°EEPROMä¸­
 */
 #define BANK1_USER_VAR_LEN	32
 #define BANK2_USER_VAR_LEN	128
 #define BANK3_USER_VAR_LEN	0
 typedef __packed struct {
-	uint32_t    ulInitFlag;			//³õÊ¼»¯±êÖ¾
+	uint32_t    ulInitFlag;			//åˆå§‹åŒ–æ ‡å¿—
 	/* Bank 0 */
-	uint8_t 	ucUpdateFlag;				//0:²»ĞèÒªÉı¼¶£¬1£ºĞèÒªÉı¼¶
-	CanBaud_e	eCanBaud;					//CAN ²¨ÌØÂÊ
-	uint32_t 	ulRecvCanID;				//½ÓÊÜCanID
-	uint32_t	ulSendCanID;				//·¢ËÍCanID
-	uint8_t     ucProcessAutoExecMode;		//×Ô¶¨ÒåÁ÷³Ì£¬ÉÏµç×Ô¶¯Ö´ĞĞ±êÖ¾, 0:ÏÂ·¢Ö¸Áî´¥·¢Ö´ĞĞ£¬1£ºÉÏµç×Ô¶¯Ö´ĞĞ
+	uint8_t 	ucUpdateFlag;				//0:ä¸éœ€è¦å‡çº§ï¼Œ1ï¼šéœ€è¦å‡çº§
+	CanBaud_e	eCanBaud;					//CAN æ³¢ç‰¹ç‡
+	uint32_t 	ulRecvCanID;				//æ¥å—CanID
+	uint32_t	ulSendCanID;				//å‘é€CanID
+	uint8_t     ucProcessAutoExecMode;		//è‡ªå®šä¹‰æµç¨‹ï¼Œä¸Šç”µè‡ªåŠ¨æ‰§è¡Œæ ‡å¿—, 0:ä¸‹å‘æŒ‡ä»¤è§¦å‘æ‰§è¡Œï¼Œ1ï¼šä¸Šç”µè‡ªåŠ¨æ‰§è¡Œ
 	
-	/* Bank 1 ±£Áô */
-	int32_t		laBank1_UserVar[BANK1_USER_VAR_LEN]; //Bank1 ÓÃ»§±äÁ¿ (Type:0-31)£¬Êı¾İĞŞ¸ÄÊı¾İºó£¬»áÄ¬ÈÏÍ¬²½µ½EEPROMÖĞ£¬ÉÏµçÆô¶¯ºó£¬´ÓEEPROMÖĞ¼ÓÔØµ½RAMÖĞ
+	/* Bank 1 ä¿ç•™ */
+	int32_t		laBank1_UserVar[BANK1_USER_VAR_LEN]; //Bank1 ç”¨æˆ·å˜é‡ (Type:0-31)ï¼Œæ•°æ®ä¿®æ”¹æ•°æ®åï¼Œä¼šé»˜è®¤åŒæ­¥åˆ°EEPROMä¸­ï¼Œä¸Šç”µå¯åŠ¨åï¼Œä»EEPROMä¸­åŠ è½½åˆ°RAMä¸­
 	
 	//crc
-	uint16_t 	usCrc;				//CRC16 Ğ£ÑéÂë
+	uint16_t 	usCrc;				//CRC16 æ ¡éªŒç 
 	
-	/* Bank 2  ÓÃ»§±äÁ¿2*/
-	int32_t		laBank2_UserVar[BANK2_USER_VAR_LEN]; //ÓÃ»§±äÁ¿2 (Type:0-127)£¬½ö±£´æµ½RAMÖĞ
+	/* Bank 2  ç”¨æˆ·å˜é‡2*/
+	int32_t		laBank2_UserVar[BANK2_USER_VAR_LEN]; //ç”¨æˆ·å˜é‡2 (Type:0-127)ï¼Œä»…ä¿å­˜åˆ°RAMä¸­
 	
 	/* Bank 3  */
-	//int32_t		laBank3_UserVar[BANK3_USER_VAR_LEN]; //ÓÃ»§±äÁ¿2 (Type: 0)£¬½ö±£´æµ½RAMÖĞ
+	//int32_t		laBank3_UserVar[BANK3_USER_VAR_LEN]; //ç”¨æˆ·å˜é‡2 (Type: 0)ï¼Œä»…ä¿å­˜åˆ°RAMä¸­
 	
 
 		
@@ -74,20 +79,20 @@ typedef __packed struct {
 
 
 
-/* È«¾Ö²ÎÊı */
+/* å…¨å±€å‚æ•° */
 
-//È«¾Ö²ÎÊı³õÊ¼»¯
+//å…¨å±€å‚æ•°åˆå§‹åŒ–
 ErrorType_e Global_Param_Init(void);
-//Çå³ıEEPROM±£´æµÄÄ£¿é²ÎÊı
+//æ¸…é™¤EEPROMä¿å­˜çš„æ¨¡å—å‚æ•°
 void ClearAndSave_Default_Global_Params(void);
-//Çå³ı Ä£¿é²ÎÊı
+//æ¸…é™¤ æ¨¡å—å‚æ•°
 void Global_Param_SetDefault_Value(__IO GlobalParam_t *ptGlobalParam);
-//Çå³ıEEPROM±£´æµÄÄ£¿é²ÎÊı
+//æ¸…é™¤EEPROMä¿å­˜çš„æ¨¡å—å‚æ•°
 void ClearAndSave_Default_Global_Params(void);
-//Éı¼¶±êÖ¾Î»
+//å‡çº§æ ‡å¿—ä½
 ErrorType_e Set_UpdateFlag(uint8_t ucFlag);
 
-//È«¾Ö²ÎÊı¿é
+//å…¨å±€å‚æ•°å—
 ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData);
 ErrorType_e GlobalParam_Bank_1(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData);
 ErrorType_e GlobalParam_Bank_2(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData);
@@ -97,7 +102,7 @@ ErrorType_e TMC_Global_Param(Bank_e eBank, ReadWrite_e eReadWrite, uint8_t ucTyp
 //
 ErrorType_e GlobalParam_Set_CanID(uint8_t ucRecvCanID, uint8_t SendCanID);
 
-/* ²ÎÊı±£´æ */
+/* å‚æ•°ä¿å­˜ */
 ErrorType_e Read_Global_Param(__IO GlobalParam_t *ptGlobalParam);
 ErrorType_e Save_Global_Param(__IO GlobalParam_t *ptGlobalParam);
 

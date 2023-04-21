@@ -37,12 +37,12 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 
-
-
-
 //等待超时时间
-#define  SPIT_FLAG_TIMEOUT             ((uint32_t)0x2000)
-#define  SPIT_LONG_TIMEOUT             ((uint32_t)(10 * SPIT_FLAG_TIMEOUT))
+//0x1000，72MHz时钟，示波器实测1.952ms（增加P电机控制后，疑似IIC通信时序被打断）
+#define  SPIT_FLAG_TIMEOUT             ((uint32_t)0x1000)
+//0x1000 * 10=0xA000，72MHz时钟，示波器实测19.44ms
+#define  SPIT_LONG_TIMEOUT             ((uint32_t)(4 * SPIT_FLAG_TIMEOUT))
+
 
 ////信息输出
 //#define  FLASH_DEBUG_ON                1

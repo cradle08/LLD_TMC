@@ -19,15 +19,21 @@
 
 //
 #include "lld_param.h"
+#include "monitor_can.h" 
+
+#include "liquid_level.h"
 
 
-//TMC×´Ì¬
+
+
+
+//TMCçŠ¶æ€
 __IO TMCStatus_t g_tTMCStatus = {0};
 
 
 
 /*
-*	È«¾ÖÖµ³õÊ¼»¯
+*	å…¨å±€å€¼åˆå§‹åŒ–
 */
 void Global_Status_Init(void)
 {
@@ -39,7 +45,7 @@ void Global_Status_Init(void)
 	for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 	{
 		g_tTMCStatus.ulBoardStatus 	 = 0;
-		g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_NONE; //µç»ú¸´Î»×´Ì¬¡£ 0£ºÎ´¸´Î»
+		g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_NONE; //ç”µæœºå¤ä½çŠ¶æ€ã€‚ 0ï¼šæœªå¤ä½
 	}
 }
 
@@ -52,11 +58,11 @@ void Global_Status_Init(void)
 
 
 /*
-*	MCU ÖØÆô
+*	MCU é‡å¯
 */
 void MCU_Reset(void)
 {
-	//MCU ¸´Î», µ¥Æ¬»ú¸´Î»ºó£¬TMC×´Ì¬£¨¼Ä´æÆ÷µÄÖµµÈĞÅÏ¢×´Ìå£©
+	//MCU å¤ä½, å•ç‰‡æœºå¤ä½åï¼ŒTMCçŠ¶æ€ï¼ˆå¯„å­˜å™¨çš„å€¼ç­‰ä¿¡æ¯çŠ¶ä½“ï¼‰
 	__set_PRIMASK(1);
 	NVIC_SystemReset();
 }
@@ -67,7 +73,7 @@ void MCU_Reset(void)
 
 
 ///*
-//*	Çå³ıEEPROM±£´æµÄÖá²ÎÊı
+//*	æ¸…é™¤EEPROMä¿å­˜çš„è½´å‚æ•°
 //*/
 //void ClearAndSave_Default_Axis_Params(void)
 //{
@@ -79,7 +85,7 @@ void MCU_Reset(void)
 
 
 /*
-*	Çå³ıËùÓĞ±£´æÔÚEEPROMµÄ²ÎÊı, ²¢ÉèÖÃÎªÄ¬ÈÏÖµ
+*	æ¸…é™¤æ‰€æœ‰ä¿å­˜åœ¨EEPROMçš„å‚æ•°, å¹¶è®¾ç½®ä¸ºé»˜è®¤å€¼
 */
 void Reset_Factory(void)
 {
@@ -87,7 +93,7 @@ void Reset_Factory(void)
 	ClearAndSave_Default_Axis_Params();
 	ClearAndSave_Default_Process();
 	
-	//ÒºÃæÌ½²â²ÎÊı
+	//æ¶²é¢æ¢æµ‹å‚æ•°
 	ClearAndSave_Default_LLDParams();
 }
 
@@ -96,18 +102,18 @@ void Reset_Factory(void)
 
 
 /*
- *  »ñÈ¡ÈíÓ²¼ş°æ±¾ºÅ
+ *  è·å–è½¯ç¡¬ä»¶ç‰ˆæœ¬å·
  */
 void Get_Soft_HardWare_Version(uint8_t *pucaData)
 {
-	extern uint16_t g_usSoftVersion;		//Èí¼ş°æ±¾ºÅ
-	extern uint16_t g_usHardWareVesion;	//Ó²¼ş°æ±¾ºÅ
+	extern uint16_t g_usSoftVersion;		//è½¯ä»¶ç‰ˆæœ¬å·
+	extern uint16_t g_usHardWareVesion;	//ç¡¬ä»¶ç‰ˆæœ¬å·
 
-	//Èí¼ş°æ±¾ºÅ
+	//è½¯ä»¶ç‰ˆæœ¬å·
 	pucaData[0] = g_usSoftVersion & 0xFF;
 	pucaData[1] = (g_usSoftVersion >> 8) & 0xFF;
 	
-	//Ó²¼ş°æ±¾ºÅ
+	//ç¡¬ä»¶ç‰ˆæœ¬å·
 	pucaData[2] = g_usHardWareVesion & 0xFF;
 	pucaData[3] = (g_usHardWareVesion >> 8) & 0xFF;
 
@@ -116,7 +122,7 @@ void Get_Soft_HardWare_Version(uint8_t *pucaData)
 
 
 /*
- *  »ñÈ¡Ä£¿éÀàĞÍ
+ *  è·å–æ¨¡å—ç±»å‹
  */
 uint32_t Get_Module_Type(void)
 {
@@ -129,7 +135,7 @@ uint32_t Get_Module_Type(void)
 
 
 /*
-* ×´Ì¬¼ì²â, 1:ÓĞÏà¹ØÒì³££¬ 0£ºÎŞÏà¹ØÒì³£
+* çŠ¶æ€æ£€æµ‹, 1:æœ‰ç›¸å…³å¼‚å¸¸ï¼Œ 0ï¼šæ— ç›¸å…³å¼‚å¸¸
 */
 void Period_Error_Check(uint32_t ulTick)
 {
@@ -141,84 +147,84 @@ void Period_Error_Check(uint32_t ulTick)
 	int32_t lStatus = 0;
 	uint8_t ucFlag = 0;
 	
-	//Ã¿¸ô200ms
+	//æ¯éš”200ms
 	if(ulTick - s_ulTick >= 200)
 	{
 		s_ulTick = ulTick;
-		//Ã¿¸ö10ms£¬¼ì²âÒ»´Î×´Ì¬
+		//æ¯ä¸ª10msï¼Œæ£€æµ‹ä¸€æ¬¡çŠ¶æ€
 		
-		/* ¼ì²â¡¢¼ÇÂ¼TMC×´Ì¬ĞÅÏ¢ */
+		/* æ£€æµ‹ã€è®°å½•TMCçŠ¶æ€ä¿¡æ¯ */
 		for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 		{
 			lStatus = TMC_ReadInt(eTMC, TMC5160_DRVSTATUS);
 			
-			/* AÏà¿ªÂ· */
+			/* Aç›¸å¼€è·¯ */
 			if((lStatus >> 30) == 1)
 			{
-				//ÉèÖÃÎ»
+				//è®¾ç½®ä½
 				BIT_SET(g_tTMCStatus.ucErrStatus[eTMC], 0);
 			}else{
-				//Çå³ıÎ»
+				//æ¸…é™¤ä½
 				BIT_RESET(g_tTMCStatus.ucErrStatus[eTMC], 0);
 			}
 			
 
-			/* BÏà¿ªÂ· */
+			/* Bç›¸å¼€è·¯ */
 			if((lStatus >> 29) == 1)
 			{
-				//ÉèÖÃÎ»
+				//è®¾ç½®ä½
 				BIT_SET(g_tTMCStatus.ucErrStatus[eTMC], 1);
 			}else{
-				//Çå³ıÎ»
+				//æ¸…é™¤ä½
 				BIT_RESET(g_tTMCStatus.ucErrStatus[eTMC], 1);
 			}
 			
 			
-			/* AÏà¶ÌÂ· */
+			/* Aç›¸çŸ­è·¯ */
 			if((lStatus >> 28) == 1)
 			{
-				//ÉèÖÃÎ»
+				//è®¾ç½®ä½
 				BIT_SET(g_tTMCStatus.ucErrStatus[eTMC], 2);
 			}else{
-				//Çå³ıÎ»
+				//æ¸…é™¤ä½
 				BIT_RESET(g_tTMCStatus.ucErrStatus[eTMC], 2);
 			}
 			
 						
-			/* BÏà¶ÌÂ· */
+			/* Bç›¸çŸ­è·¯ */
 			if((lStatus >> 27) == 1)
 			{
-				//ÉèÖÃÎ»
+				//è®¾ç½®ä½
 				BIT_SET(g_tTMCStatus.ucErrStatus[eTMC], 3);
 			}else{
-				//Çå³ıÎ»
+				//æ¸…é™¤ä½
 				BIT_RESET(g_tTMCStatus.ucErrStatus[eTMC], 3);
 			}
 			
 			
-			/* ¹ıÎÂ */
+			/* è¿‡æ¸© */
 //			if((lStatus >> 26) == 1)
 //			{
-//				//ÉèÖÃÎ»
+//				//è®¾ç½®ä½
 //				BIT_SET(g_tBoardStatus.ucTMCStatus[eTMC], 5);
 //			}else{
-//				//Çå³ıÎ»
+//				//æ¸…é™¤ä½
 //				BIT_RESET(g_tBoardStatus.ucTMCStatus[eTMC], 5);
 //			}
 			
 			
-			/* ¹ıÑ¹¼ì²â  */
+			/* è¿‡å‹æ£€æµ‹  */
 			
 			
-			/* ¶Â×ª¼ì²â  */			
+			/* å µè½¬æ£€æµ‹  */			
 		}
 		
 		
-		/* ±ê¼ÇTMC×´Ì¬±êÖ¾£¬Ö»ÒªÓĞÒ»¸ö·¢Éú£¬¾Í»á±ê¼Ç */
-		/* BÏà¿ªÂ· */
+		/* æ ‡è®°TMCçŠ¶æ€æ ‡å¿—ï¼Œåªè¦æœ‰ä¸€ä¸ªå‘ç”Ÿï¼Œå°±ä¼šæ ‡è®° */
+		/* Bç›¸å¼€è·¯ */
 		for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 		{
-			//AÏà¿ªÂ·
+			//Aç›¸å¼€è·¯
 			if((g_tTMCStatus.ucErrStatus[eTMC] & 0x01) == 1) ucFlag = 1;
 		}
 		if(ucFlag == 1){			
@@ -227,10 +233,10 @@ void Period_Error_Check(uint32_t ulTick)
 				BIT_RESET(g_tTMCStatus.ulBoardStatus, 0);
 		}
 		
-		/* BÏà¿ªÂ· */
+		/* Bç›¸å¼€è·¯ */
 		for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 		{
-			//BÏà¿ªÂ·
+			//Bç›¸å¼€è·¯
 			if((g_tTMCStatus.ucErrStatus[eTMC] & 0x02) == 1) ucFlag = 1;
 		}
 		if(ucFlag == 1)		
@@ -241,7 +247,7 @@ void Period_Error_Check(uint32_t ulTick)
 		}
 
 
-		/* AÏà¶ÌÂ· */
+		/* Aç›¸çŸ­è·¯ */
 		for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 		{
 			if((g_tTMCStatus.ucErrStatus[eTMC] & 0x04) == 1) ucFlag = 1;
@@ -254,7 +260,7 @@ void Period_Error_Check(uint32_t ulTick)
 		}
 		
 		
-		/* BÏà¶ÌÂ· */
+		/* Bç›¸çŸ­è·¯ */
 		for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 		{
 			if((g_tTMCStatus.ucErrStatus[eTMC] & 0x08) == 1) ucFlag = 1;
@@ -266,7 +272,7 @@ void Period_Error_Check(uint32_t ulTick)
 				BIT_RESET(g_tTMCStatus.ulBoardStatus, 3);
 		}
 		
-		/* ³õÊ¼»¯EEPROM ¶ÁĞ´Òì³£ */
+		/* åˆå§‹åŒ–EEPROM è¯»å†™å¼‚å¸¸ */
 		if(1 == g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag)
 		{
 			BIT_SET(g_tTMCStatus.ulBoardStatus, 9);
@@ -275,7 +281,7 @@ void Period_Error_Check(uint32_t ulTick)
 		}
 		
 		
-		/* Ö´ĞĞÁ÷³ÌÒì³£ */
+		/* æ‰§è¡Œæµç¨‹å¼‚å¸¸ */
 		if(1 == g_tTMCStatus.ucExecProcessStatus)
 		{
 			BIT_SET(g_tTMCStatus.ulBoardStatus, 9);
@@ -285,24 +291,24 @@ void Period_Error_Check(uint32_t ulTick)
 	}
 	
 	
-	//Ã¿¸ô10ms£¬¼ì²âÒ»´Î
+	//æ¯éš”10msï¼Œæ£€æµ‹ä¸€æ¬¡
 	if(ulTick - s_ulTick2 >= 10)
 	{
 		s_ulTick2 = ulTick;
 		
-		/* Ê§²½¼ì²â  */
+		/* å¤±æ­¥æ£€æµ‹  */
 		for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 		{
-			/* Ê§²½¼ì²â  */
+			/* å¤±æ­¥æ£€æµ‹  */
 			lStatus = TMC_ReadInt(eTMC, TMC5160_ENC_STATUS);
 			if(lStatus & 0x02)
 			{
-				//ÉèÖÃÎ»£¬Ê§²½£¬²»»á×Ô¶¯Çå³ı
+				//è®¾ç½®ä½ï¼Œå¤±æ­¥ï¼Œä¸ä¼šè‡ªåŠ¨æ¸…é™¤
 				BIT_SET(g_tTMCStatus.ucErrStatus[eTMC], 4);
 				//LOG_Error("Step Error");
 			
 			}else{
-				//Çå³ıÎ»
+				//æ¸…é™¤ä½
 				BIT_RESET(g_tTMCStatus.ucErrStatus[eTMC], 4);
 			}			
 		}	
@@ -319,7 +325,7 @@ void Period_Error_Check(uint32_t ulTick)
 		}
 		
 		
-		/* CANÍ¨ĞÅÓ¦´ğÒì³£ */
+		/* CANé€šä¿¡åº”ç­”å¼‚å¸¸ */
 		if(g_tBoardStatus.tCanMsgCount_Info.ulSendFailNum >= 1)
 		{
 			BIT_SET(g_tTMCStatus.ulBoardStatus, 11);
@@ -330,7 +336,7 @@ void Period_Error_Check(uint32_t ulTick)
 
 
 /*
-* Ä£¿éÒì³£×´Ì¬´¦Àí
+* æ¨¡å—å¼‚å¸¸çŠ¶æ€å¤„ç†
 */
 ErrorType_e Module_Error_Handle(TMC_e eTMC, ModuleErrorType_e eType)
 {
@@ -356,14 +362,14 @@ ErrorType_e Module_Error_Handle(TMC_e eTMC, ModuleErrorType_e eType)
 
 
 /*
-*	¶ª²½´¦Àí	
+*	ä¸¢æ­¥å¤„ç†	
 */
 ErrorType_e MissStep_Handle(TMC_e eTMC)
 {	
 	ErrorType_e eError = ERROR_TYPE_SUCCESS;
 	if(eTMC >= TMC_MODULE_END) return ERROR_TYPE_DEVICE_ID;
 	   	
-	//Ğè´¦Àí¶ª²½£¬ÊÇXENCºÍXVACTUALĞ¡ÓÚÊ§²½ãĞÖµ£¬ÔÙĞ´1£¬Çå³ı¸Ã±êÖ¾Î»¡£»ò¹Ø±Õ¶ª²½¼ì²â¹¦ÄÜ£¬ÔÙÖ´ĞĞÔË¶¯£¬ÔÙÇå³ı¸ÃÎ»¡£
+	//éœ€å¤„ç†ä¸¢æ­¥ï¼Œæ˜¯XENCå’ŒXVACTUALå°äºå¤±æ­¥é˜ˆå€¼ï¼Œå†å†™1ï¼Œæ¸…é™¤è¯¥æ ‡å¿—ä½ã€‚æˆ–å…³é—­ä¸¢æ­¥æ£€æµ‹åŠŸèƒ½ï¼Œå†æ‰§è¡Œè¿åŠ¨ï¼Œå†æ¸…é™¤è¯¥ä½ã€‚
 	int32_t lAc = TMC5160_ReadInt(eTMC, TMC5160_XACTUAL);
 	int32_t lEc = TMC5160_ReadInt(eTMC, TMC5160_XENC);
 	int32_t lX = TMC5160_ReadInt(eTMC, TMC5160_XTARGET);
@@ -379,7 +385,7 @@ ErrorType_e MissStep_Handle(TMC_e eTMC)
 	lX = TMC5160_ReadInt(eTMC, TMC5160_XTARGET);
 	uint8_t flag = TMC5160_FIELD_READ(eTMC, TMC5160_ENC_STATUS, TMC5160_DEVIATION_WARN_MASK, TMC5160_DEVIATION_WARN_SHIFT);
 
-	//Çå³ı¶ª²½±êÖ¾Î»
+	//æ¸…é™¤ä¸¢æ­¥æ ‡å¿—ä½
 	TMC5160_FIELD_UPDATE(eTMC, TMC5160_ENC_STATUS, TMC5160_DEVIATION_WARN_MASK, TMC5160_DEVIATION_WARN_SHIFT, 1);
 
 	return eError;
@@ -389,63 +395,67 @@ ErrorType_e MissStep_Handle(TMC_e eTMC)
 
 
 /*
-*	¼±Í£´¦Àí
+*	æ€¥åœå¤„ç†
 */
 ErrorType_e Urgent_Stop(TMC_e eTMC)
 {
+	ErrorType_e eErrorTyoe = ERROR_TYPE_SUCCESS;
 	uint32_t ulValue = 0, ulStatus = 0, ulXActual = 0;
 //	uint8_t ucValid = 0, ucPolarity = 0;
 
-	//±¸·İSWMODEµÄÖµ
+	//å¤‡ä»½SWMODEçš„å€¼
 	ulValue = TMC_ReadInt(eTMC, TMC5160_SWMODE);
 
-	/* ´¥·¢¼±Í£ */
+	/* è§¦å‘æ€¥åœ */
 //	ucValid = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT);
 //	ucPolarity = TMC5160_FIELD_READ(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_L_MASK, TMC5160_POL_STOP_L_SHIFT);
 //	if(0 == ucValid && 0 == ucPolarity)
 //	{
-//		//¸ßÓĞĞ§£¬´Ë¿ÌÎªÎŞĞ§×´Ì¬ ==¡·¼´£¬×óÏŞÎ»ÎªµÍµçÆ½
+//		//é«˜æœ‰æ•ˆï¼Œæ­¤åˆ»ä¸ºæ— æ•ˆçŠ¶æ€ ==ã€‹å³ï¼Œå·¦é™ä½ä¸ºä½ç”µå¹³
 //		ulStatus =  0x05; 
 //	}else if(0 == ucValid && 1 == ucPolarity){
-//		//¸ßÓĞĞ§£¬´Ë¿ÌÎªÓĞĞ§×´Ì¬ ==¡·¼´£¬×óÏŞÎ»Îª¸ßµçÆ½
+//		//é«˜æœ‰æ•ˆï¼Œæ­¤åˆ»ä¸ºæœ‰æ•ˆçŠ¶æ€ ==ã€‹å³ï¼Œå·¦é™ä½ä¸ºé«˜ç”µå¹³
 //		ulStatus = 0x01;
 //	}else if(1 == ucValid && 0 == ucPolarity){
-//		//µÍÓĞĞ§£¬´Ë¿ÌÎªÎŞĞ§×´Ì¬ ==¡·¼´£¬×óÏŞÎ»Îª¸ßµçÆ½
+//		//ä½æœ‰æ•ˆï¼Œæ­¤åˆ»ä¸ºæ— æ•ˆçŠ¶æ€ ==ã€‹å³ï¼Œå·¦é™ä½ä¸ºé«˜ç”µå¹³
 //		ulStatus = 0x01;
 //	}else if(1 == ucValid && 1 == ucPolarity){
-//		//µÍÓĞĞ§£¬´Ë¿ÌÎªÓĞĞ§×´Ì¬ ==¡·¼´£¬×óÏŞÎ»ÎªµÍµçÆ½
+//		//ä½æœ‰æ•ˆï¼Œæ­¤åˆ»ä¸ºæœ‰æ•ˆçŠ¶æ€ ==ã€‹å³ï¼Œå·¦é™ä½ä¸ºä½ç”µå¹³
 //		ulStatus = 0x05;
 //	}
 	//TMC_WriteInt(eTMC, TMC5160_SWMODE, ulStatus);
-	TMC_WriteInt(eTMC, TMC5160_SWMODE, 0x03);
+	eErrorTyoe = TMC_WriteInt(eTMC, TMC5160_SWMODE, 0x03);
 
-	//¼±Í££¬ºó´¦Àí
-	TMC_WriteInt(eTMC, TMC5160_VMAX, 0);
+	//æ€¥åœï¼Œåå¤„ç†
+	eErrorTyoe = TMC_WriteInt(eTMC, TMC5160_VMAX, 0);
 	ulXActual = TMC_ReadInt(eTMC, TMC5160_XACTUAL);
-	TMC_WriteInt(eTMC, TMC5160_XTARGET, ulXActual);
+	eErrorTyoe = TMC_WriteInt(eTMC, TMC5160_XTARGET, ulXActual);
 
-	//»Ö¸´SWMODEµÄÖµ
-	TMC_WriteInt(eTMC, TMC5160_SWMODE, ulValue);
+	//æ¢å¤SWMODEçš„å€¼
+	eErrorTyoe = TMC_WriteInt(eTMC, TMC5160_SWMODE, ulValue);
 
-	//¸´Î»×´Ì¬ÏÂ£¬¼±Í£
+	//å¤ä½çŠ¶æ€ä¸‹ï¼Œæ€¥åœ
 	if(g_tTMCStatus.ucMotorResetStartFlag != 0)
 	{
 		//
 		g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_FAIL;
 		
-		//ÉèÖÃÄ£Ê½--Î»ÖÃÄ£Ê½
+		//è®¾ç½®æ¨¡å¼--ä½ç½®æ¨¡å¼
 		TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC_MODE_POSITION);
 		
-		//»Ö¸´ËÙ¶ÈÉèÖÃ
+		//æ¢å¤é€Ÿåº¦è®¾ç½®
 		TMC_SetPMode_V(eTMC, 2);
 	}
+	
+	return eErrorTyoe;
 }
 
 
 
 
+
 /*
-* ´¦Àí½ÓÊÜÏûÏ¢, ·µ»ØÖµ£¬0£ºÃ»ÓĞ·¢ËÍÓ¦´ğÏûÏ¢¡£1£ºÒÑ·¢ËÍÓ¦´ğÏûÏ¢
+* å¤„ç†æ¥å—æ¶ˆæ¯, è¿”å›å€¼ï¼Œ0ï¼šæ²¡æœ‰å‘é€åº”ç­”æ¶ˆæ¯ã€‚1ï¼šå·²å‘é€åº”ç­”æ¶ˆæ¯
 * 
 */
 uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *ptSendFrame)
@@ -456,13 +466,13 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 	extern __IO BoardStatus_t g_tBoardStatus;
 	extern AxisParamDefault_t g_tAxisParamDefault;
 	
-	uint8_t ucSendFlag = 0; //Ó¦´ğÏûÏ¢£¬Ó¦´ğ±êÖ¾£¬0£ºÎŞÓ¦´ğ£¬1£ºÒÑÓ¦´ğ
+	uint8_t ucSendFlag = 0; //åº”ç­”æ¶ˆæ¯ï¼Œåº”ç­”æ ‡å¿—ï¼Œ0ï¼šæ— åº”ç­”ï¼Œ1ï¼šå·²åº”ç­”
 	ErrorType_e eError = ERROR_TYPE_SUCCESS;
 	TMC_e eTMC = TMC_0;
 	
 	//
 	eTMC = (TMC_e)ptRecvFrame->ucDeviceID;
-	//²ÎÊı¼ì²â
+	//å‚æ•°æ£€æµ‹
 	if(eTMC >= TMC_MODULE_END)
 	{
 		//LOG_Error("TMC DeviceID=%d Is Err", eTMC);
@@ -470,7 +480,7 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		return ucSendFlag;
 	}
 	
-	//Ö¸Áî´¦Àí	
+	//æŒ‡ä»¤å¤„ç†	
 	switch(ptRecvFrame->ucCmd)
 	{
 		/**********************/
@@ -478,13 +488,13 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		{
 			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
 			{
-				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //µç»úÔÚ¸´Î»ÖĞ£¬²»Ö´ĞĞĞı×ªÖ¸Áî
+				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //ç”µæœºåœ¨å¤ä½ä¸­ï¼Œä¸æ‰§è¡Œæ—‹è½¬æŒ‡ä»¤
 				return ucSendFlag;
 			}
 			
-			TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0); //¹Ø±Õ±àÂëÆ÷Ê§²½¼ì²â¹¦ÄÜ
+			TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0); //å…³é—­ç¼–ç å™¨å¤±æ­¥æ£€æµ‹åŠŸèƒ½
 			
-			//Ğı×ª
+			//æ—‹è½¬
 			ptSendFrame->ucStatus = TMC_Rotate(eTMC, ptRecvFrame->ucType, ptRecvFrame->uData.ulData);
 			TMC_SetVMode_V(eTMC, 0);
 			
@@ -495,21 +505,28 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		{
 			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
 			{
-				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //µç»úÔÚ¸´Î»ÖĞ£¬²»Ö´ĞĞÒÆ¶¯Ö¸Áî
+				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //ç”µæœºåœ¨å¤ä½ä¸­ï¼Œä¸æ‰§è¡Œç§»åŠ¨æŒ‡ä»¤
 				return ucSendFlag;
 			}	
-				
 			
-			//¹Ø±Õ±àÂëÆ÷Ê§²½¼ì²â¹¦ÄÜ
+			
+			//æ£€æŸ¥ç”µæœºæ˜¯å¦çœŸå®å¯åŠ¨
+			if(PLLD_ABS_START == AirSenPara.ABS_Start_End)
+			{
+				AirSenPara.ABS_Real_Start_End = PLLD_ABS_START;
+			}
+			
+			
+			//å…³é—­ç¼–ç å™¨å¤±æ­¥æ£€æµ‹åŠŸèƒ½
 			TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0);
 			
-			//ÒÆ¶¯
+			//ç§»åŠ¨
 			if(0 == ptRecvFrame->ucType)
 			{
-				//¾ø¶ÔÆ«ÒÆ
+				//ç»å¯¹åç§»
 				ptSendFrame->ucStatus = TMC_MoveTo(eTMC, ptRecvFrame->uData.lData);
 			}else{
-				//Ïà¶ÔÆ«ÒÆ
+				//ç›¸å¯¹åç§»
 				ptSendFrame->ucStatus = TMC_MoveBy(eTMC, ptRecvFrame->uData.lData);
 			}
 			TMC_SetPMode_V(eTMC, 0);
@@ -520,22 +537,22 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		{
 			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
 			{
-				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //µç»úÔÚ¸´Î»ÖĞ£¬²»Ö´ĞĞÒÆ¶¯Ö¸Áî
+				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //ç”µæœºåœ¨å¤ä½ä¸­ï¼Œä¸æ‰§è¡Œç§»åŠ¨æŒ‡ä»¤
 				return ucSendFlag;
 			}	
 			
-			//±àÂëÆ÷Ê§²½ãĞÖµ, ¸ÃÖµÎªÁã£¬Ôò¹Ø±Õ¸Ã¹¦ÄÜ			
+			//ç¼–ç å™¨å¤±æ­¥é˜ˆå€¼, è¯¥å€¼ä¸ºé›¶ï¼Œåˆ™å…³é—­è¯¥åŠŸèƒ½			
 			ptSendFrame->ucStatus = TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, g_tAxisParamDefault.lEncDiff_Threshold[eTMC]);
 //			LOG_Info("ENC Deviation Start: Motor=%d, EncDiff=%d, Steps=%d, CurStep=%d", \
 					eTMC, g_tAxisParamDefault.lEncDiff_Threshold[eTMC], ptRecvFrame->uData.lData, TMC5160_ReadInt(eTMC, TMC5160_XACTUAL));
 			
-			//ÒÆ¶¯
+			//ç§»åŠ¨
 			if(0 == ptRecvFrame->ucType)
 			{
-				//¾ø¶ÔÆ«ÒÆ
+				//ç»å¯¹åç§»
 				ptSendFrame->ucStatus = TMC_MoveTo(eTMC, ptRecvFrame->uData.lData);
 			}else{
-				//Ïà¶ÔÆ«ÒÆ
+				//ç›¸å¯¹åç§»
 				ptSendFrame->ucStatus = TMC_MoveBy(eTMC, ptRecvFrame->uData.lData);
 			}
 			TMC_SetPMode_V(eTMC, 0);
@@ -543,23 +560,23 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		break;
 		case CMD_STOP:   //0x13
 		{
-			//Í£Ö¹
+			//åœæ­¢
 			//LOG_Info("Before STOP XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
 			ptSendFrame->ucStatus = TMC_Stop(eTMC);
 			
-			//¸´Î»×´Ì¬ÏÂ£¬Í£Ö¹
+			//å¤ä½çŠ¶æ€ä¸‹ï¼Œåœæ­¢
 			if(g_tTMCStatus.ucMotorResetStartFlag != 0)
 			{
 				//
 				g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_FAIL;
 				
-				//¹Ø±Õ×ö²Î¿¼µã¸´Î»
+				//å…³é—­åšå‚è€ƒç‚¹å¤ä½
 				TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 0);
 				
-				//ÉèÖÃÄ£Ê½--Î»ÖÃÄ£Ê½
+				//è®¾ç½®æ¨¡å¼--ä½ç½®æ¨¡å¼
 				TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC_MODE_POSITION);
 				
-				//»Ö¸´ËÙ¶ÈÉèÖÃ
+				//æ¢å¤é€Ÿåº¦è®¾ç½®
 				TMC_SetPMode_V(eTMC, 2);
 			}
 			
@@ -568,48 +585,50 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		break;
 		case CMD_MOTOR_RESET: //0x14
 		{
-			/* ¸´Î»£¬µ½Ô­µã£¨²Î¿¼Î»ÖÃ£©*/
+			/* å¤ä½ï¼Œåˆ°åŸç‚¹ï¼ˆå‚è€ƒä½ç½®ï¼‰*/
 			
-			//¸´Î»Î´Íê³É
+			//å¤ä½æœªå®Œæˆ
 			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus != MOTOR_RESET_STATUS_ING)
 			{
-				//ĞŞ¸Ä¸´Î»¿ØÖÆĞÅÏ¢£¬Æô¶¯¸´Î»´¦Àí
+				//ä¿®æ”¹å¤ä½æ§åˆ¶ä¿¡æ¯ï¼Œå¯åŠ¨å¤ä½å¤„ç†
 				g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_ING;
 				g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec   = MOTOR_RESET_EXEC_1;
-				g_tTMCStatus.ucMotorResetStartFlag  = 1; //Ö´ĞĞ¸´Î»
+				g_tTMCStatus.ucMotorResetStartFlag  = 1; //æ‰§è¡Œå¤ä½
 			}
 //			g_tBoardStatus.eMotorResetStatus[eTMC] = 0;
 //			TMC_Reset(eTMC, TMC_REF_LEFT);  //TMC_REF_RIGHT   TMC_REF_LEFT
-//			//¸´Î»ÒÑÍê³É
+//			//å¤ä½å·²å®Œæˆ
 //			g_tBoardStatus.ucMotor_ResetStatus[eTMC] = 1;
 		}
 		break;
 		case CMD_URGENT_STOP:   //0x15
 		{
+			/* å°½é‡é¿å…åœ¨é«˜é€Ÿä¸‹ï¼Œæ€¥åœ */
 			Urgent_Stop(eTMC);
+			//LOG_Info("End STOP XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
 		}
-		break;		
+		break;
 		
 		/**********************/
 		case CMD_MCU_REST:  //0x20
 		{
-			/* ÖØÆômcu */
+			/* é‡å¯mcu */
 			
-			//·¢ËÍÓ¦´ğ
+			//å‘é€åº”ç­”
 			if(MSG_TYPE_CAN == eMsgType)
 			{
 				Can_Send_Msg(ptSendFrame);
 				ucSendFlag = 1;
 			}
-			rt_thread_delay(3);//HAL_Delay(3);
+			rt_thread_mdelay(3);//HAL_Delay(3);
 			
-			//ÖØÆô
+			//é‡å¯
 			MCU_Reset();
 		}
 		break;		
 		case CMD_QUERY_BOARD_TYPE:  //0x21
 		{
-			//²éÑ¯°å¿¨ÀàĞÍ
+			//æŸ¥è¯¢æ¿å¡ç±»å‹
 			ptSendFrame->uData.ulData = Get_Module_Type();
 			//ptSendFrame->ucType = Recv_CanID();
 			
@@ -617,7 +636,7 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		break;		
 		case CMD_HARD_SOFT_VERSION:  //0x22
 		{
-			//²éÑ¯ÈíÓ²¼ş°æ±¾
+			//æŸ¥è¯¢è½¯ç¡¬ä»¶ç‰ˆæœ¬
 			Get_Soft_HardWare_Version(ptSendFrame->uData.ucData);
 		}
 		break;
@@ -626,43 +645,43 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		/**********************/
 		case CMD_SET_AXIS_PARAM:  //0x30
 		{
-			//ÉèÖÃÖá²ÎÊı
+			//è®¾ç½®è½´å‚æ•°
 			ptSendFrame->ucStatus = TMC_AxisParam(eTMC, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);
 //			LOG_Info("Set Axis Parma,T=%d, V=%d", ptRecvFrame->ucType, ptRecvFrame->uData.lData)
 		}
 		break;
 		case CMD_GET_AXIS_PARAM:  //0x31
 		{
-			//²éÑ¯Öá²ÎÊı
+			//æŸ¥è¯¢è½´å‚æ•°
 			ptSendFrame->ucStatus = TMC_AxisParam(eTMC, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);
 //			LOG_Info("Get Axis Parma,T=%d, V=%d", ptRecvFrame->ucType, ptSendFrame->uData.lData)
 		}
 		break;		
 		case CMD_SET_DEFAULT_AXIS_PARAM: //0x3A
 		{
-			//ÉèÖÃÄ¬ÈÏÖá²ÎÊı
+			//è®¾ç½®é»˜è®¤è½´å‚æ•°
 			ptSendFrame->ucStatus = TMC_AxisParam_Default(eTMC, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);		
 		
 		}
 		break;
 		case CMD_GET_DEFAULT_AXIS_PARAM: //0x3B
 		{
-			//²éÑ¯Ä¬ÈÏÖá²ÎÊı
+			//æŸ¥è¯¢é»˜è®¤è½´å‚æ•°
 			ptSendFrame->ucStatus = TMC_AxisParam_Default(eTMC, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);		
 		}
 		break;		
 		
 		case CMD_SET_GLOBAL_PARAM:  //0x33
 		{
-			/* ÉèÖÃÈ«¾Ö²ÎÊı */
-			//Ó¦´ğ
+			/* è®¾ç½®å…¨å±€å‚æ•° */
+			//åº”ç­”
 			if(MSG_TYPE_CAN == eMsgType)
 			{
 				Can_Send_Msg(ptSendFrame);
 				ucSendFlag = 1;
 			}
 			
-			//ÉèÖÃÈ«¾Ö²ÎÊı
+			//è®¾ç½®å…¨å±€å‚æ•°
 			Bank_e eBank = (Bank_e)ptRecvFrame->ucDeviceID;
 			ptSendFrame->ucStatus = TMC_Global_Param(eBank, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);
 //			LOG_Info("Set Module Parma,T=%d, V=%d", ptRecvFrame->ucType, lValue)
@@ -670,7 +689,7 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		break;
 		case CMD_GET_GLOBAL_PARAM:  //0x34
 		{
-			//²éÑ¯È«¾Ö²ÎÊı
+			//æŸ¥è¯¢å…¨å±€å‚æ•°
 			Bank_e eBank = (Bank_e)ptRecvFrame->ucDeviceID;
 			ptSendFrame->ucStatus = TMC_Global_Param(eBank, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);
 //			LOG_Info("Get Module Parma,T=%d, V=%d", ptRecvFrame->ucType, ptSendFrame->uData.lData)
@@ -678,7 +697,7 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		break;			
 		case CMD_SET_IO_STATUS:  //0x35
 		{
-			//ÉèÖÃIO×´Ì¬
+			//è®¾ç½®IOçŠ¶æ€
 //@todo			eError = Set_Out_IO(ptRecvFrame->ucType, ptRecvFrame->uData.ulData);
 //@todo			ptSendFrame->ucStatus = (uint8_t)eError;
 			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
@@ -686,7 +705,7 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		break;
 		case CMD_GET_INPUT_IO_STATUS:  //0x36
 		{
-			//²éÑ¯IO×´Ì¬
+			//æŸ¥è¯¢IOçŠ¶æ€
 //			uint16_t usOutState = 0, usInState = 0;
 			
 //@todo			ptSendFrame->ucStatus = Get_In_IO_One(ptRecvFrame->ucType, &ptSendFrame->uData.ucData[0]);
@@ -703,64 +722,71 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		/**********************/
 		case CMD_SET_EXEC_PROCESS:  //0x40
 		{
-			//ÉèÖÃÖ´ĞĞÁ÷³Ì
+			//è®¾ç½®æ‰§è¡Œæµç¨‹
 			ptSendFrame->ucStatus = Set_Process(ptRecvFrame);
 		}
 		break;	
 		case CMD_GET_EXEC_PROCESS:  //0x41
 		{
-			//»ñÈ¡Ö´ĞĞÁ÷³Ì
+			//è·å–æ‰§è¡Œæµç¨‹
 			SubProcess_t tSubProcess = {0};
-			ucSendFlag = 1;
+			//ucSendFlag = 1;
 			
 			for(uint8_t ucIndex = 0; ucIndex < SUB_PROCESS_MAX_CMD_NUM; ucIndex++)
 			{
 				memset((void*)&tSubProcess, 0, sizeof(SubProcess_t));
 				Get_Process(ucIndex, &tSubProcess);
 				
-				if(tSubProcess.ucParamNum >= SUB_PROCESS_MAX_PARAM_NUM)
-				{
-					//Êı¾İÒì³£
-					LOG_Error("Param Num Error=%d", tSubProcess.ucParamNum);
-					ptSendFrame->ucStatus = ERROR_TYPE_CRC;
-					if(MSG_TYPE_CAN == eMsgType)
-					{
-						Can_Send_Msg(ptSendFrame);
-					}
-				}
+//				if(tSubProcess.ucParamNum >= SUB_PROCESS_MAX_PARAM_NUM)
+//				{
+//					//æ•°æ®å¼‚å¸¸
+//					LOG_Error("Param Num Error=%d", tSubProcess.ucParamNum);
+//					ptSendFrame->ucStatus = ERROR_TYPE_CRC;
+//					if(MSG_TYPE_CAN == eMsgType)
+//					{
+//						Can_Send_Msg(ptSendFrame);
+//						break;
+//					}
+//				}
 				
 				/* send set "cmd"*/
 				ptSendFrame->ucStatus = ERROR_TYPE_SUCCESS;
 				ptSendFrame->uData.ucData[0] = tSubProcess.ucCmd;
-				if(MSG_TYPE_CAN == eMsgType)
+				if(0 != tSubProcess.ucCmd)
 				{
+					ptSendFrame->ucType = ucIndex;
 					Can_Send_Msg(ptSendFrame);
+					rt_thread_mdelay(2);//HAL_Delay(2);
 				}
 		
 				/* send set param */
-				for(uint8_t i = 0; i < tSubProcess.ucParamNum; i++)
+				if(tSubProcess.ucParamNum != 0 && tSubProcess.ucParamNum <=  SUB_PROCESS_MAX_PARAM_NUM)
 				{
-					memset((void*)&ptSendFrame->uData.ulData, 0, sizeof(Data4Byte_u));
-					ptSendFrame->uData.lData = tSubProcess.uParam[i].lData;
-					
-					if(MSG_TYPE_CAN == eMsgType)
+					for(uint8_t i = 0; i < tSubProcess.ucParamNum; i++)
 					{
+						memset((void*)&ptSendFrame->uData.ulData, 0, sizeof(Data4Byte_u));
+						ptSendFrame->ucType = ucIndex | 0x80;
+						ptSendFrame->uData.lData = tSubProcess.uParam[i].lData;
 						Can_Send_Msg(ptSendFrame);
+						rt_thread_mdelay(2);//HAL_Delay(2);
 					}
-					rt_thread_delay(2);//HAL_Delay(2);
-				}		
-			}	
+					rt_thread_mdelay(2);//HAL_Delay(2);
+				}					
+			}
+			ptSendFrame->ucStatus = ERROR_TYPE_SUCCESS;		
+			ptSendFrame->ucType = 0xFF;
+			ptSendFrame->uData.ulData = 0;
 		}
 		break;
 		case CMD_EXEC_PROCESS_CTRL:  //0x42
 		{
-			//Ö´ĞĞÁ÷³Ì--Ö´ĞĞºÍÍ£Ö¹
+			//æ‰§è¡Œæµç¨‹--æ‰§è¡Œå’Œåœæ­¢
 			Exec_Process_Ctrl(ptRecvFrame->ucType);
 		}
 		break;
 		case CMD_CLS_SAVE_EXEC_PROCESS:  //0x43
 		{
-			//Ö´ĞĞÁ÷³Ì--Çå³şºÍ±£´æ
+			//æ‰§è¡Œæµç¨‹--æ¸…æ¥šå’Œä¿å­˜
 			Exec_Process_Clear_Or_Save(ptRecvFrame->ucType);
 			//LOG_Info("Save Prcess");
 		}
@@ -771,13 +797,13 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		/********************/
 		case CMD_QUERY_STATUS:  //0x50
 		{
-			//²éÑ¯×´Ì¬
+			//æŸ¥è¯¢çŠ¶æ€
 			ptSendFrame->uData.ulData = g_tTMCStatus.ulBoardStatus;
 		}
 		break;
 //		case CMD_ERROR_HANDLE: //0x51
 //		{
-//			//Òì³£×´Ì¬´¦Àí
+//			//å¼‚å¸¸çŠ¶æ€å¤„ç†
 //			ptSendFrame->ucStatus = Module_Error_Handle(eTMC,  ptRecvFrame->ucType);
 //		}
 //		break;
@@ -785,14 +811,14 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		/********************/
 		case CMD_CLEAR_EEPROM_PARAM: //0x60
 		{
-			//Ó¦´ğ
+			//åº”ç­”
 			if(MSG_TYPE_CAN == eMsgType)
 			{
 				Can_Send_Msg(ptSendFrame);
 				ucSendFlag = 1;
 			}
 			
-			//´¦Àí
+			//å¤„ç†
 			if(0 == ptRecvFrame->ucType)
 			{
 				Reset_Factory();
@@ -804,42 +830,42 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 				ClearAndSave_Default_Process();
 			}
 			
-			rt_thread_delay(3);//HAL_Delay(3);
+			rt_thread_mdelay(3);//HAL_Delay(3);
 			MCU_Reset();
 		}
 		break;
 		case CMD_UPGRADE_LANCH: //0x70
 		{
-			/* Æô¶¯Éı¼¶£¬Ìø×ªÖÁBoot */
-			//ĞŞ¸ÄÉı¼¶±êÖ¾Î»£¬
-			ptSendFrame->ucStatus = Set_UpdateFlag(1); //@todo, ¸ÄÎªÌø×ªµ½bootµÄ·½Ê½
+			/* å¯åŠ¨å‡çº§ï¼Œè·³è½¬è‡³Boot */
+			//ä¿®æ”¹å‡çº§æ ‡å¿—ä½ï¼Œ
+			ptSendFrame->ucStatus = Set_UpdateFlag(1); //@todo, æ”¹ä¸ºè·³è½¬åˆ°bootçš„æ–¹å¼
 			if(MSG_TYPE_CAN == eMsgType)
 			{
 				Can_Send_Msg(ptSendFrame);
 				ucSendFlag = 1;
 			}
 			
-			//ÖØÆô
-			rt_thread_delay(3);//HAL_Delay(3);
+			//é‡å¯
+			rt_thread_mdelay(3);//HAL_Delay(3);
 			MCU_Reset();
 		}
 		break;
 		case CMD_QUERY_RUNING_SOFT_TYPE: //0x75
 		{
-			/* ²éÑ¯µ±Ç°ÕıÔÚÖ´ĞĞµÄ³ÌĞòÀàĞÍ */
+			/* æŸ¥è¯¢å½“å‰æ­£åœ¨æ‰§è¡Œçš„ç¨‹åºç±»å‹ */
 			ptSendFrame->uData.ucData[0] = SOFT_TYPE_APP;
 		}
 		break;
 		case CMD_GET_SN_CAN_ID: //0x80
 		{
-			/* Êı¾İ²¿·Ö²»µÈÓÚ0Ê±£¬²»Ó¦´ğÏûÏ¢£¬·ÀÖ¹ÔÚÊ¹ÓÃ¸ÃÃüÁîÊ±£¬ÍøÂçÖĞ´æÔÚ³åÍ»CanID£¬ÏûÏ¢ÔÚÍøÂçÖĞ»Ø»··¢ËÍ, Í¬Ê±ÔÚÊ¹ÓÃ¸ÃÖ¸ÁîÊ±£¬Êı¾İ²¿·Ö±ØĞëÎª0 */ 
+			/* æ•°æ®éƒ¨åˆ†ä¸ç­‰äº0æ—¶ï¼Œä¸åº”ç­”æ¶ˆæ¯ï¼Œé˜²æ­¢åœ¨ä½¿ç”¨è¯¥å‘½ä»¤æ—¶ï¼Œç½‘ç»œä¸­å­˜åœ¨å†²çªCanIDï¼Œæ¶ˆæ¯åœ¨ç½‘ç»œä¸­å›ç¯å‘é€, åŒæ—¶åœ¨ä½¿ç”¨è¯¥æŒ‡ä»¤æ—¶ï¼Œæ•°æ®éƒ¨åˆ†å¿…é¡»ä¸º0 */ 
 			if(ptRecvFrame->uData.ulData != 0)
 			{
 				ucSendFlag = 1;
 				return ucSendFlag;
 			}
 			
-			/* »ñÈ¡ÏµÁĞºÅ¼°CAN ID */
+			/* è·å–ç³»åˆ—å·åŠCAN ID */
 			ptSendFrame->uData.ucData[0] = Recv_CanID();
 			ptSendFrame->uData.ucData[1] = Send_CanID();
 			
@@ -850,120 +876,124 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		break;
 		case CMD_SET_CAN_ID_WITH_SN: //0x81
 		{
-			/* »ñÈ¡ÏµÁĞºÅ¼°CAN ID */
+			/* è·å–ç³»åˆ—å·åŠCAN ID */
 			uint16_t usSN = (ptRecvFrame->uData.ucData[3]<<8) | ptRecvFrame->uData.ucData[2];
 			
-			if(MSG_TYPE_CAN == eMsgType)
-			{
+//			if(MSG_TYPE_CAN == eMsgType)
+//			{
+//				Can_Send_Msg(ptSendFrame);
+//				ucSendFlag = 1;
+//				HAL_Delay(3);
+//			}
+
+			//å½“è¯†åˆ«ç ç›¸ç­‰æ‰å»ä¿®æ”¹CanID
+			if(g_tBoardStatus.usSN == usSN){			
 				Can_Send_Msg(ptSendFrame);
 				ucSendFlag = 1;
-				rt_thread_delay(2);//HAL_Delay(3);
-			}
-
-			//µ±Ê¶±ğÂëÏàµÈ²ÅÈ¥ĞŞ¸ÄCanID
-			if(g_tBoardStatus.usSN == usSN)
-			{
+				rt_thread_mdelay(3);//HAL_Delay(3);
 				ptSendFrame->ucStatus = GlobalParam_Set_CanID(ptRecvFrame->uData.ucData[0], ptRecvFrame->uData.ucData[1]);
 			}else{
-				ptSendFrame->ucStatus = ERROR_TYPE_DATA;
+				//tSendFrame->ucStatus = ERROR_TYPE_DATA;
+				ucSendFlag = 1;
+				break;
 			}
-			
-//			HAL_Delay(100);
-//			//
-
-			
-//			/* ÏµÁĞºÅ¼°CAN ID */
-//			ptSendFrame->uData.ucData[0] = Recv_CanID();
-//			ptSendFrame->uData.ucData[1] = Send_CanID();
-//			
-//			ptSendFrame->uData.ucData[2] = g_tBoardStatus.usSN & 0xFF;
-//			ptSendFrame->uData.ucData[3] = (g_tBoardStatus.usSN>>8) & 0xFF;	
-							
-//			//·¢ËÍ
-//			Can_Send_Msg(ptSendFrame);
-//			//±ê¼ÇÒÑÓ¦´ğ
-//			ucSendFlag = 1;
 		}
 		break;
 		case CMD_SHAKE_WITH_SN: //0x82
 		{
 			uint8_t i = 0, ucFlag = 0;
-			uint16_t usTick = 0;
+			uint16_t usCount = 0;
 			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
 			uint16_t usShake = (ptRecvFrame->uData.ucData[3]<<8) | (ptRecvFrame->uData.ucData[2]);
 						
-			//ÅĞ¶ÏSNÊÇ·ñÒ»ÖÂ
+			//åˆ¤æ–­SNæ˜¯å¦ä¸€è‡´
 			if(usSN != g_tBoardStatus.usSN) 
 			{
-				//²»Ò»ÖÂ£¬²»Ö´ĞĞ£¬Ó¦´ğ
-				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
-				Can_Send_Msg(ptSendFrame);
+				//ä¸ä¸€è‡´ï¼Œä¸æ‰§è¡Œï¼Œä¸åº”ç­”
+				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
+				//Can_Send_Msg(ptSendFrame);
 				ucSendFlag = 1;
 				break;
 			}else{
+				//æå‰åº”ç­”
 				Can_Send_Msg(ptSendFrame);
 				ucSendFlag = 1;
 			}
 			
-			//Ä¬ÈÏ¶¶¶¯·ù¶È
-			if(usShake == 0) usShake = 500;
+			//é»˜è®¤æŠ–åŠ¨å¹…åº¦ï¼Œ
+			if(usShake == 0) usShake = g_tAxisParamDefault.usMicroStepResultion[eTMC]*3; //å¤§æ¦‚5åº¦
 			
-			//¶¶¶¯£¬3´Î
+			//æŠ–åŠ¨ï¼Œ3æ¬¡
 			for(i = 0; i < 3; i++)
 			{
-				//ÕıÏòÒÆ¶¯
+				//æ­£å‘ç§»åŠ¨
 				ptSendFrame->ucStatus = TMC_MoveBy(eTMC, usShake);
-				while(usTick < 200)
+				while(usCount < 1500)
 				{
-					//×î³¤µÈ´ı2Ãë,¼ì²âÊÇ·ñµ½´ïÎ»ÖÃ
+					//æœ€é•¿ç­‰å¾…2ç§’,æ£€æµ‹æ˜¯å¦åˆ°è¾¾ä½ç½®
 					ucFlag = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
 					
-					//µ½´ïÍË³ö
+					//åˆ°è¾¾é€€å‡º
 					if(ucFlag == 1) break; 
-					rt_thread_delay(10);//HAL_Delay(10);
+					rt_thread_mdelay(50);//HAL_Delay(50);
+					usCount += 50;
 				}
 				
-				//ÑÓÊ±
-				rt_thread_delay(50);//HAL_Delay(50);				
+				//å»¶æ—¶
+				rt_thread_mdelay(50);//HAL_Delay(50);				
 				
-				//»ØÍË
+				//å›é€€
 				ptSendFrame->ucStatus = TMC_MoveBy(eTMC, -usShake);
-				while(usTick < 200)
+				while(usCount < 1500)
 				{
-					//×î³¤µÈ´ı2Ãë,¼ì²âÊÇ·ñµ½´ïÎ»ÖÃ
+					//æœ€é•¿ç­‰å¾…2ç§’,æ£€æµ‹æ˜¯å¦åˆ°è¾¾ä½ç½®
 					ucFlag = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
 					
-					//µ½´ïÍË³ö
+					//åˆ°è¾¾é€€å‡º
 					if(ucFlag == 1) break;
-					rt_thread_delay(10);//HAL_Delay(10);
+					rt_thread_mdelay(50);//HAL_Delay(50);
+					usCount += 50;
 				}				
 			}
 		}
 		break;
-		case CMD_SHINE_WITH_SN: //0x83
+		case CMD_SHINE_WITH_SN: //é—ªç¯ 0x83
 		{
 			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
 						
-			//ÅĞ¶ÏSNÊÇ·ñÒ»ÖÂ
+			//åˆ¤æ–­SNæ˜¯å¦ä¸€è‡´
 			if(usSN != g_tBoardStatus.usSN) 
 			{
-				//²»Ò»ÖÂ£¬²»Ö´ĞĞ£¬Ó¦´ğ
-				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
-				Can_Send_Msg(ptSendFrame);
+				//ä¸ä¸€è‡´ï¼Œä¸æ‰§è¡Œï¼Œä¸åº”ç­”
+				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
+				//Can_Send_Msg(ptSendFrame);
 				ucSendFlag = 1;
 				break;
 			}
-			//3´Î£¬¼ä¸ô50ms
+			//3æ¬¡ï¼Œé—´éš”50ms
 			LED_Shine(6, 50);
 		}
 		break;
-		case 0xF0://ÒºÃæÌ½²â²ÎÊı Ğ´
+		case CMD_TYPE_WITH_SN:  //0x84
 		{
-			int32_t lValue = ptRecvFrame->uData.lData;
-			ptSendFrame->ucStatus = LLD_Param(TMC_WRITE, ptRecvFrame->ucType, &lValue);
+			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
+			
+			//åˆ¤æ–­SNæ˜¯å¦ä¸€è‡´
+			if(usSN != g_tBoardStatus.usSN) 
+			{
+				//ä¸ä¸€è‡´ï¼Œä¸æ‰§è¡Œï¼Œä¸åº”ç­”
+				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
+				//Can_Send_Msg(ptSendFrame);
+				ucSendFlag = 1;
+				break;
+			}
+			
+			//æŸ¥è¯¢æ¿å¡ç±»å‹
+			ptSendFrame->uData.ulData = Get_Module_Type();
+			//ptSendFrame->ucType = Recv_CanID();
 		}
 		break;
-		case 0xF1://ÒºÃæÌ½²â²ÎÊı ¶Á
+		case 0xF1://æ¶²é¢æ¢æµ‹å‚æ•° è¯»
 		{
 			int32_t lValue = 0;
 			ptSendFrame->ucStatus = LLD_Param(TMC_READ, ptRecvFrame->ucType, &lValue);
@@ -976,19 +1006,19 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 //			LOG_Info("Start ...");
 			if(0 == ptRecvFrame->ucType)
 			{
-				//´òÓ¡Áùµã¼ÓËÙÖµ
+				//æ‰“å°å…­ç‚¹åŠ é€Ÿå€¼
 				TMC5160_PrintSixPoint_V(eTMC);
 			}else if(1 == ptRecvFrame->ucType){
-				//´òÓ¡ËùÓĞ¼Ä´æÆ÷Öµ
+				//æ‰“å°æ‰€æœ‰å¯„å­˜å™¨å€¼
 				Print_AllRegister_Value(eTMC);
 			}else if(2 == ptRecvFrame->ucType){
 
-				//´òÓ¡CANÍ¨ĞÅ£¬ÊÕ·¢Í³¼ÆĞÅÏ¢
+				//æ‰“å°CANé€šä¿¡ï¼Œæ”¶å‘ç»Ÿè®¡ä¿¡æ¯
 //				LOG_Debug("Recv: S=%d, E=%d, F=%d, O=%d", g_tBoardStatus.tCanMsgCount_Info.ulRecvSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvErrorNum, \
 														  g_tBoardStatus.tCanMsgCount_Info.ulRecvFailNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvOverNum);
 //				LOG_Debug("Send: S=%d, F=%d", g_tBoardStatus.tCanMsgCount_Info.ulSendSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulSendFailNum);
 			}else if(3 == ptRecvFrame->ucType){
-				// TMC SPIÍ¨ĞÅ²âÊÔ
+				// TMC SPIé€šä¿¡æµ‹è¯•
 				ErrorType_e eError = ERROR_TYPE_SUCCESS;
 				uint32_t i = 0, ulV = 0, ulNum = ptRecvFrame->uData.ulData;
 				
@@ -1010,7 +1040,7 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 						{
 							Can_Send_Msg(ptSendFrame);
 						}
-						rt_thread_delay(3);//HAL_Delay(3);
+						rt_thread_mdelay(3);//HAL_Delay(3);
 					}
 				}
 			}
@@ -1036,45 +1066,89 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 */
 void Event_Process(void)
 {
-    SysEvent_t *e;
-	SysEvent_t tSysEvent = {0};
-    
-	__disable_irq();
-    e = SysEventGet();
-    if(e){
-		memmove((void*)&tSysEvent, (void*)e, sizeof(SysEvent_t));
-		SysEventFree(e);
-		__enable_irq();
-	}else{
-		__enable_irq();
-		return;
-	}
-    
-	//
-    switch(tSysEvent.eMsgType)
+	uint8_t      reply = CAN_TxStatus_Ok;
+    SysEvent_t   *e;
+	
+	
+	
+	//ä»æŠ¥æ–‡é˜Ÿåˆ—ä¸­æŸ¥è¯¢æŠ¥æ–‡
+    switch(MonCan.Motor.tSysEvent.eMsgType)
     {
+        case MSG_TYPE_NULL:
+        {
+			__disable_irq();
+			e = SysEventGet();
+			if(e)
+			{
+				
+				memmove((void*)&MonCan.Motor.tSysEvent, (void*)e, sizeof(SysEvent_t));
+				SysEventFree(e);
+			}
+			else
+			{
+				;
+			}
+			__enable_irq();
+		}
+		break;
+		
+        default:
+		{
+		}
+		break;
+    }
+	
+	
+    switch(MonCan.Motor.tSysEvent.eMsgType)
+    {
+        case MSG_TYPE_NULL:
+        {
+		}
+		break;
+		
         case MSG_TYPE_CAN:
         {
 //            Can_RxMsg_t tRxMsg = {0};
 //			memmove((void*)&tRxMsg, (void*)tSysEvent.tMsg.ucaDataBuf, sizeof(Can_RxMsg_t));
 //            Handle_Can_RxMsg(&tRxMsg);
-			Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)&tSysEvent.tMsg.tMsgCan;
-			Handle_Can_RxMsg(ptRxMsg);
-        }
-        break;
-        case MSG_TYPE_USART:
-        {
-//			MsgUsart_t tRxMsg = {0};
-//			memmove((void*)&tRxMsg, (void*)&tSysEvent.tMsg.tMsgUsart, sizeof(MsgUsart_t));
-//            Handle_Usart_RxMsg(&tRxMsg);
+			Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)MonCan.Motor.tSysEvent.tMsg.ucaDataBuf;
+			reply = Handle_Can_RxMsg(ptRxMsg);
 			
-//			MsgUsart_t *ptRxMsg = (MsgUsart_t*)tSysEvent.tMsg.ucaDataBuf;
-//			Handle_Usart_RxMsg(ptRxMsg);
+			
+			//åˆ¤æ–­æ˜¯å¦éœ€è¦é‡å‘
+			if(CAN_TxStatus_NoMailBox == reply)
+			{
+				MonCan.Motor.IsReSend = true;
+				//å‘é€é‚®ç®±æ»¡
+				//CAN_Config(CAN1, &MonCan.Confg);
+				CAN_Config(CAN1);
+			}
+			else
+			{
+				MonCan.Motor.tSysEvent.eMsgType = MSG_TYPE_NULL;
+				MonCan.Motor.IsReSend = false;
+			}
         }
         break;
-        default:break;
+		
+//        case MSG_TYPE_USART:
+//        {
+////			MsgUsart_t tRxMsg = {0};
+////			memmove((void*)&tRxMsg, (void*)&tSysEvent.tMsg.tMsgUsart, sizeof(MsgUsart_t));
+////            Handle_Usart_RxMsg(&tRxMsg);
+//			
+////			MsgUsart_t *ptRxMsg = (MsgUsart_t*)tSysEvent.tMsg.ucaDataBuf;
+////			Handle_Usart_RxMsg(ptRxMsg);
+//        }
+//        break;
+		
+        default:
+		{
+			MonCan.Motor.tSysEvent.eMsgType = MSG_TYPE_NULL;
+			MonCan.Motor.IsReSend = false;
+		}
+		break;
     }
-
 }
 
 
@@ -1084,20 +1158,20 @@ void Event_Process(void)
 
 
 
-//LED ÉÁÒ«
+//LED é—ªè€€
 void LED_Shine(uint16_t usCount, uint32_t ulTime)
 {
 	for(uint16_t i = 0; i < usCount; i++)
 	{
-		//Ö¸Ê¾µÆÉÁË¸
-		SYS_LED_TRIGGER;
-		rt_thread_delay(ulTime);//HAL_Delay(ulTime);
+		//æŒ‡ç¤ºç¯é—ªçƒ
+//@todo		SYS_LED_TRIGGER;
+		rt_thread_mdelay(ulTime);//HAL_Delay(ulTime);
 	}
 }
 
 
 /************************************************/
-//µ÷ÊÔ¹¦ÄÜ
+//è°ƒè¯•åŠŸèƒ½
 #if MGIM_DEBUG
 
 

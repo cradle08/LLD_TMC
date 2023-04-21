@@ -29,8 +29,8 @@
 #include "monitor_can.h" 
 #include "monitor_usart.h" 
 #include "gpio.h"
-#include "TMC_Process.h"
 
+#include "TMC_Process.h"
 
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
@@ -142,23 +142,27 @@ void DebugMon_Handler(void)
   */
 void SysTick_Handler(void)
 {
-	uint32_t ulTick = rt_tick_get();
-	
     //进入中断
     rt_interrupt_enter();
 
     //更新时基
     rt_tick_increase();
-
-	//执行流程处理
-	Process_Handle(ulTick);
-	  
-	//异常检测
-//	Period_Error_Check(ulTick);
-	  
-	//电机复位处理
-    Motor_Reset_Handle(ulTick);
-
+	
+	//-------出现过IIC通信异常------------//
+//	//执行流程处理
+//	Process_Handle(ulTick);
+//	  
+//	if(ulTick - s_ulTick >= 250)
+//	{
+//		//异常检测
+//		//Period_Error_Check(ulTick);
+//	}
+//	
+//	//电机复位处理
+//	Motor_Reset_Handle(ulTick);
+	//------------------------------------//
+	
+	
     //离开中断
     rt_interrupt_leave();
 }
@@ -215,34 +219,6 @@ void TIM3_IRQHandler(void)
 	
 	if(TIM_GetITStatus(TIM3, TIM_IT_Update) != RESET) 
 	{
-		//运行脉冲计数。
-		if(MotorCtr.RunPulse > 0)
-		{
-			MotorCtr.RunPulse--;
-			
-			if(1 == MotorCtr.Dir) 
-			{
-				if(MotorCtr.CurPulse > 0)
-				{
-					MotorCtr.CurPulse--;
-				}
-				else
-				{
-					//报错
-				}
-			}
-			else if(0 == MotorCtr.Dir) 
-			{
-				MotorCtr.CurPulse++;
-			}
-		}
-		else
-		{
-			MotorTimerPWMStop();
-		}
-
-
-		
 		TIM_ClearITPendingBit(TIM3, TIM_FLAG_Update); 
 	}
 	

@@ -17,6 +17,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "bsp_lib.h" 
 #include "param.h"
 #include "lld_param.h"
+#include "event.h"
 
 
 
@@ -53,9 +54,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 #define  INS_R_SOFTWARE_NAME           252u  //读软件名称
 #define  INS_R_SOFTWARE_VER            253u  //读软件版本
-
-#define  INS_W_PARA                    254u  //写参数参数
-#define  INS_R_PARA                    255u  //读参数参数
+#define  INS_RW_PARA                   254u  //写参数参数
 
 
 //操作码
@@ -111,7 +110,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //Can应用通信地址（液面探测部分）
-#define  LLD_CAN_BROADCAST_ID_MOTOR        0x7FE
+#define  LLD_CAN_BROADCAST_ID_MOTOR    0x7FE
 
 
 
@@ -139,6 +138,15 @@ struct tagBroadcast
 };
 
 
+//电机相关Can通信管理
+struct tagMotorCan
+{
+	//电机相关
+	SysEvent_t   tSysEvent;
+	uint8_t      IsReSend;
+};
+
+
 //Can通信管理
 struct tagMonCan
 {
@@ -159,6 +167,11 @@ struct tagMonCan
 	
 	struct tagQueueLoop      RxQueue;
 	uint8_t     RxBuf[CAN_QUEUE_LOOP_LEN][CAN_QUEUE_LOOP_WIDTH];
+	
+	
+	
+	//电机相关
+	struct tagMotorCan   Motor;
 };
 
 

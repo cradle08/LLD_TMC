@@ -109,7 +109,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  LLD_ABS_BLOCK_AIR             5u        //检测吸液被堵和检测全程吸空
 #define  LLD_DIS_BLOCK                 6u        //检测排液被堵
 #define  LLD_DIS_AIR                   7u        //检测排液排空
-#define  LLD_ABS_MOM_AIR               8u        //检测间断吸空
+#define  LLD_ABS_MOM_AIR               8u        //检测吸液吸空
 
 
 
@@ -122,21 +122,21 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  CLLD_BUBBLE                   0x10      //探测气泡
 #define  CLLD_ABS_BLOCK                0x11      //检测吸液被堵（检测凝块）
 #define  CLLD_ABS_AIR                  0x12      //检测吸空
-#define  CLLD_ABS_BLOCK_AIR            0x13      //检测吸液被堵和检测吸空
+#define  CLLD_ABS_BLOCK_FIXED_AIR      0x13      //检测吸液被堵和检测吸空
 #define  CLLD_DIS_BLOCK                0x14      //检测排液被堵
 #define  CLLD_ABS_FOLLOW               0x15      //探测追随（预留）
 #define  CLLD_TWO_DETE                 0x16      //探测两次（预留）
 
 #define  PLLD_BUBBLE                   0x20      //探测气泡
 #define  PLLD_ABS_BLOCK                0x21      //检测吸液被堵（检测凝块）
-#define  PLLD_ABS_AIR                  0x22      //检测全程吸空
-#define  PLLD_ABS_BLOCK_AIR            0x23      //检测吸液被堵和检测全程吸空
+#define  PLLD_ABS_FIXED_AIR            0x22      //检测固定点吸空
+#define  PLLD_ABS_BLOCK_FIXED_AIR      0x23      //检测吸液被堵和检测固定点吸空
 #define  PLLD_DIS_BLOCK                0x24      //检测排液被堵
 #define  PLLD_ABS_FOLLOW               0x25      //探测追随（预留）
 #define  PLLD_TWO_DETE                 0x26      //探测两次（预留）
-#define  PLLD_ABS_MOM_AIR              0x27      //检测间断吸空
-#define  PLLD_ABS_BLOCK_MOM_AIR        0x28      //检测吸液被堵和检测间断吸空
-#define  PLLD_ABS_BLOCK_AIR_MOM_AIR    0x29      //检测吸液被堵、全程吸空、间断吸空
+#define  PLLD_ABS_FOLLOW_AIR           0x27      //检测追随吸空
+#define  PLLD_ABS_BLOCK_FOLLOW_AIR     0x28      //检测吸液被堵和检测追随吸空
+#define  PLLD_ABS_BLOCK_FIXED_FOLLOW   0x29      //检测吸液被堵、固定点吸空、追随吸空
 
 
 
@@ -418,11 +418,14 @@ struct tagAirSenPara
 	int16_t    ABS_StartWait;                    //吸液启动等待
 	int16_t    ABS_StartDly;                     //吸液启动延时
 	int16_t    ABS_EndDly;                       //吸液结束延时
+	int16_t    ABS_StartAirPress;                //吸液启动时气压
+	
 	
 	uint8_t    CommAckBlock;                     //通信应答阻塞
 	uint8_t    CommAckBlockDly;                  //通信应答阻塞延时
 	uint8_t    ABS_Start_End;                    //吸液开始、吸液结束
 	uint8_t    Dis_Start_End;                    //排液开始、吸液结束
+	uint8_t    ABS_Real_Start_End;               //吸液真实开始、吸液真实结束
 	
 	uint8_t    sig1_cnt_1;                       //信号1计数
 	uint8_t    sig1_cnt_2;                       //信号1计数
@@ -440,6 +443,7 @@ struct tagAirSenPara
 	uint8_t    sig8_cnt_2;                       //信号8计数
 	uint8_t    sig8_cnt_3;                       //信号8计数
 	uint8_t    sig8_cnt_4;                       //信号8计数
+	uint8_t    sig8_cnt_5;                       //信号8计数
 	
 	
 	uint8_t    AbsState1_1;                      //吸液状态1
@@ -458,9 +462,13 @@ struct tagAirSenPara
 	uint8_t    AbsState8_2;                      //吸液状态8
 	uint8_t    AbsState8_3;                      //吸液状态8
 	uint8_t    AbsState8_4;                      //吸液状态8
+	uint8_t    AbsState8_5;                      //吸液状态8
 	
 	uint8_t    AbsState8_Timer;                  //吸液状态8持续时间
-	uint8_t    AbsAirMonentState;                //间断吸空状态
+	uint8_t    AbsState8_Timer1;                 //吸液状态8持续时间
+	uint8_t    AbsState8_Timer2;                 //吸液状态8持续时间
+	uint8_t    AbsAirFollowState1;               //追随吸空状态1
+	uint8_t    AbsAirFollowState2;               //追随吸空状态2
 	
 	uint8_t    LLDStage;                         //检测液面阶段	
 	int16_t    PressVal;                         //气压值

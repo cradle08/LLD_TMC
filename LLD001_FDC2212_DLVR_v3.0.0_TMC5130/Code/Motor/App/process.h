@@ -16,28 +16,28 @@ extern "C" {
 
 
 /*
-*	Ä£¿éÒì³£ÀàĞÍ
+*	æ¨¡å—å¼‚å¸¸ç±»å‹
 */
 typedef enum {
-	MODULE_ERROR_TYPE_MissStep	= 0,	//¶ª²½
+	MODULE_ERROR_TYPE_MissStep	= 0,	//ä¸¢æ­¥
 
 }ModuleErrorType_e;
 
 
 /*
-*	µç»ú¸´Î»×´Ì¬
+*	ç”µæœºå¤ä½çŠ¶æ€
 */
 typedef enum {
-	MOTOR_RESET_STATUS_NONE		= 0,	//Î´¸´Î»,ÉÏµçºó£¬Î´Ö´ĞĞ¸´Î»²Ù×÷
-	MOTOR_RESET_STATUS_ING,				//¸´Î»ÖĞ
-	MOTOR_RESET_STATUS_FINISH,			//¸´Î»Íê³É
-	MOTOR_RESET_STATUS_FAIL,			//¸´Î»Ê§°Ü
+	MOTOR_RESET_STATUS_NONE		= 0,	//æœªå¤ä½,ä¸Šç”µåï¼Œæœªæ‰§è¡Œå¤ä½æ“ä½œ
+	MOTOR_RESET_STATUS_ING,				//å¤ä½ä¸­
+	MOTOR_RESET_STATUS_FINISH,			//å¤ä½å®Œæˆ
+	MOTOR_RESET_STATUS_FAIL,			//å¤ä½å¤±è´¥
 
 }MotorResetStatus_e;
 
 
 /*
-*	µç»ú¸´Î»--Ö´ĞĞ×´Ì¬
+*	ç”µæœºå¤ä½--æ‰§è¡ŒçŠ¶æ€
 */
 typedef enum {
 	MOTOR_RESET_EXEC_1		= 0,	
@@ -59,56 +59,56 @@ typedef enum {
 
 
 /*
-*	µç»ú¸´Î»ĞÅÏ¢£¬½á¹¹Ìå
+*	ç”µæœºå¤ä½ä¿¡æ¯ï¼Œç»“æ„ä½“
 */
 typedef __packed struct {
 	
-	uint8_t				ucResetMode;	//×ó²Î¿¼µã or ÓÒ²Î¿¼µã
-	MotorResetStatus_e  eResetStatus;	//µç»úÔ­µã¸´Î»Íê³É±êÖ¾Î»£¬0£ºÎ´¸´Î»£¬1£º¸´Î»ÖĞ£¬ 2£º¸´Î»ÒÑÍê³É£¬ 3£º¸´Î»Ê§°Ü
-	MotorResetExec_e    eResetExec;     //¸´Î»Ö´ĞĞ×´Ì¬
-	uint32_t 			ulStartTick;	//¸´Î»ÆğÊ¼tick
+	uint8_t				ucResetMode;	//å·¦å‚è€ƒç‚¹ or å³å‚è€ƒç‚¹
+	MotorResetStatus_e  eResetStatus;	//ç”µæœºåŸç‚¹å¤ä½å®Œæˆæ ‡å¿—ä½ï¼Œ0ï¼šæœªå¤ä½ï¼Œ1ï¼šå¤ä½ä¸­ï¼Œ 2ï¼šå¤ä½å·²å®Œæˆï¼Œ 3ï¼šå¤ä½å¤±è´¥
+	MotorResetExec_e    eResetExec;     //å¤ä½æ‰§è¡ŒçŠ¶æ€
+	uint32_t 			ulStartTick;	//å¤ä½èµ·å§‹tick
 	
 } MotorReset_Info_t;
 
 
 
 ///*
-//*	CanÏûÏ¢Êı¾İÍ³¼Æ
+//*	Canæ¶ˆæ¯æ•°æ®ç»Ÿè®¡
 //*/
 //typedef __packed struct {
 //	
-//	uint32_t ulSendSuccessNum;	//·¢ËÍÏûÏ¢´ÎÊı
-//	uint32_t ulSendFailNum;		//·¢ËÍ´íÎó-ÏûÏ¢´ÎÊı
-//	uint32_t ulRecvSuccessNum;	//½ÓÊÜÏûÏ¢´ÎÊı
-//	uint32_t ulRecvFailNum;		//½ÓÊÜÊ§°Ü-ÏûÏ¢´ÎÊı
-//	uint32_t ulRecvErrorNum;	//½ÓÊÜ´íÎó-ÏûÏ¢´ÎÊı
-//	uint32_t ulRecvOverNum;		//½ÓÊÜÒç³ö´ÎÊı
+//	uint32_t ulSendSuccessNum;	//å‘é€æ¶ˆæ¯æ¬¡æ•°
+//	uint32_t ulSendFailNum;		//å‘é€é”™è¯¯-æ¶ˆæ¯æ¬¡æ•°
+//	uint32_t ulRecvSuccessNum;	//æ¥å—æ¶ˆæ¯æ¬¡æ•°
+//	uint32_t ulRecvFailNum;		//æ¥å—å¤±è´¥-æ¶ˆæ¯æ¬¡æ•°
+//	uint32_t ulRecvErrorNum;	//æ¥å—é”™è¯¯-æ¶ˆæ¯æ¬¡æ•°
+//	uint32_t ulRecvOverNum;		//æ¥å—æº¢å‡ºæ¬¡æ•°
 //	
 //} CanMsgCount_Info_t;
 
 
 
 /*
-*	È«¾Ö×´Ì¬½á¹¹Ìå
+*	å…¨å±€çŠ¶æ€ç»“æ„ä½“
 */
 typedef __packed struct {
 	
-	uint8_t  ucEnableFlag[TMC_MODULE_END];	  //TMCÊ¹ÄÜ±êÖ¾£¬0£ºÊ§ÄÜ£¬1£ºÊ¹ÄÜ
-//	uint8_t  ucMotorMoveFlag[TMC_MODULE_END]; //µç»úÔË¶¯±êÖ¾Î»£¬Í¨¹ı¸Ã±êÖ¾£¬ÇĞ»»³õÊ¼±£³ÖµçÁ÷ºÍÔËĞĞ±£³ÖµçÁ÷	
+	uint8_t  ucEnableFlag[TMC_MODULE_END];	  //TMCä½¿èƒ½æ ‡å¿—ï¼Œ0ï¼šå¤±èƒ½ï¼Œ1ï¼šä½¿èƒ½
+//	uint8_t  ucMotorMoveFlag[TMC_MODULE_END]; //ç”µæœºè¿åŠ¨æ ‡å¿—ä½ï¼Œé€šè¿‡è¯¥æ ‡å¿—ï¼Œåˆ‡æ¢åˆå§‹ä¿æŒç”µæµå’Œè¿è¡Œä¿æŒç”µæµ	
 	
-	uint8_t  ucErrStatus[TMC_MODULE_END];	  //TMCÄ£¿é×´Ì¬
-	uint32_t ulBoardStatus; 				  //°å¿¨×´Ì¬	
-//	uint8_t  ucEEPRAM_Init_CRC_ErrFlag;	 	  //EPPROM×´Ì¬£º 0:Õı³££¬1£º³õÊ¼»¯¶ÁÈ¡²ÎÊıÒì³£		 
-	uint8_t  ucExecProcessStatus;			  //Ö´ĞĞÁ÷³Ì×´Ì¬
+	uint8_t  ucErrStatus[TMC_MODULE_END];	  //TMCæ¨¡å—çŠ¶æ€
+	uint32_t ulBoardStatus; 				  //æ¿å¡çŠ¶æ€	
+//	uint8_t  ucEEPRAM_Init_CRC_ErrFlag;	 	  //EPPROMçŠ¶æ€ï¼š 0:æ­£å¸¸ï¼Œ1ï¼šåˆå§‹åŒ–è¯»å–å‚æ•°å¼‚å¸¸		 
+	uint8_t  ucExecProcessStatus;			  //æ‰§è¡Œæµç¨‹çŠ¶æ€
 	
-	uint8_t ucMotorResetStartFlag;			  //¸´Î»¿ªÆô±êÖ¾£¬ 0£º¹Ø±Õ£¬1£º¿ªÆô				
-	MotorReset_Info_t  tMotorResetInfo[TMC_MODULE_END];	//¸´Î»×´Ì¬ĞÅÏ¢
+	uint8_t ucMotorResetStartFlag;			  //å¤ä½å¼€å¯æ ‡å¿—ï¼Œ 0ï¼šå…³é—­ï¼Œ1ï¼šå¼€å¯				
+	MotorReset_Info_t  tMotorResetInfo[TMC_MODULE_END];	//å¤ä½çŠ¶æ€ä¿¡æ¯
 
-//	//CANÏûÏ¢Í³¼ÆĞÅÏ¢
+//	//CANæ¶ˆæ¯ç»Ÿè®¡ä¿¡æ¯
 //	CanMsgCount_Info_t tCanMsgCount_Info;
 //	
-//	//°å¿¨Ê¶±ğÂë
-//	uint16_t usSN;		//¶ÔMCUµÄUUID×öcrc16µÄĞ£Ñé£¬µÃµ½µÄÖµ¡£
+//	//æ¿å¡è¯†åˆ«ç 
+//	uint16_t usSN;		//å¯¹MCUçš„UUIDåšcrc16çš„æ ¡éªŒï¼Œå¾—åˆ°çš„å€¼ã€‚
 	
 } TMCStatus_t;
 
@@ -120,55 +120,57 @@ typedef __packed struct {
 
 
 
-//È«¾Ö²ÎÊı³õÊ¼»¯
+//å…¨å±€å‚æ•°åˆå§‹åŒ–
 void Global_Status_Init(void);
 
-//»ñÈ¡SNºÅ
+//è·å–SNå·
 uint16_t Get_SN(uint8_t ucFlag);
 
-//¼Ä´æÆ÷³õÊ¼»¯
+//å¯„å­˜å™¨åˆå§‹åŒ–
 //void ShadowRegister_Init(AxisParamDefault_t *ptAxisParamDefault);
 
-//MCU ÖØÆô
+//MCU é‡å¯
 void MCU_Reset(void);
 
-//³ö³§³õÊ¼»¯
+//å‡ºå‚åˆå§‹åŒ–
 void Reset_Factory(void);
 
-//»ñÈ¡ÈíÓ²¼ş°æ±¾ºÅ
+//è·å–è½¯ç¡¬ä»¶ç‰ˆæœ¬å·
 void Get_Soft_HardWare_Version(uint8_t *pucaData);
 
-//»ñÈ¡Ä£¿éÀàĞÍ
+//è·å–æ¨¡å—ç±»å‹
 uint32_t Get_Module_Type(void);
 
-//Òì³£¼ì²â
+//å¼‚å¸¸æ£€æµ‹
 void Period_Error_Check(uint32_t ulTick);
 
-//Ä£¿éÒì³£×´Ì¬´¦Àí
+//æ¨¡å—å¼‚å¸¸çŠ¶æ€å¤„ç†
 ErrorType_e Module_Error_Handle(TMC_e eTMC, ModuleErrorType_e eType);
 
-//¶ª²½´¦Àí
+//ä¸¢æ­¥å¤„ç†
 ErrorType_e MissStep_Handle(TMC_e eTMC);
 
 
-//½ÓÊÜÏûÏ¢´¦Àí
+//æ¥å—æ¶ˆæ¯å¤„ç†
 uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *ptSendFrame);
 
-
-//ÊÂ¼ş´¦Àí
-void Event_Process(void);
-
-//¼±Í£
+//æ€¥åœ
 ErrorType_e Urgent_Stop(TMC_e eTMC);
 
-//LED ÉÁÒ«
+//äº‹ä»¶å¤„ç†
+void Event_Process(void);
+
+
+
+
+//LED é—ªè€€
 void LED_Shine(uint16_t usCount, uint32_t ulTime);
 
 
 
 
 /************************************************/
-//µ÷ÊÔ¹¦ÄÜ
+//è°ƒè¯•åŠŸèƒ½
 #if MGIM_DEBUG
 
 void Param_WR_Test(void);

@@ -33,11 +33,9 @@
 #if (TMC_DRIVER_CLK_EFAULT == TMC_DRIVER_CLK_16M)
 	#define A_CHANGE_CONST					A_CHANGE_CONST_16M
 	#define V_CHANGE_CONST					V_CHANGE_CONST_16M
-#elif (TMC_DRIVER_CLK_EFAULT == TMC_DRIVER_CLK_12M)
+#else 
 	#define A_CHANGE_CONST					A_CHANGE_CONST_12M
 	#define V_CHANGE_CONST					V_CHANGE_CONST_12M
-#else
-	#error "not support this clk"
 #endif
 
 //设置电流值和实际配置值，倍数关系， Real = Set/8

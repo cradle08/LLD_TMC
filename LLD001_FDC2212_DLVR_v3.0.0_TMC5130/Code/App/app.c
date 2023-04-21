@@ -26,6 +26,12 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "lld_param.h"
 
 
+
+/*** 电机部分版本号 ***/
+uint16_t g_usSoftVersion    = 0x0103;    //软件版本号
+uint16_t g_usHardWareVesion = 0x0010;    //硬件版本号
+
+
 //定义变量---------------------------------------------------------------------//
 /*
  * @function: IWDG_Feed
@@ -41,6 +47,7 @@ void IWDG_Feed(void* parameter)
 	while(1)
 	{
 		IWDG_ReloadCounter();
+		
 		rt_thread_delay(200); 
 	}
 }
@@ -64,7 +71,7 @@ void SWSysTimer(void* parameter)
 //		StorageManStage();
 //		MemManStage(&StorageMan);
 		
-//		MotorMoveUpAndDown();
+		SYS_LED_TRIGGER;
 		
 		
 		rt_thread_delay(1000);
@@ -81,34 +88,24 @@ void SWSysTimer(void* parameter)
  */
 void SWTimer10ms(void* parameter)
 {
-	static uint32_t s_ulTick = 0;
 	while(1)
 	{
 		//同时使用IIC1和IIC2接口进行通信，发现有相互干扰现象。
 		CapSensor();
-//		AirSensor();
+		AirSensor();
 		LLDReslut();
 		
 		CheckPhotosensor();
-		DipSWCheck();
+//		DipSWCheck();
 		TempNTC();
 		
-		//系统指示灯闪耀
-		if(rt_tick_get() - s_ulTick >= 1000) 
-		{
-			SYS_LED_TRIGGER;
-			s_ulTick = rt_tick_get();
-		}
 		rt_thread_delay(10);
-
 	}
 }
 
 
 
-/*** 电机部分版本号 ***/
-uint16_t g_usSoftVersion 	= 0x0102;	//软件版本号
-uint16_t g_usHardWareVesion	= 0x0010;	//硬件版本号
+
 
 
 void EPPROM_Data_Reset(void)
@@ -187,7 +184,7 @@ void Motor_App_Init(void)
 		g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;	
 	}
 
-	//EPPROM_Data_Reset();
+	//EPPROM_Data_Reset(); 
 	//Can初始化,ID
 	//Bsp_Can_Init(g_tGlobalParam.eCanBaud);
 	CAN_MonInit();
@@ -221,45 +218,101 @@ void Motor_App_Init(void)
 //uint32_t lT = 0;
 void CommMonitor(void* parameter)
 {
-	extern struct rt_messagequeue can_msg_queue;
-	extern __IO LLDParam_t g_tLLDParam;
-	extern __IO GlobalParam_t 	 g_tGlobalParam;
-	CanRxMsg    rx_msg;
-
+//	uint32_t i = 0, Tick = 0;
 	Motor_App_Init();
 	
-#if USE_OS_QUEUE
-	while(1)
-	{
-		//BSP_UartCommStage(&ModbusMon.Usart);
-		memset(&rx_msg, 0, sizeof(CanRxMsg));
-		if(rt_mq_recv(&can_msg_queue, &rx_msg, sizeof(CanRxMsg), RT_WAITING_FOREVER) == RT_EOK)
-		{
-			//比较ID
-			if(((rx_msg.StdId == g_tLLDParam.CanConfig.ModuleID) || ((rx_msg.StdId == LLD_CAN_BROADCAST_ID_MOTOR))) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
-			{			
-				CanMonComStage();
-			}
-			else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
-			{
-				Can_RxMsg_t tRxMsg = {0};
-				memmove((void*)tRxMsg.ucaRxData, (void*)rx_msg.Data, 8);
-				tRxMsg.ulRecvCanID = rx_msg.StdId;
-				Handle_Can_RxMsg(&tRxMsg);
-			}
-		}
-	}
+//	lT = TMC5160_ReadInt(TMC_0, TMC5160_GCONF);
+//	TMC5160_WriteInt(TMC_0, TMC5160_IHOLD_IRUN, 0x00070903);
+//	TMC5160_WriteInt(TMC_0, TMC5160_GCONF, 0x00000000 | 1<<4);
+//	
+//	lT = TMC5160_ReadInt(TMC_0, TMC5160_GCONF);
+//	lT = TMC5160_ReadInt(TMC_0, TMC5160_CHOPCONF);
+//	lT = TMC5160_ReadInt(TMC_0, TMC5160_PWMCONF);
+//	
+//	TMC_Rotate(TMC_0, 0, 12800);
 	
-#else	
 	while(1)
 	{
+//		uint32_t ulTick = rt_tick_get();
+		
 //		BSP_UartCommStage(&ModbusMon.Usart);
+		
 		CanMonComStage();
+		
 		//电机协议处理
 		Event_Process();
 
+		
+//		//执行流程处理
+//		Process_Handle(ulTick);
+//		//电机复位处理
+//		Motor_Reset_Handle(ulTick);
+		
+		
+//		TMC2209_WriteInt(0x10,0x00070903); //IHOLD_IRUN: IHOLD=3, IRUN=0C=600MA电流, IHOLDDELAY=7
+//		Tick = rt_tick_get();
+//		while(i < Tick+5000)
+//		{
+//			TMC2209_STEP_HIGH;
+//			Delay_US(10);
+//			TMC2209_STEP_LOW;
+//			Delay_US(10);
+//			
+//			i = rt_tick_get();
+//		}
+//		rt_thread_delay(5000);
+		
+		
+//		//手动产生方波
+//		//TMC2209_WriteInt(0x10,0x00070903); //IHOLD_IRUN: IHOLD=3, IRUN=0C=600MA电流, IHOLDDELAY=7
+//		//TMC2209_WriteInt(0x10,0x00071403);
+//		TMC2209_WriteInt(0x10,0x00070903); //0-31
+//		Tick = rt_tick_get();
+//		while(i < Tick+5000)
+//		{
+//			TMC2209_STEP_HIGH;
+//			Delay_US(10);
+//			TMC2209_STEP_LOW;
+//			Delay_US(10);
+//			
+//			i = rt_tick_get();
+//		}
+////		rt_thread_delay(5000);
+		
+		
+		
 		rt_thread_delay(2);
 	}
-#endif
-	
+}
+
+
+/*
+ * @function: MotorDrive
+ * @details : 电机驱动
+ * @input   : parameter:参数。未使用。
+ * @output  : NULL
+ * @return  : NULL
+ */
+void MotorDrive(void* parameter)
+{
+	while(1)
+	{
+		uint32_t ulTick = rt_tick_get();
+		
+		
+		//执行流程处理
+		Process_Handle(ulTick);
+		  
+//		if(ulTick - s_ulTick >= 250)
+//		{
+//			//异常检测
+//			Period_Error_Check(ulTick);
+//		}
+		
+		//电机复位处理
+		Motor_Reset_Handle(ulTick);
+		
+		
+		rt_thread_delay(1);
+	}
 }

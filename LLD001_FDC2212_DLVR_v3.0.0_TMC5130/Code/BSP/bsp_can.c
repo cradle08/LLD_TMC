@@ -276,6 +276,9 @@ void CAN_Filter_Config(CAN_TypeDef* can)
 	
 	
 	CAN_FilterInit(&CAN_FilterInitStructure);
+	
+	//CAN通信中断使能，使能接收中断
+	CAN_ITConfig(can, CAN_IT_FMP0, ENABLE);
 }
 
 
@@ -325,16 +328,12 @@ void CAN_NVIC_Config(void)
 //	NVIC_Init(&NVIC_InitStructure);
 
 	
-	
 	//CAN通信中断使能，使能fifo0相关中断
 //	CAN_ITConfig(CAN1, CAN_IT_FF0 | CAN_IT_FOV0, ENABLE);
 //	CAN_ITConfig(CAN1, CAN_IT_WKU | CAN_IT_SLK | CAN_IT_EWG | CAN_IT_EPV, ENABLE);
 //	CAN_ITConfig(CAN1, CAN_IT_BOF | CAN_IT_LEC | CAN_IT_ERR , ENABLE);
 //	//CAN通信中断使能，使能接收中断
 //	CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
-
-	//CAN通信中断使能，使能接收中断
-	CAN_ITConfig(CAN1, CAN_IT_FMP0, ENABLE);
 }
 
 /*

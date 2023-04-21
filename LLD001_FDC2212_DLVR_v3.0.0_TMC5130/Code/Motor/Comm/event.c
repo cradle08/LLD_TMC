@@ -1,17 +1,17 @@
 /*
 **  Program   : event.c
 **  Purpose   :
-**      �¼�����ģ��� API����ʵ�֡��¼�����ģ����ϵͳ���ĵķ�ģ�飬��
-**  ���ǽ�ϵͳ���������ĸ����¼��ύ���û����洦��ģ�顣ϵͳ�¼��ж���
-**  ���ͣ�ÿ�����Ͱ���һ������¼���
+**      事件管理模块的 API函数实现。事件管理模块是系统核心的分模块，任
+**  务是将系统中所发生的各种事件提交给用户界面处理模块。系统事件有多种
+**  类型，每种类型包含一类相关事件。
 **
 **  Functions :
 **
-**      SysEventInit()     - �¼�����ģ���ʼ��
-**      SysEventAlloc()    - ����һ���¼�����
-**      SysEventFree()     - �ͷ�һ���¼�����
-**      SysEventGet()      - ȡ��һ��ϵͳ�¼�
-**      SysEventPut()      - ϵͳ�¼�ѹ�����
+**      SysEventInit()     - 事件管理模块初始化
+**      SysEventAlloc()    - 分配一个事件缓存
+**      SysEventFree()     - 释放一个事件缓存
+**      SysEventGet()      - 取下一个系统事件
+**      SysEventPut()      - 系统事件压入队列
 */
 //#include <string.h>                   // string and memory functions          
 
@@ -19,46 +19,46 @@
 #include "event.h"
 //#include "task.h"
 
-#define MAXSYSEVENTS 16   // ��������ϵͳ�¼���
+#define MAXSYSEVENTS 16   // 最大待处理系统事件数
 
-// ϵͳ�¼����е��ס�βָ�����飺
-SysEvent_t *SysEventHead[2];          		// ����ָ��
-SysEvent_t *SysEventTail[2];          		// ��βָ��
-SysEvent_t *SysEventFreeList;         		// ������ָ��
-SysEvent_t SysEventBuf[MAXSYSEVENTS] = {0}; // ϵͳ�¼�����
-uint8_t SysEventCount = 0;    				// �¼�����
+// 系统事件队列的首、尾指针数组：
+SysEvent_t *SysEventHead[2];          		// 队首指针
+SysEvent_t *SysEventTail[2];          		// 队尾指针
+SysEvent_t *SysEventFreeList;         		// 空闲链指针
+SysEvent_t SysEventBuf[MAXSYSEVENTS] = {0}; // 系统事件缓存
+uint8_t SysEventCount = 0;    				// 事件计数
 
 
 /*
-**     SysEventHead[2]��SysEventTail[2]�ֱ��ǵ�ǰ��ͬ���ȼ�ϵͳ�¼�
-** ���еĶ��׺Ͷ�βָ�롣�µ�ϵͳ�¼��Ӷ�β�����뵽ϵͳ�¼����У���
-** һ����ȡ��������ϵͳ�¼��Ӷ��״�ȡ��(�����ȼ�)��
-**     SysEventFreeList �ǵ�ǰ���е�ϵͳ�¼�������������ϵͳ�¼���
-** SysEventFreeList ����ȡһ�����е�ϵͳ�¼����棬�ù���ϵͳ�¼���
-** ���ٷŻش�����
-**     SysEventBuf[MAXSYSEVENTS]��ϵͳ�¼���������
-**     SysEventCount �ǵ�ǰ�¼���������ϵͳ�¼�����Ŀ����64ʱ������
-** �¼������ԡ�
+**     SysEventHead[2]和SysEventTail[2]分别是当前不同优先级系统事件
+** 队列的队首和队尾指针。新到系统事件从队尾处加入到系统事件队列，下
+** 一个被取出处理的系统事件从队首处取出(按优先级)。
+**     SysEventFreeList 是当前空闲的系统事件缓存链。新增系统事件从
+** SysEventFreeList 链首取一个空闲的系统事件缓存，用过的系统事件缓
+** 存再放回此链。
+**     SysEventBuf[MAXSYSEVENTS]是系统事件缓存区。
+**     SysEventCount 是当前事件计数。当系统事件的数目超过64时，按键
+** 事件将忽略。
 */
 
 
 /*
 ** Function : SysEventInit
 ** Purpose  :
-**     �¼�ģ���ʼ��.
+**     事件模块初始化.
 */
 void SysEventInit(void)
 {
     int i;
 
 	DISABLE_EVENT_IRQ;
-	// �����ȼ�������Ϊ�գ���ϵͳ�¼�
+	// 各优先级队列置为空：无系统事件
 	for ( i = 0; i < 2; i++ )
 	{
         SysEventHead[i] = SysEventTail[i] = (SysEvent_t *)NULL;
 	}
 
-    // �����е�ϵͳ�¼����洮������������������
+    // 将所有的系统事件缓存串联起来，放入自由链
     SysEventFreeList = &SysEventBuf[0];
 
     for ( i = 0; i < MAXSYSEVENTS - 1; i++ )
@@ -68,7 +68,7 @@ void SysEventInit(void)
 
     SysEventBuf[i].ptNext = (SysEvent_t *)NULL;
 
-    // ϵͳ�¼�������0
+    // 系统事件计数清0
     SysEventCount = 0;
 	
 	//
@@ -79,9 +79,9 @@ void SysEventInit(void)
 /*
 **  Function : SysEventAlloc
 **  Purpose  :
-**      ��SysEventFreeList���״�����һ�������¼�����ָ��
+**      从SysEventFreeList链首处分配一个空闲事件缓存指针
 **  Return   :
-**      ���䵽���¼�����ָ��
+**      分配到的事件缓存指针
 */
 SysEvent_t *SysEventAlloc(void) 
 {
@@ -89,7 +89,7 @@ SysEvent_t *SysEventAlloc(void)
 
 	//cli();
 	DISABLE_EVENT_IRQ;
-    // ȡһ���¼����档������������գ�SysEventFreeList����
+    // 取一个事件缓存。如果自由链不空，SysEventFreeList下移
     e = SysEventFreeList;
     if (  e != (SysEvent_t *) NULL ){
         SysEventFreeList = SysEventFreeList->ptNext;
@@ -97,7 +97,7 @@ SysEvent_t *SysEventAlloc(void)
     //sei();
 	ENABLE_EVENT_IRQ;
 
-    // ���ظ��¼����棬��Ϊ��
+    // 返回该事件缓存，或为空
     return e;
 }
 
@@ -106,25 +106,27 @@ SysEvent_t *SysEventAlloc(void)
 /*
 **  Function : SysEventFree
 **  Purpose  :
-**      �ͷ�һ�����ù����¼����浽SysEventFreeList��
+**      释放一块已用过的事件缓存到SysEventFreeList上
 **  Params   :
-**      e : Ҫ�ͷŵ��¼�ָ��.
+**      e : 要释放的事件指针.
 */
 void SysEventFree(SysEvent_t *e)
 {
     
-    // �嵽��������
+    // 插到自由链首
     if ( e != (SysEvent_t *)NULL )
     {
 		//
-		DISABLE_EVENT_IRQ;
+//		DISABLE_EVENT_IRQ;
+		rt_enter_critical();
 		
 		memset((void*)e, 0, sizeof(SysEvent_t));
         e->ptNext = SysEventFreeList;
         SysEventFreeList = e;
 		
 		//
-		ENABLE_EVENT_IRQ;
+//		ENABLE_EVENT_IRQ;
+		rt_exit_critical();
 	}	
 }
 
@@ -133,22 +135,24 @@ void SysEventFree(SysEvent_t *e)
 /*
 **  Function : SysEventGet
 **  Purpose  :
-**      �ӵ�ǰ���¼������ȼ���ߵ�ϵͳ�¼�������ȡ��һ��ϵͳ�¼���
-**      ����Ӷ�����ժ�£������ظ������ߡ������ж���ΪNULL���򷵻�
-**      (SysEvent *)NULL��
+**      从当前有事件的优先级最高的系统事件队列中取出一个系统事件，
+**      将其从队列中摘下，并返回给调用者。如所有队列为NULL，则返回
+**      (SysEvent *)NULL。
 **  Return  :
-**      ���ػ�õ��¼�ָ����.
+**      返回获得的事件指针或空.
 **  Calls   :
-**      TaskSched : �������ģ�麯��, task.c;
+**      TaskSched : 任务管理模块函数, task.c;
 */
 SysEvent_t * SysEventGet(void)
 {
     int i;
     SysEvent_t *e;
+	
+	
+//	DISABLE_EVENT_IRQ;
+	rt_enter_critical();
 
-	DISABLE_EVENT_IRQ;
-
-	// ��������ȼ���ʼ����
+	// 从最高优先级开始查找
     for ( i = 0; i < 2; i++ )
     {
 
@@ -156,18 +160,19 @@ SysEvent_t * SysEventGet(void)
 
         if ( e != (SysEvent_t *)NULL )
         {
-            // ���ҵ����Ӷ�����ժ��
+            // 如找到，从队列中摘下
             SysEventHead[i] = SysEventHead[i]->ptNext; 
             if ( SysEventHead[i] == NULL)
                 SysEventTail[i] = (SysEvent_t *)NULL;
 
-            // �¼�������1
+            // 事件计数减1
             SysEventCount--;
             break;
         }
     }
 
-	ENABLE_EVENT_IRQ;
+//	ENABLE_EVENT_IRQ;
+	rt_exit_critical();
     return e;
 }
 	
@@ -177,27 +182,27 @@ SysEvent_t * SysEventGet(void)
 /*
 **  Function : SysEventPut
 **  Purpose  :
-**      ��ϵͳ���������ύ��ָ�����ȼ������¼��ҵ������ȼ�ϵͳ�¼���
-**      �ж�β����
+**      将系统其他部分提交的指定优先级的新事件挂到该优先级系统事件队
+**      列队尾处。
 **  Params  :
-**      e   : �¼�ָ��;
-**      pri : �¼����ȼ�.
+**      e   : 事件指针;
+**      pri : 事件优先级.
 */
 void SysEventPut( SysEvent_t *e, int pri ) //reentrant
 {
 
 	DISABLE_EVENT_IRQ;
-    // e ��Ϊ��
+    // e 不为空
     if ( e != (SysEvent_t *)NULL )
     {
-        // ���¼�����С��16
+        // 若事件计数小于16
         if ( SysEventCount < MAXSYSEVENTS   )
         {
 
-            // �¼�������1
+            // 事件计数加1
             SysEventCount++;
 
-            // �� e �ӵ��¼�����β
+            // 将 e 加到事件队列尾
             e->ptNext = (SysEvent_t *)NULL;
 
             if ( SysEventTail[pri] )
@@ -209,7 +214,7 @@ void SysEventPut( SysEvent_t *e, int pri ) //reentrant
         }									       
         else
         {
-            // ���¼���������16, �����¼�
+            // 若事件计数已满16, 放弃事件
             e->ptNext = SysEventFreeList;
             SysEventFreeList = e;
         }

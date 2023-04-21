@@ -218,17 +218,10 @@ uint8_t CapSenReadStatus(void)
 	uint8_t     result = 0;
 	
 	
+	__disable_irq();
 	//数据高位寄存器、低位寄存器分开读，不能连续读。
 	result = I2C_Mem_Read(I2C2, CAP_DEV_ADDR, &CapSenPara.Buff[0], CAP_STATE_REG, 2);
-//	result = i2c_ReadBytes(&GPIOIIC[IIC_2], CAP_DEV_ADDR, CAP_STATE_REG, &CapSenPara.Buff[0], 2);
-//	if(0 == result)
-//	{
-//		result = 1;
-//	}
-//	else
-//	{
-//		result = 0;
-//	}
+	__enable_irq(); 
 	
 	
 	return (result);
@@ -249,6 +242,7 @@ uint8_t CapSenReadChl(void)
 	
 	
 	//数据高位寄存器、低位寄存器分开读，不能连续读。
+	__disable_irq();
 	if(0 == CapSenPara.ChlNmu)
 	{
 		result = I2C_Mem_Read(I2C2, CAP_DEV_ADDR, &CapSenPara.Buff[2], CAP_DATA_CH0_REG, 2);
@@ -259,17 +253,7 @@ uint8_t CapSenReadChl(void)
 		result = I2C_Mem_Read(I2C2, CAP_DEV_ADDR, &CapSenPara.Buff[6], CAP_DATA_CH1_REG, 2);
 		result = I2C_Mem_Read(I2C2, CAP_DEV_ADDR, &CapSenPara.Buff[8], CAP_DATA_LSB_CH1_REG, 2);
 	}
-	
-//	result = i2c_ReadBytes(&GPIOIIC[IIC_2], CAP_DEV_ADDR, CAP_DATA_CH0_REG, &CapSenPara.Buff[2], 2);
-//	result = i2c_ReadBytes(&GPIOIIC[IIC_2], CAP_DEV_ADDR, CAP_DATA_LSB_CH0_REG, &CapSenPara.Buff[4], 2);
-//	if(0 == result)
-//	{
-//		result = 1;
-//	}
-//	else
-//	{
-//		result = 0;
-//	}
+	__enable_irq(); 
 	
 	
 	return (result);
@@ -369,9 +353,11 @@ uint8_t CapSenChlSelect(void)
  * @output  : NULL
  * @return  : NULL
  */
+#ifdef CLLD_DEBUG
 #define    CAP_DIS_NUM    75
 int32_t    CapDataDis[CAP_DIS_NUM] = {0};
 int32_t    cap_offset = 123000000;
+#endif
 uint8_t CapSenChData(void)
 {
 	uint8_t    ret = FALSE;
@@ -486,10 +472,10 @@ uint8_t CapSenChData(void)
 		cal_temp = CapSenPara.ChColl[CLLD_CH0_DATA].FilterValue;
 		
 		
-		//Debug
+#ifdef CLLD_DEBUG
 		cal_dis = CapSenPara.ChColl[CLLD_CH0_DATA].FilterValue - cap_offset;
 		SmoothPipeline32(CapDataDis, cal_dis, CAP_DIS_NUM);
-		
+#endif	
 		
 		//丢掉前几个不稳定数据
 		if((CapSenPara.UpdateCnt <= CapSenPara.ResWaitTime)
@@ -944,9 +930,10 @@ void CapSensor(void)
 			//退出关机模式
 //			FDC2212ShutDownInput(IO_LOW);
 			
+			rt_enter_critical();    //进入临界段
 			//IIC通信复位
 			iic_ack = CapSenReset();
-			
+			rt_exit_critical();     //退出临界段
 			
 			CapSenPara.ComStage = CP_COMM_INIT;
 		}
@@ -963,10 +950,10 @@ void CapSensor(void)
 			//选择通道0或通道1
 			CapSenChlEn();
 			
-			
+			rt_enter_critical();    //进入临界段
 			//发送配置数据
 			iic_ack = CapSenConfig();
-			
+			rt_exit_critical();     //退出临界段
 			
 			if(IIC_ACR_NORMAL == iic_ack)
 			{
@@ -991,11 +978,16 @@ void CapSensor(void)
 				CapSenPara.Rdy = FALSE;
 				CapSenPara.RdyTime = 0;
 				
+				//1、进入临界段，有改善效果，但仍然偶发故障，概率约0.5%。可能是原子锁有时间限制。
+				//2、使用Delay_MS_NOBlock替换掉电机驱动函数、存储函数中的rt_thread_delay，无改善。
+				rt_enter_critical();    //进入临界段。
 				//读取状态寄存器
 				iic_ack = CapSenReadStatus();
 				
 				//读取电容数据
 				iic_ack = CapSenReadChl();
+				rt_exit_critical();     //退出临界段
+				
 				
 				//提取数据
 				CapSenChData();
@@ -1073,14 +1065,30 @@ void CapSensor(void)
 			
 			
 			//6.探测到液面，关闭电容探测信号，降低相互干扰。
-			if(LLD_STAGE_LIQ == CapSenPara.LLDStage)
+//			if(LLD_STAGE_LIQ == CapSenPara.LLDStage)
+//			{
+//				CapSenPara.SleepOpen = TRUE;
+//			}
+//			else
+//			{
+//				CapSenPara.SleepOpen = FALSE;
+//			}
+			if(CLLD_LIQUL == UserPara[LLD_SEN_FUN].Value)
 			{
-				CapSenPara.SleepOpen = TRUE;
+				if(LLD_STAGE_LIQ == CapSenPara.LLDStage)
+				{
+					CapSenPara.SleepOpen = TRUE;
+				}
+				else
+				{
+					CapSenPara.SleepOpen = FALSE;
+				}
 			}
 			else
 			{
-				CapSenPara.SleepOpen = FALSE;
+				;
 			}
+
 			
 			
 			//7.关闭电容探测信号，为了让注检EMC通过。
@@ -1102,7 +1110,10 @@ void CapSensor(void)
 			//9.电容传感器进入睡眠
 			if(CapSenPara.SleepStatu != CapSenPara.SleepOpen)
 			{
+				rt_enter_critical();    //进入临界段
 				iic_ack = CapSenSleepEn(CapSenPara.SleepOpen);
+				rt_exit_critical();     //退出临界段
+				
 				CapSenPara.SleepStatu = CapSenPara.SleepOpen;
 			}
 			
@@ -1182,7 +1193,6 @@ void CapSensor(void)
 			//硬件IIC重置
 			GPIOIIC[IIC_2].State = IIC_RESET;
 			IIC2_Reset();
-			
 			
 			rt_exit_critical();     //退出临界段
 			
@@ -1588,35 +1598,63 @@ uint8_t AirSenCheckAll(struct tagAirSenPara* air_sen, uint8_t is_check)
 					air_sen->AirPress.Stage = PLLD_STAGE_TOUCH;
 				}
 			}
-			else if((PLLD_ABS_BLOCK == is_check)
-					|| (PLLD_ABS_AIR == is_check)
-					|| (PLLD_ABS_BLOCK_AIR == is_check))
+			else if((is_check >= PLLD_ABS_BLOCK)
+					&& (is_check <= PLLD_ABS_BLOCK_FIXED_FOLLOW))
 			{
-//				//检测到P电机启动吸液、吸气（有滤芯吸头，P电机器启动时，吸液和吸气的气压几乎一样）
-				if(air_sen->AbsState8_1 >= 1)
+//				//检测到P电机启动吸液、吸气（有滤芯吸头，P电机器启动时，吸气的气压与吸小容量液体的气压几乎一模一样）
+//				if(air_sen->AbsState8_1 >= 1)
+//				{
+//					air_sen->AbsState5_1 = 0;
+//					air_sen->AbsState8_1 = 0;
+//					air_sen->AbsState8_2 = 0;
+//					air_sen->AbsState8_3 = 0;
+//					air_sen->AbsState8_4 = 0;
+//					air_sen->AbsState8_5 = 0;
+//					air_sen->AbsState8_Timer = 0;
+//					air_sen->AbsAirFollowState1 = 0;
+//					air_sen->AbsAirFollowState2 = 0;
+//					//检测到P电机开始吸液，向前移动（AIRPRESS_SHORTET_PASS_NUM + 3）单位，取气压作为吸液前参考气压
+//					air_sen->ABS_StartAirPress = air_sen->ChColl[PLLD_CH0_DATA].FilterData[AIRPRESS_SHORTET_PASS_NUM + 3];
+//					
+//					
+//					air_sen->AirPress.Stage = PLLD_STAGE_START;
+//				}
+				
+				
+				
+				//P电机真实启动
+				if(PLLD_ABS_START == air_sen->ABS_Real_Start_End)
 				{
 					air_sen->AbsState5_1 = 0;
 					air_sen->AbsState8_1 = 0;
 					air_sen->AbsState8_2 = 0;
 					air_sen->AbsState8_3 = 0;
 					air_sen->AbsState8_4 = 0;
+					air_sen->AbsState8_5 = 0;
 					air_sen->AbsState8_Timer = 0;
-					air_sen->AbsAirMonentState = 0;
+					air_sen->AbsState8_Timer1 = 0;
+					air_sen->AbsState8_Timer2 = 0;
+					air_sen->AbsAirFollowState1 = 0;
+					air_sen->AbsAirFollowState2 = 0;
+					//检测到P电机开始吸液，向前移动（AIRPRESS_SHORTET_PASS_NUM + 3）单位，取气压作为吸液前参考气压
+					air_sen->ABS_StartAirPress = air_sen->ChColl[PLLD_CH0_DATA].FilterData[AIRPRESS_SHORTET_PASS_NUM + 3];
 					
 					
 					air_sen->AirPress.Stage = PLLD_STAGE_START;
 				}
 				
 				
-				//主要检测无滤芯吸头、低速吸液等工况下部分行程吸空/间断吸空。
-				if((PLLD_ABS_AIR == is_check) || (PLLD_ABS_BLOCK_AIR == is_check))
-				{
-					Accumulation8(&air_sen->AbsState8_Timer);
-					if(air_sen->AbsState8_Timer >= air_sen->ABS_StartWait)
-					{
-						air_sen->AirPress.Stage = PLLD_STAGE_AIR_ALWAYS;
-					}
-				}
+				
+//				//等待超时
+//				Accumulation8(&air_sen->AbsState8_Timer);
+//				if(air_sen->AbsState8_Timer >= air_sen->ABS_StartWait)
+//				{
+//					//检测到P电机开始吸液，向前移动（AIRPRESS_SHORTET_PASS_NUM + 3）单位，取气压作为吸液前参考气压
+//					air_sen->ABS_StartAirPress = air_sen->ChColl[PLLD_CH0_DATA].FilterData[AIRPRESS_SHORTET_PASS_NUM + 3];
+//					
+//					
+//					air_sen->AirPress.Stage = PLLD_STAGE_AIR_ALWAYS;
+//				}
 			}
 		}
 		break;
@@ -1632,8 +1670,12 @@ uint8_t AirSenCheckAll(struct tagAirSenPara* air_sen, uint8_t is_check)
 				air_sen->AbsState8_2 = 0;
 				air_sen->AbsState8_3 = 0;
 				air_sen->AbsState8_4 = 0;
+				air_sen->AbsState8_5 = 0;
 				air_sen->AbsState8_Timer = 0;
-				air_sen->AbsAirMonentState = 0;
+				air_sen->AbsState8_Timer1 = 0;
+				air_sen->AbsState8_Timer2 = 0;
+				air_sen->AbsAirFollowState1 = 0;
+				air_sen->AbsAirFollowState2 = 0;
 				
 				
 				air_sen->AirPress.Stage = PLLD_STAGE_TOUCH;
@@ -1670,15 +1712,22 @@ uint8_t AirSenCheckAll(struct tagAirSenPara* air_sen, uint8_t is_check)
 			
 			
 			
-			//吸液完毕，判断吸液是否存在全程吸空
-			if((PLLD_ABS_AIR == is_check)
-				|| (PLLD_ABS_BLOCK_AIR == is_check)
-				|| (PLLD_ABS_BLOCK_AIR_MOM_AIR == is_check))
+			//吸液完毕，判断吸液是否存在固定点吸空
+			if((PLLD_ABS_FIXED_AIR == is_check)
+				|| (PLLD_ABS_BLOCK_FIXED_AIR == is_check)
+				|| (PLLD_ABS_BLOCK_FIXED_FOLLOW == is_check))
 			{
-				if(PLLD_ABS_END == air_sen->ABS_Start_End)
+				if(PLLD_ABS_END == air_sen->ABS_Real_Start_End)
 				{
-					//检测全程吸空
-					temp = air_sen->ChColl[PLLD_CH0_DATA].FilterData[0] - AIR_SEN_ZERO_PRESS;
+					//检测全程吸空。不推荐使用绝对变化量，传感器工作时间长，零点偏移。
+//					temp = air_sen->ChColl[PLLD_CH0_DATA].FilterData[0] - AIR_SEN_ZERO_PRESS;
+//					if(temp < air_sen->RakeRatio3Min)
+//					{
+//						air_sen->AirPress.Stage = PLLD_STAGE_AIR_ALWAYS;
+//					}
+					
+					//使用相对变化量
+					temp = air_sen->ChColl[PLLD_CH0_DATA].FilterData[0] - air_sen->ABS_StartAirPress;
 					if(temp < air_sen->RakeRatio3Min)
 					{
 						air_sen->AirPress.Stage = PLLD_STAGE_AIR_ALWAYS;
@@ -1688,14 +1737,95 @@ uint8_t AirSenCheckAll(struct tagAirSenPara* air_sen, uint8_t is_check)
 			
 			
 			
-			//检测凝块
-			//检测凝块和全程吸空
-			if((PLLD_ABS_BLOCK == is_check)
-				|| (PLLD_ABS_BLOCK_AIR == is_check)
-				|| (PLLD_ABS_BLOCK_MOM_AIR == is_check)
-				|| (PLLD_ABS_BLOCK_AIR_MOM_AIR == is_check))
+			//检测追随吸空/部分行程吸空
+			if((PLLD_ABS_FIXED_AIR == is_check)
+				|| (PLLD_ABS_BLOCK_FIXED_AIR == is_check)
+				|| (PLLD_ABS_FOLLOW_AIR == is_check)
+				|| (PLLD_ABS_BLOCK_FOLLOW_AIR == is_check)
+				|| (PLLD_ABS_BLOCK_FIXED_FOLLOW == is_check))
+//			if((PLLD_ABS_FOLLOW_AIR == is_check)
+//				|| (PLLD_ABS_BLOCK_FOLLOW_AIR == is_check)
+//				|| (PLLD_ABS_BLOCK_FIXED_FOLLOW == is_check))
 			{
-				if(PLLD_ABS_START == air_sen->ABS_Start_End)
+				//检测气压剧烈跳动变小，有4种情况：
+				//（1）P电机启动吸液。
+				//（2）P电机吸液中，吸头从空气进入液体，即部分吸空。
+				//（3）追随吸液时吸空，气压先变小后变大。检测吸气是否上升。
+				//（4）吸液时被异物短暂堵塞，然后被吸进吸头，气压短暂变小。
+				if(air_sen->AbsState8_4 >= 1)
+				{
+					air_sen->AbsAirFollowState1 = 1;
+				}
+				if(air_sen->AbsAirFollowState1 >= 1)
+				{
+					Accumulation8(&air_sen->AbsState8_Timer1);
+				}
+				//P电机加速，可能误触发瞬间空吸
+				if(air_sen->AbsAirFollowState1 >= 1)
+				{
+					//收到P电机吸液完毕信息，查看是否有误判间断吸空问题
+					if(PLLD_ABS_END == air_sen->ABS_Start_End)
+					{
+						if(air_sen->AbsState8_Timer1 >= air_sen->ABS_EndDly)
+						{
+							air_sen->AbsState8_Timer1 = 0;
+						
+						
+							air_sen->AirPress.Stage = PLLD_STAGE_AIR_MOMENT;
+						}
+						else
+						{
+							air_sen->AbsAirFollowState1 = 0;
+						}
+					}
+				}
+				
+				
+				
+				//检测气压剧烈跳动下降，有2种情况：
+				//（1）吸液即将结束，P电机减速。
+				//（2）追随吸液时吸空，气压先变小后变大。检测吸气是否下降。
+				if(air_sen->AbsState8_5 >= 1)
+				{
+					air_sen->AbsAirFollowState2 = 1;
+				}
+				if(air_sen->AbsAirFollowState2 >= 1)
+				{
+					Accumulation8(&air_sen->AbsState8_Timer2);
+				}
+				
+				
+				//P电机减速，可能误触发瞬间空吸
+				if(air_sen->AbsAirFollowState2 >= 1)
+				{
+					//收到P电机吸液完毕信息，查看是否有误判间断吸空问题
+					if(PLLD_ABS_END == air_sen->ABS_Real_Start_End)
+					{
+						if(air_sen->AbsState8_Timer2 > air_sen->ABS_EndDly)
+						{
+							air_sen->AbsState8_Timer2 = 0;
+						
+						
+							air_sen->AirPress.Stage = PLLD_STAGE_AIR_MOMENT;
+						}
+						else
+						{
+							air_sen->AbsAirFollowState2 = 0;
+						}
+					}
+				}
+			}
+			
+			
+			
+			//检测凝块
+			//检测凝块和固定点吸空
+			if((PLLD_ABS_BLOCK == is_check)
+				|| (PLLD_ABS_BLOCK_FIXED_AIR == is_check)
+				|| (PLLD_ABS_BLOCK_FOLLOW_AIR == is_check)
+				|| (PLLD_ABS_BLOCK_FIXED_FOLLOW == is_check))
+			{
+				if(PLLD_ABS_START == air_sen->ABS_Real_Start_End)
 				{
 					//吸液过程中，查看气压值是否超过吸液堵塞阈值
 					if(air_sen->ChColl[PLLD_CH0_DATA].FilterData[0] >= AIR_SEN_ERR_PRESS)
@@ -1703,7 +1833,7 @@ uint8_t AirSenCheckAll(struct tagAirSenPara* air_sen, uint8_t is_check)
 						air_sen->AirPress.Stage = PLLD_STAGE_ABS_BLOCK;
 					}
 				}
-				else if(PLLD_ABS_END == air_sen->ABS_Start_End)
+				else if(PLLD_ABS_END == air_sen->ABS_Real_Start_End)
 				{
 					//吸液完毕，查看气压值是否超过吸液堵塞阈值
 					if(air_sen->AbsState8_3 >= 1)
@@ -1715,40 +1845,6 @@ uint8_t AirSenCheckAll(struct tagAirSenPara* air_sen, uint8_t is_check)
 			
 			
 			
-			//检测间断吸空/部分行程吸空
-			if((PLLD_ABS_MOM_AIR == is_check)
-				|| (PLLD_ABS_BLOCK_MOM_AIR == is_check)
-				|| (PLLD_ABS_BLOCK_AIR_MOM_AIR == is_check))
-			{
-				//检测气压剧烈跳动上升，说明吸头从空气进入液体，存在部分吸空现象
-				if(air_sen->AbsState8_4 >= 1)
-				{
-					air_sen->AbsAirMonentState = 1;
-				}
-				
-				
-				//P电机减速，可能误触发瞬间空吸
-				if(air_sen->AbsAirMonentState >= 1)
-				{
-					Accumulation8(&air_sen->AbsState8_Timer);
-					
-					//收到P电机吸液完毕信息，查看是否有误判间断吸空问题
-					if(PLLD_ABS_END == air_sen->ABS_Start_End)
-					{
-						if(air_sen->AbsState8_Timer > air_sen->ABS_EndDly)
-						{
-							air_sen->AbsState8_Timer = 0;
-						
-						
-							air_sen->AirPress.Stage = PLLD_STAGE_AIR_MOMENT;
-						}
-						else
-						{
-							air_sen->AbsAirMonentState = 0;
-						}
-					}
-				}
-			}
 		}
 		break;
 		
@@ -1860,6 +1956,8 @@ void AirSenDeteLiqLevel(void)
 	int16_t    temp = 0;
 	int16_t    sub1 = 0;
 	int16_t    sub2 = 0;
+	uint8_t    ret = 0;
+	
 	
 	
 	
@@ -1882,6 +1980,39 @@ void AirSenDeteLiqLevel(void)
 	{
 		AirSenPara.CommAckBlockDly = 0;
 		AirSenPara.CommAckBlock = FALSE;
+	}
+	
+	
+	//各个状态下的执行动作
+	switch(AirSenPara.ABS_Real_Start_End)
+	{
+		case PLLD_ABS_IDLE:
+		{
+		}
+		break;
+		
+		case PLLD_ABS_END:
+		{
+		}
+		break;
+		
+		case PLLD_ABS_START:
+		{
+			ret = TMC5160_FIELD_READ(TMC_0, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
+			//LOG_Info("RAMP_STAT=%X", TMC_ReadInt(eTMC, TMC5160_RAMPSTAT));
+			
+			//检查电机是否真实结束
+			if(0x01 == ret)
+			{
+				AirSenPara.ABS_Real_Start_End = PLLD_ABS_END;
+			}
+		}
+		break;
+		
+		default:
+		{	
+		}
+		break;
 	}
 	
 	
@@ -1910,6 +2041,10 @@ void AirSenDeteLiqLevel(void)
 				AirSenPara.CommAckBlock = FALSE;
 				AirSenPara.ABS_Start_End = PLLD_ABS_START;
 				AirSenPara.LLDResult = LLD_IDLE;
+				
+				AirSenPara.AbsState8_Timer = 0;
+				AirSenPara.AbsState8_Timer1 = 0;
+				AirSenPara.AbsState8_Timer2 = 0;
 				
 				
 				AirSenPara.LLDStage = LLD_STAGE_START;
@@ -1949,11 +2084,11 @@ void AirSenDeteLiqLevel(void)
 			}
 			
 			
-			//检测凝块、空吸
-			if((PLLD_ABS_BLOCK == UserPara[LLD_SEN_FUN].Value)
-				|| (PLLD_ABS_AIR == UserPara[LLD_SEN_FUN].Value)
-				|| (PLLD_ABS_BLOCK_AIR == UserPara[LLD_SEN_FUN].Value))
+			//检测凝块、空吸，直接往下走，无需等待
+			if((UserPara[LLD_SEN_FUN].Value >= PLLD_ABS_BLOCK)
+				&& (UserPara[LLD_SEN_FUN].Value <= PLLD_ABS_BLOCK_FIXED_FOLLOW))
 			{
+				//直接给平均气压值，然后往下走
 				AirSenPara.AtmosAbsAve = AirSenPara.AtmosAve;
 				
 				
@@ -1969,6 +2104,7 @@ void AirSenDeteLiqLevel(void)
 			{
 				AirSenPara.CommAckBlock = FALSE;
 				AirSenPara.ABS_Start_End = PLLD_ABS_IDLE;
+				AirSenPara.ABS_Real_Start_End = PLLD_ABS_IDLE;
 				AirSenPara.LLDResult = LLD_IDLE;
 				
 				
@@ -1995,6 +2131,7 @@ void AirSenDeteLiqLevel(void)
 			AirSenPara.sig8_cnt_2 = 0;
 			AirSenPara.sig8_cnt_3 = 0;
 			AirSenPara.sig8_cnt_4 = 0;
+			AirSenPara.sig8_cnt_5 = 0;
 			
 			
 			
@@ -2005,6 +2142,7 @@ void AirSenDeteLiqLevel(void)
 			
 			AirSenPara.RakeRatio2Max = UserPara[AIR_RAKERATIO2_MAX].Value;
 			AirSenPara.RakeRatio2Min = UserPara[AIR_RAKERATIO2_MIN].Value;
+			
 			
 			AirSenPara.AspLiqNoise = UserPara[AIR_ASP_LIQ_NOISE].Value;
 			AirSenPara.RakeRatio3Max = UserPara[AIR_RAKERATIO3_MAX].Value;
@@ -2119,15 +2257,23 @@ void AirSenDeteLiqLevel(void)
 				
 				
 				
-				if((curve_rake_ratio < -AirSenPara.AspLiqNoise)
-					|| (curve_rake_ratio > AirSenPara.AspLiqNoise))
+				if(curve_rake_ratio > AirSenPara.AspLiqNoise)
 				{
-					//间断吸空
+					//开启吸液，短暂吸空到真正吸液
 					Accumulation8(&AirSenPara.sig8_cnt_4);
 				}
 				else
 				{
 					AirSenPara.sig8_cnt_4 = 0;
+				}
+				if(curve_rake_ratio < -AirSenPara.AspLiqNoise)
+				{
+					//吸液过程吸空
+					Accumulation8(&AirSenPara.sig8_cnt_5);
+				}
+				else
+				{
+					AirSenPara.sig8_cnt_5 = 0;
 				}
 			}
 			
@@ -2185,6 +2331,7 @@ void AirSenDeteLiqLevel(void)
 //			AirSenPressState2(&AirSenPara.AbsState8_2, AirSenPara.sig8_cnt_2, AIRPRESS_SHORTET_PASS_NUM);
 			AirSenPressState2(&AirSenPara.AbsState8_3, AirSenPara.sig8_cnt_3, AIRPRESS_SHORTET_PASS_NUM);
 			AirSenPressState2(&AirSenPara.AbsState8_4, AirSenPara.sig8_cnt_4, AIRPRESS_SHORTET_PASS_NUM);
+			AirSenPressState2(&AirSenPara.AbsState8_5, AirSenPara.sig8_cnt_5, AIRPRESS_SHORTET_PASS_NUM);
 			
 			
 			
@@ -2240,6 +2387,7 @@ void AirSenDeteLiqLevel(void)
 			{
 				AirSenPara.CommAckBlock = FALSE;
 				AirSenPara.ABS_Start_End = PLLD_ABS_IDLE;
+				AirSenPara.ABS_Real_Start_End = PLLD_ABS_IDLE;
 				AirSenPara.LLDResult = LLD_IDLE;
 				
 				
@@ -2278,6 +2426,7 @@ void AirSenDeteLiqLevel(void)
 			if(LLD_CLOSE == UserPara[LLD_SEN_FUN].Value)
 			{
 				AirSenPara.ABS_Start_End = PLLD_ABS_IDLE;
+				AirSenPara.ABS_Real_Start_End = PLLD_ABS_IDLE;
 				AirSenPara.LLDResult = LLD_IDLE;
 				
 				
@@ -2291,6 +2440,7 @@ void AirSenDeteLiqLevel(void)
 			if(LLD_CLOSE == UserPara[LLD_SEN_FUN].Value)
 			{
 				AirSenPara.ABS_Start_End = PLLD_ABS_IDLE;
+				AirSenPara.ABS_Real_Start_End = PLLD_ABS_IDLE;
 				AirSenPara.LLDResult = LLD_IDLE;
 				
 				
@@ -2304,6 +2454,7 @@ void AirSenDeteLiqLevel(void)
 			if(LLD_CLOSE == UserPara[LLD_SEN_FUN].Value)
 			{
 				AirSenPara.ABS_Start_End = PLLD_ABS_IDLE;
+				AirSenPara.ABS_Real_Start_End = PLLD_ABS_IDLE;
 				AirSenPara.LLDResult = LLD_IDLE;
 				
 				
@@ -2366,19 +2517,10 @@ uint8_t AirSenReadPressADC(void)
 	uint8_t     result = 0;
 	
 	
+	__disable_irq();
 	//硬件IIC接口（气压传感器一旦通信失败，难以恢复。暂时不用硬件通信）
 	result = I2C_Mem_Read2(I2C2, AIR_SEN_DEV_ADDR, AirSenPara.Buff, AIR_SEN_REG_INVALID_ADDR, 2);
-	
-	//模拟IIC接口
-//	result = i2c_ReadBytes2(&GPIOIIC[IIC_2], AIR_SEN_DEV_ADDR, AIR_SEN_REG_INVALID_ADDR, AirSenPara.Buff, 2);
-//	if(0 == result)
-//	{
-//		result = 1;
-//	}
-//	else
-//	{
-//		result = 0;
-//	
+	__enable_irq(); 
 	
 	
 	return (result);
@@ -2391,9 +2533,11 @@ uint8_t AirSenReadPressADC(void)
  * @output  : NULL
  * @return  : NULL
  */
+#ifdef PLLD_DEBUG
 #define  AIR_DIS_NUM    150
 int16_t  AirDataDis[AIR_DIS_NUM] = {0};
 int16_t  air_offset = 8192;
+#endif
 uint8_t AirSenConvertAD(void)
 {
 	uint8_t     result = 0;
@@ -2422,20 +2566,21 @@ uint8_t AirSenConvertAD(void)
 //		press_data = LPF1(press_data, AirSenPara.ChColl[PLLD_CH0_DATA].FilterValue, 0.3);
 //		AirSenPara.ChColl[PLLD_CH0_DATA].FilterValue = press_data;
 		SmoothPipeline32(AirSenPara.ChColl[PLLD_CH0_DATA].FilterData, press_data, PLLD_NUM);
-		
-		
+
+
+#ifdef PLLD_DEBUG
 		//获取启动气压检测信号
-//		if(LLD_CLOSE == UserPara[LLD_SEN_FUN].Value)
-//		{
-//			air_offset = 8142;
-//		}
-//		else
-//		{
-//			air_offset = 8192;
-//		}
+		if(LLD_CLOSE == UserPara[LLD_SEN_FUN].Value)
+		{
+			air_offset = 8142;
+		}
+		else
+		{
+			air_offset = 8192;
+		}
 		press_dis = press_data - air_offset;
 		SmoothPipeline16(AirDataDis, press_dis, AIR_DIS_NUM);
-		
+#endif	
 		
 		
 //		//计算压力值，放大100倍。压力单位是inH2O
@@ -2502,8 +2647,9 @@ void AirSensor(void)
 			//因此等待Dev1复位完成后再往下运行。
 			if(FALSE == GPIOIIC[IIC_2].Dev1Err)
 			{
+				rt_enter_critical();    //进入临界段。有改善效果，但仍然偶发故障，概率约0.5%
 				iic_ack = AirSenConfig();
-				
+				rt_exit_critical();     //退出临界段
 				
 				
 				AirSenPara.ComStage = CP_COMM_NORMAL;
@@ -2515,7 +2661,10 @@ void AirSensor(void)
 		{
 			if(IIC_BUS_NORMAL == GPIOIIC[IIC_2].State)
 			{
+				rt_enter_critical();    //进入临界段
 				iic_ack = AirSenReadPressADC();
+				rt_exit_critical();     //退出临界段
+				
 				if(IIC_ACR_NORMAL != iic_ack)
 				{
 					GPIOIIC[IIC_2].Dev2Err = TRUE;
@@ -2582,10 +2731,10 @@ void AirSenInit(void)
 	UserPara[AIR_RAKERATIO2_MAX].Value = 14;
 	UserPara[AIR_RAKERATIO2_MIN].Value = 2;
 	
-	//间断空吸、吸到凝块阈值/吸头堵塞、全程空吸
-	UserPara[AIR_ASP_LIQ_NOISE].Value = 700;
+	//吸液中断空吸、吸到凝块阈值/吸头堵塞、全程空吸
+	UserPara[AIR_ASP_LIQ_NOISE].Value = 260;
 	UserPara[AIR_RAKERATIO3_MAX].Value = 190;
-	UserPara[AIR_RAKERATIO3_MIN].Value = 10;
+	UserPara[AIR_RAKERATIO3_MIN].Value = 50;
 	
 	
 	//气压检测吸空，等待一段时间仍然没检测到吸液动作
@@ -2835,7 +2984,7 @@ uint8_t ReadCLLDPara3(uint8_t *buf, uint8_t num)
 	uint8_t    ret = 0;
 	
 	
-	buf[3] = UserPara[CAP_CLOCK_DIVIDERS_CH0].Value;
+	buf[3] = UserPara[CAP_SET_CONTIME].Value;
 	buf[4] = UserPara[CAP_DRIVE_CURRENT_CH0].Value;
 	buf[5] = UserPara[CAP_CON_THRESHOLD_H].Value;
 	buf[6] = UserPara[CAP_CON_THRESHOLD_L].Value>>8;
@@ -3532,7 +3681,7 @@ void LLDReslut(void)
 		case CLLD_BUBBLE:
 		case CLLD_ABS_BLOCK:
 		case CLLD_ABS_AIR:
-		case CLLD_ABS_BLOCK_AIR:
+		case CLLD_ABS_BLOCK_FIXED_AIR:
 		case CLLD_DIS_BLOCK:
 		case CLLD_ABS_FOLLOW:
 		case CLLD_TWO_DETE:
@@ -3544,11 +3693,14 @@ void LLDReslut(void)
 		case PLLD_LIQUL:
 		case PLLD_BUBBLE:
 		case PLLD_ABS_BLOCK:
-		case PLLD_ABS_AIR:
-		case PLLD_ABS_BLOCK_AIR:
+		case PLLD_ABS_FIXED_AIR:
+		case PLLD_ABS_BLOCK_FIXED_AIR:
 		case PLLD_DIS_BLOCK:
 		case PLLD_ABS_FOLLOW:
 		case PLLD_TWO_DETE:
+		case PLLD_ABS_FOLLOW_AIR:
+		case PLLD_ABS_BLOCK_FOLLOW_AIR:
+		case PLLD_ABS_BLOCK_FIXED_FOLLOW:
 		{
 			LLDMan.Result = AirSenPara.LLDResult;
 		}

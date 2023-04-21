@@ -33,6 +33,7 @@ void IWDG_Feed(void* parameter);
 void SWSysTimer(void* parameter);
 void SWTimer10ms(void* parameter);
 void CommMonitor(void* parameter);
+void MotorDrive(void* parameter);
 
 
 #endif

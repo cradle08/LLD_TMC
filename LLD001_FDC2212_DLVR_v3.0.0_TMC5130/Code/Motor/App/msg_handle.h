@@ -26,7 +26,7 @@ extern "C" {
 #define CMD_MOVE_POSITION_WITH_ENC		0x12	//move position  with enc
 #define CMD_STOP						0x13 	//stop
 #define CMD_MOTOR_RESET					0x14	//motor reset
-#define CMD_URGENT_STOP                 0x15
+#define CMD_URGENT_STOP					0x15 	//urgent stop
 
 //
 #define CMD_MCU_REST					0x20	//mcu reset
@@ -62,13 +62,14 @@ extern "C" {
 #define CMD_UPGRADE_START				0x71	//update start
 #define CMD_UPGRADE_APP_DATA			0x72	//update data
 #define CMD_UPGRADE_FINISHED			0x73	//update finished
-#define CMD_QUERY_RUNING_SOFT_TYPE		0x75	//²éÑ¯µ±Ç°ÕıÔÚÔËĞĞµÄ³ÌĞòÀàĞÍ
+#define CMD_QUERY_RUNING_SOFT_TYPE		0x75	//æŸ¥è¯¢å½“å‰æ­£åœ¨è¿è¡Œçš„ç¨‹åºç±»å‹
 
 //
-#define CMD_GET_SN_CAN_ID				0x80	//»ñÈ¡SNºÅ¼°CAN ID
-#define CMD_SET_CAN_ID_WITH_SN			0x81	//¸ù¾İÏµÁĞºÅÉèÖÃSNºÅ¼°CAN ID
-#define CMD_SHAKE_WITH_SN				0x82	//¸ù¾İÏµÁĞºÅ--¿ØÖÆµç»ú¶¶¶¯
-#define CMD_SHINE_WITH_SN				0x83	//¸ù¾İÏµÁĞºÅ--ÉÁµÆ
+#define CMD_GET_SN_CAN_ID				0x80	//è·å–SNå·åŠCAN ID
+#define CMD_SET_CAN_ID_WITH_SN			0x81	//æ ¹æ®ç³»åˆ—å·è®¾ç½®SNå·åŠCAN ID
+#define CMD_SHAKE_WITH_SN				0x82	//æ ¹æ®ç³»åˆ—å·--æ§åˆ¶ç”µæœºæŠ–åŠ¨
+#define CMD_SHINE_WITH_SN				0x83	//æ ¹æ®ç³»åˆ—å·--é—ªç¯
+#define CMD_TYPE_WITH_SN				0x84	//æ ¹æ®ç³»åˆ—å·--è·å–æ¿å¡ç±»å‹
 
 
 // others
@@ -80,11 +81,11 @@ extern "C" {
 #define CMD_JA							0x95	//jump 
 #define CMD_JC							0x96	//jump and compare result of last subprocess
 //
-#define CMD_SET_AXIS_PARAM_AAP 			0x97	//ÉèÖÃÖá²ÎÊı--»º³åÖµ
-#define CMD_SET_GLOBAL_PARAM_AGP		0x98	//ÉèÖÃÈ«¾Ö²ÎÊı--»º³åÖµ
-#define CMD_TIME_COUNT					0x9A	//¼ÆÊ±Æ÷´¥·¢ 
-#define CMD_TIME_COUNT_A				0x9B	//¼ÆÊ±Æ÷´¥·¢¡ª-»º³åÖµ 
-#define CMD_TIME_COUNT_CHECK			0x9C	//¼ÆÊ±Æ÷´¥·¢¼ì²â
+#define CMD_SET_AXIS_PARAM_AAP 			0x97	//è®¾ç½®è½´å‚æ•°--ç¼“å†²å€¼
+#define CMD_SET_GLOBAL_PARAM_AGP		0x98	//è®¾ç½®å…¨å±€å‚æ•°--ç¼“å†²å€¼
+#define CMD_TIME_COUNT					0x9A	//è®¡æ—¶å™¨è§¦å‘ 
+#define CMD_TIME_COUNT_A				0x9B	//è®¡æ—¶å™¨è§¦å‘â€”-ç¼“å†²å€¼ 
+#define CMD_TIME_COUNT_CHECK			0x9C	//è®¡æ—¶å™¨è§¦å‘æ£€æµ‹
 //
 #define CMD_TEST						0xFE	 //move with v
 
@@ -92,7 +93,7 @@ extern "C" {
 
 
 /*
-*	CAN Recv Msg Format£¬CAN Ó¦´ğÏûÏ¢¸ñÊ½
+*	CAN Recv Msg Formatï¼ŒCAN åº”ç­”æ¶ˆæ¯æ ¼å¼
 */
 typedef struct {
 	//CAN_RxHeaderTypeDef tCan_RxHeader;
@@ -105,7 +106,7 @@ typedef struct {
 
 
 /*
-*	CAN Send Msg Format£¬CAN ·¢ËÍÏûÏ¢¸ñÊ½
+*	CAN Send Msg Formatï¼ŒCAN å‘é€æ¶ˆæ¯æ ¼å¼
 */
 typedef struct {
 	//CAN_TxHeaderTypeDef tCan_TxHeader;
@@ -117,14 +118,14 @@ typedef struct {
 
 
 /*
-*	½ÓÊÜ±¨ÎÄ¸ñÊ½
+*	æ¥å—æŠ¥æ–‡æ ¼å¼
 */
 typedef __packed struct {
-	uint8_t  	ucMsgID;	//ÏûÏ¢ID
-	uint8_t  	ucDeviceID;	//Éè±¸ID
-	uint8_t  	ucCmd;		//Ö¸Áî
-	uint8_t  	ucType;		//ÀàĞÍ
-	Data4Byte_u	uData;		//Êı¾İ
+	uint8_t  	ucMsgID;	//æ¶ˆæ¯ID
+	uint8_t  	ucDeviceID;	//è®¾å¤‡ID
+	uint8_t  	ucCmd;		//æŒ‡ä»¤
+	uint8_t  	ucType;		//ç±»å‹
+	Data4Byte_u	uData;		//æ•°æ®
 
 } RecvFrame_t;
 
@@ -132,14 +133,14 @@ typedef __packed struct {
 
 
 /*
-*	·¢ËÍ±¨ÎÄ¸ñÊ½
+*	å‘é€æŠ¥æ–‡æ ¼å¼
 */
 typedef __packed struct {
-	uint8_t  	ucMsgID;	//ÏûÏ¢ID
-	uint8_t  	ucStatus;	//×´Ì¬
-	uint8_t  	ucCmd;		//Ö¸Áî
-	uint8_t  	ucType;		//ÀàĞÍ
-	Data4Byte_u	uData;		//Êı¾İ
+	uint8_t  	ucMsgID;	//æ¶ˆæ¯ID
+	uint8_t  	ucStatus;	//çŠ¶æ€
+	uint8_t  	ucCmd;		//æŒ‡ä»¤
+	uint8_t  	ucType;		//ç±»å‹
+	Data4Byte_u	uData;		//æ•°æ®
 
 } SendFrame_t;
 
@@ -148,53 +149,53 @@ typedef __packed struct {
 
 
 /*
-*	CanÏûÏ¢Êı¾İÍ³¼Æ
+*	Canæ¶ˆæ¯æ•°æ®ç»Ÿè®¡
 */
 typedef __packed struct {
 	
-	uint32_t ulSendSuccessNum;	//·¢ËÍÏûÏ¢´ÎÊı
-	uint32_t ulSendFailNum;		//·¢ËÍ´íÎó-ÏûÏ¢´ÎÊı
-	uint32_t ulRecvSuccessNum;	//½ÓÊÜÏûÏ¢´ÎÊı
-	uint32_t ulRecvFailNum;		//½ÓÊÜÊ§°Ü-ÏûÏ¢´ÎÊı
-	uint32_t ulRecvErrorNum;	//½ÓÊÜ´íÎó-ÏûÏ¢´ÎÊı
-	uint32_t ulRecvOverNum;		//½ÓÊÜÒç³ö´ÎÊı
+	uint32_t ulSendSuccessNum;	//å‘é€æ¶ˆæ¯æ¬¡æ•°
+	uint32_t ulSendFailNum;		//å‘é€é”™è¯¯-æ¶ˆæ¯æ¬¡æ•°
+	uint32_t ulRecvSuccessNum;	//æ¥å—æ¶ˆæ¯æ¬¡æ•°
+	uint32_t ulRecvFailNum;		//æ¥å—å¤±è´¥-æ¶ˆæ¯æ¬¡æ•°
+	uint32_t ulRecvErrorNum;	//æ¥å—é”™è¯¯-æ¶ˆæ¯æ¬¡æ•°
+	uint32_t ulRecvOverNum;		//æ¥å—æº¢å‡ºæ¬¡æ•°
 	
 } CanMsgCount_Info_t;
 
 
 
 /*
-*	È«¾Ö×´Ì¬½á¹¹Ìå
+*	å…¨å±€çŠ¶æ€ç»“æ„ä½“
 */
 typedef __packed struct {
 	
 
-	uint8_t  ucEEPRAM_Init_CRC_ErrFlag;	 	  //EPPROM×´Ì¬£º 0:Õı³££¬1£º³õÊ¼»¯¶ÁÈ¡²ÎÊıÒì³£		 
+	uint8_t  ucEEPRAM_Init_CRC_ErrFlag;	 	  //EPPROMçŠ¶æ€ï¼š 0:æ­£å¸¸ï¼Œ1ï¼šåˆå§‹åŒ–è¯»å–å‚æ•°å¼‚å¸¸		 
 
-	//CANÏûÏ¢Í³¼ÆĞÅÏ¢
+	//CANæ¶ˆæ¯ç»Ÿè®¡ä¿¡æ¯
 	CanMsgCount_Info_t tCanMsgCount_Info;
 	
-	//°å¿¨Ê¶±ğÂë
-	uint16_t usSN;		//¶ÔMCUµÄUUID×öcrc16µÄĞ£Ñé£¬µÃµ½µÄÖµ¡£
+	//æ¿å¡è¯†åˆ«ç 
+	uint16_t usSN;		//å¯¹MCUçš„UUIDåšcrc16çš„æ ¡éªŒï¼Œå¾—åˆ°çš„å€¼ã€‚
 	
 } BoardStatus_t;
 
 
 
 
-//CanÓ¦´ğÏûÏ¢
+//Canåº”ç­”æ¶ˆæ¯
 uint8_t Can_Send_Msg(SendFrame_t *ptSendFrame);
 
-//CanÏûÏ¢´¦Àí
+//Canæ¶ˆæ¯å¤„ç†
 uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg);
 
-//´®¿ÚÏûÏ¢´¦Àí
+//ä¸²å£æ¶ˆæ¯å¤„ç†
 uint8_t Handle_Usart_RxMsg(MsgUsart_t *ptMsgUsart);
 
 
 
 
-//»ñÈ¡Ê¶±ğÂë
+//è·å–è¯†åˆ«ç 
 uint16_t Get_SN(uint8_t ucFlag);
 
 

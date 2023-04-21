@@ -7,13 +7,13 @@
 #include "monitor_can.h" 
 //#include "TMC_Process.h"
 
-//ƒ£øÈ≤Œ ˝±Ì
+//Ê®°ÂùóÂèÇÊï∞Ë°®
 __IO GlobalParam_t 	 g_tGlobalParam = {0};
 
 
 
 /*
-*	»´æ÷≤Œ ˝≥ı ºªØ
+*	ÂÖ®Â±ÄÂèÇÊï∞ÂàùÂßãÂåñ
 */
 ErrorType_e Global_Param_Init(void)
 {
@@ -24,27 +24,27 @@ ErrorType_e Global_Param_Init(void)
 
 
 /*
-*	ƒ£øÈ≤Œ ˝ «Â≥˝
+*	Ê®°ÂùóÂèÇÊï∞ Ê∏ÖÈô§
 */
 void Global_Param_SetDefault_Value(__IO GlobalParam_t *ptGlobalParam)
 {
-	//µ⁄“ª¥Œ…œµÁ, ≥ı ºªØ£¨±£¥Ê
+	//Á¨¨‰∏ÄÊ¨°‰∏äÁîµ, ÂàùÂßãÂåñÔºå‰øùÂ≠ò
 	memset((void*)ptGlobalParam, 0, sizeof(GlobalParam_t));
 	
 	/* Bank 0 */
 	ptGlobalParam->ulInitFlag  	  = PARAM_INIT_FLAG;
-	ptGlobalParam->eCanBaud    	  = EN_CAN_BAUD_1000; 	   //≤®Ãÿ¬ 
-	ptGlobalParam->ulRecvCanID    = CAN_DEFAULT_RECV_ID;   //ƒ¨»œΩ” ‹CanID
-	ptGlobalParam->ulSendCanID    = CAN_DEFAULT_SEND_ID;   //ƒ¨»œ∑¢ÀÕCanID
-	ptGlobalParam->ucProcessAutoExecMode = 0; //◊‘∂®“Â¡˜≥Ã£¨…œµÁ◊‘∂Ø÷¥––±Í÷æ, 0:œ¬∑¢÷∏¡Ó¥•∑¢÷¥––£¨1£∫…œµÁ◊‘∂Ø÷¥––
+	ptGlobalParam->eCanBaud    	  = EN_CAN_BAUD_1000; 	   //Ê≥¢ÁâπÁéá
+	ptGlobalParam->ulRecvCanID    = CAN_DEFAULT_RECV_ID;   //ÈªòËÆ§Êé•ÂèóCanID
+	ptGlobalParam->ulSendCanID    = CAN_DEFAULT_SEND_ID;   //ÈªòËÆ§ÂèëÈÄÅCanID
+	ptGlobalParam->ucProcessAutoExecMode = 0; //Ëá™ÂÆö‰πâÊµÅÁ®ãÔºå‰∏äÁîµËá™Âä®ÊâßË°åÊ†áÂøó, 0:‰∏ãÂèëÊåá‰ª§Ëß¶ÂèëÊâßË°åÔºå1Ôºö‰∏äÁîµËá™Âä®ÊâßË°å
 	
-	/* Bank 1 ±£¡Ù */
+	/* Bank 1 ‰øùÁïô */
 	
-	/* Bank 2  ”√ªß±‰¡ø2*/
+	/* Bank 2  Áî®Êà∑ÂèòÈáè2*/
 	
-	/* Bank 3 ÷–∂œ */
+	/* Bank 3 ‰∏≠Êñ≠ */
 	
-	/* Bank 2  ”√ªß±‰¡ø1*/
+	/* Bank 2  Áî®Êà∑ÂèòÈáè1*/
 	
 	//crc
 	ptGlobalParam->usCrc       	  = CRC16((uint8_t*)ptGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN-2);
@@ -54,7 +54,7 @@ void Global_Param_SetDefault_Value(__IO GlobalParam_t *ptGlobalParam)
 
 
 /*
-*	«Â≥˝EEPROM±£¥Êµƒƒ£øÈ≤Œ ˝
+*	Ê∏ÖÈô§EEPROM‰øùÂ≠òÁöÑÊ®°ÂùóÂèÇÊï∞
 */
 void ClearAndSave_Default_Global_Params(void)
 {
@@ -70,7 +70,7 @@ void ClearAndSave_Default_Global_Params(void)
 
 
 /*
-*	…Ë÷√…˝º∂±Í÷æŒª
+*	ËÆæÁΩÆÂçáÁ∫ßÊ†áÂøó‰Ωç
 */
 ErrorType_e Set_UpdateFlag(uint8_t ucFlag)
 {
@@ -93,7 +93,7 @@ ErrorType_e Set_UpdateFlag(uint8_t ucFlag)
 
 
 /*
-* …Ë÷√/ªÒ»°ƒ£øÈ≤Œ ˝ Bank_0
+* ËÆæÁΩÆ/Ëé∑ÂèñÊ®°ÂùóÂèÇÊï∞ Bank_0
 */
 ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 {
@@ -110,7 +110,7 @@ ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 			{
 				puData->lData = g_tGlobalParam.eCanBaud;
 			}else if(eReadWrite == TMC_WRITE) {
-				//≤Œ ˝ºÏ≤È
+				//ÂèÇÊï∞Ê£ÄÊü•
 				if(puData->lData >= EN_CAN_BAUD_END) return ERROR_TYPE_DATA;
 				if(g_tGlobalParam.eCanBaud != puData->lData)
 				{
@@ -126,7 +126,7 @@ ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 			{
 				puData->ulData = g_tGlobalParam.ulRecvCanID;
 			}else if(eReadWrite == TMC_WRITE) {
-				//≤Œ ˝ºÏ≤È		
+				//ÂèÇÊï∞Ê£ÄÊü•		
 				if(g_tGlobalParam.ulRecvCanID != puData->ulData)
 				{
 					g_tGlobalParam.ulRecvCanID = puData->ulData;
@@ -141,7 +141,7 @@ ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 			{
 				puData->ulData = g_tGlobalParam.ulSendCanID;
 			}else if(eReadWrite == TMC_WRITE) {
-				//≤Œ ˝ºÏ≤È			
+				//ÂèÇÊï∞Ê£ÄÊü•			
 				if(g_tGlobalParam.ulSendCanID != puData->ulData)
 				{
 					g_tGlobalParam.ulSendCanID = puData->ulData;
@@ -156,7 +156,7 @@ ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 			{
 				puData->lData = g_tGlobalParam.ucProcessAutoExecMode;
 			}else if(eReadWrite == TMC_WRITE) {
-				//≤Œ ˝ºÏ≤È
+				//ÂèÇÊï∞Ê£ÄÊü•
 				if(g_tGlobalParam.ucProcessAutoExecMode != puData->lData)
 				{
 					g_tGlobalParam.ucProcessAutoExecMode = puData->lData;
@@ -199,7 +199,7 @@ ErrorType_e GlobalParam_Bank_0(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 
 
 /*
-* …Ë÷√CanID
+* ËÆæÁΩÆCanID
 */
 ErrorType_e GlobalParam_Set_CanID(uint8_t ucRecvCanID, uint8_t SendCanID)
 {
@@ -209,14 +209,14 @@ ErrorType_e GlobalParam_Set_CanID(uint8_t ucRecvCanID, uint8_t SendCanID)
 	uint8_t ucSaveFlag = 0;
 	
 				
-	//≤Œ ˝ºÏ≤È			
+	//ÂèÇÊï∞Ê£ÄÊü•			
 	if(g_tGlobalParam.ulSendCanID != SendCanID)
 	{
 		g_tGlobalParam.ulSendCanID = SendCanID;
 		ucSaveFlag = 1;
 	}
 	
-	//≤Œ ˝ºÏ≤È		
+	//ÂèÇÊï∞Ê£ÄÊü•		
 	if(g_tGlobalParam.ulRecvCanID != ucRecvCanID)
 	{
 		g_tGlobalParam.ulRecvCanID = ucRecvCanID;
@@ -250,7 +250,7 @@ ErrorType_e GlobalParam_Set_CanID(uint8_t ucRecvCanID, uint8_t SendCanID)
 
 
 /*
-* …Ë÷√/ªÒ»°ƒ£øÈ≤Œ ˝ Bank_1
+* ËÆæÁΩÆ/Ëé∑ÂèñÊ®°ÂùóÂèÇÊï∞ Bank_1
 */
 ErrorType_e GlobalParam_Bank_1(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 {
@@ -290,7 +290,7 @@ ErrorType_e GlobalParam_Bank_1(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 
 
 /*
-* …Ë÷√/ªÒ»°ƒ£øÈ≤Œ ˝ Bank_2 ”√ªß±‰¡ø
+* ËÆæÁΩÆ/Ëé∑ÂèñÊ®°ÂùóÂèÇÊï∞ Bank_2 Áî®Êà∑ÂèòÈáè
 */
 ErrorType_e GlobalParam_Bank_2(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 {
@@ -312,7 +312,7 @@ ErrorType_e GlobalParam_Bank_2(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 		}
 	}
 //	
-//	if(ucType >= 0 && ucType <= 0x3F) /* ”√ªß±‰¡ø1 , RAM÷–*/ 
+//	if(ucType >= 0 && ucType <= 0x3F) /* Áî®Êà∑ÂèòÈáè1 , RAM‰∏≠*/ 
 //	{
 //		if(eReadWrite == TMC_READ)
 //		{
@@ -321,7 +321,7 @@ ErrorType_e GlobalParam_Bank_2(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 
 //			g_tGlobalParam.laBank2_UserVar[ucType] = puData->lData;
 //		}	
-//	}else if(ucType >= 40 && ucType <= 0x7F){  /* ”√ªß±‰¡ø2 RAM÷–£¨≤¢∏¸–¬µΩEEPROM÷–*/
+//	}else if(ucType >= 40 && ucType <= 0x7F){  /* Áî®Êà∑ÂèòÈáè2 RAM‰∏≠ÔºåÂπ∂Êõ¥Êñ∞Âà∞EEPROM‰∏≠*/
 //		
 //		if(eReadWrite == TMC_READ)
 //		{
@@ -353,7 +353,7 @@ ErrorType_e GlobalParam_Bank_2(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 
 
 /*
-* …Ë÷√/ªÒ»°ƒ£øÈ≤Œ ˝ Bank_3 
+* ËÆæÁΩÆ/Ëé∑ÂèñÊ®°ÂùóÂèÇÊï∞ Bank_3 
 */
 ErrorType_e GlobalParam_Bank_3(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 {
@@ -392,13 +392,13 @@ ErrorType_e GlobalParam_Bank_3(ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte
 
 
 /*
-*  …Ë÷√/ªÒ»°ƒ£øÈ≤Œ ˝
+*  ËÆæÁΩÆ/Ëé∑ÂèñÊ®°ÂùóÂèÇÊï∞
 */
 ErrorType_e TMC_Global_Param(Bank_e eBank, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 {	
 	ErrorType_e eError = ERROR_TYPE_SUCCESS;
 	
-	//≤Œ ˝ºÏ≤¡
+	//ÂèÇÊï∞Ê£ÄÊì¶
 	if(eBank >= BANK_END) return ERROR_TYPE_DEVICE_ID;
 	
 	switch(eBank) 
@@ -441,7 +441,7 @@ ErrorType_e TMC_Global_Param(Bank_e eBank, ReadWrite_e eReadWrite, uint8_t ucTyp
 
 /* 
 * 
-*  ∂¡»°»´æ÷≤Œ ˝ 
+*  ËØªÂèñÂÖ®Â±ÄÂèÇÊï∞ 
 *
 */
 ErrorType_e Read_Global_Param(__IO GlobalParam_t *ptGlobalParam)
@@ -450,38 +450,38 @@ ErrorType_e Read_Global_Param(__IO GlobalParam_t *ptGlobalParam)
 	uint8_t  ucNum = 0;
 	uint16_t usCrc = 0;
 	
-	//∂¡»°≤Œ ˝	
+	//ËØªÂèñÂèÇÊï∞	
 	do{
-		//º∆ ˝
+		//ËÆ°Êï∞
 		ucNum++;
 		
-		//∂¡»°
+		//ËØªÂèñ
 		memset((void*)ptGlobalParam, 0, sizeof(GlobalParam_t));
 		Param_Read(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)ptGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN);
 		usCrc = CRC16((uint8_t*)ptGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN-2);
 		
-		//–£—È
+		//Ê†°È™å
 		if(usCrc == ptGlobalParam->usCrc)
 		{
 			return ERROR_TYPE_SUCCESS;
 		}else{
 			//HAL_Delay(2);
-			rt_thread_delay(2);
+			rt_thread_mdelay(2);
 		}
 		
 	}while(ucNum < 3);
 
 	
-	//µ⁄“ª¥Œ…œµÁ
+	//Á¨¨‰∏ÄÊ¨°‰∏äÁîµ
 	if(ptGlobalParam->usCrc != usCrc && ptGlobalParam->ulInitFlag != PARAM_INIT_FLAG)
 	{
-		//µ⁄“ª¥Œ…œµÁ, ≥ı ºªØ£¨±£¥Ê
+		//Á¨¨‰∏ÄÊ¨°‰∏äÁîµ, ÂàùÂßãÂåñÔºå‰øùÂ≠ò
 		Global_Param_SetDefault_Value(ptGlobalParam);
-		//±£¥Ê		
-		return Save_Global_Param(ptGlobalParam);
+		//‰øùÂ≠ò		
+//		return Save_Global_Param(ptGlobalParam);
 	}
 
-	// ˝æ›–£—ÈºÏ≤‚
+	//Êï∞ÊçÆÊ†°È™åÊ£ÄÊµã
 	if(ucNum >= 3)
 	{
 //		LOG_Warn("Read Global Param CRC Error");
@@ -494,7 +494,7 @@ ErrorType_e Read_Global_Param(__IO GlobalParam_t *ptGlobalParam)
 
 /* 
 * 
-*  ±£¥Ê»´æ÷≤Œ ˝ 
+*  ‰øùÂ≠òÂÖ®Â±ÄÂèÇÊï∞ 
 *
 */
 ErrorType_e Save_Global_Param(__IO GlobalParam_t *ptGlobalParam)
@@ -504,36 +504,36 @@ ErrorType_e Save_Global_Param(__IO GlobalParam_t *ptGlobalParam)
 	uint16_t usWriteCrc = 0, usReadCrc = 0;
 	GlobalParam_t  tGlobalParam = {0};
 	
-	//º∆ ˝‘≠ º ˝æ›CRC
+	//ËÆ°Êï∞ÂéüÂßãÊï∞ÊçÆCRC
 	usWriteCrc = ptGlobalParam->usCrc;
 	
-	//∂¡»°≤Œ ˝	
+	//ËØªÂèñÂèÇÊï∞	
 	do{
-		//º∆ ˝
+		//ËÆ°Êï∞
 		ucNum++;
 		
-		//–¥»Î
+		//ÂÜôÂÖ•
 		memmove((void*)&tGlobalParam, (void*)ptGlobalParam, sizeof(GlobalParam_t));
 		Param_Write(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)&tGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN);
 			
-		//∂¡»°
+		//ËØªÂèñ
 		memset((void*)&tGlobalParam, 0, sizeof(GlobalParam_t));
 		Param_Read(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)&tGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN);
 		usReadCrc = CRC16((uint8_t*)&tGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN-2);
 		
-		//∂‘±»«∞∫Ûcrc
+		//ÂØπÊØîÂâçÂêécrc
 		if(usWriteCrc == usReadCrc && usReadCrc == tGlobalParam.usCrc)
 		{
 			return ERROR_TYPE_SUCCESS;
 		}else{
 			//HAL_Delay(2);
-			rt_thread_delay(2);
+			rt_thread_mdelay(2);
 		}
 		
-	}while(ucNum < 3);  //◊Ó∂‡÷ÿ∏¥3¥Œ
+	}while(ucNum < 3);  //ÊúÄÂ§öÈáçÂ§ç3Ê¨°
 
 	
-	//±£¥Ê ß∞‹
+	//‰øùÂ≠òÂ§±Ë¥•
 	if(ucNum >= 3)
 	{
 		LOG_Error("Save Global Param Fail");

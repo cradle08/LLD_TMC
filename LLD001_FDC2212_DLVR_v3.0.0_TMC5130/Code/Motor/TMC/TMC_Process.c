@@ -11,16 +11,17 @@
 #include "bsp_can.h"
 
 
-//–Ë±£¥Êµƒ÷·≤Œ ˝
+
+//ÈúÄ‰øùÂ≠òÁöÑËΩ¥ÂèÇÊï∞
 __IO AxisParamDefault_t g_tAxisParamDefault = {0};
-//¡˜≥Ã
+//ÊµÅÁ®ã
 __IO Process_t 		 g_tProcess = {0};
-//¡˜≥Ã-º∆ ±∆˜–≈œ¢
+//ÊµÅÁ®ã-ËÆ°Êó∂Âô®‰ø°ÊÅØ
 __IO ProtcessTimeCount_t g_tProtcessTimeCount = {0};
 
 
 /*
- * TMC Reset£¨ ∑«∂¬»˚÷¥––
+ * TMC ResetÔºå ÈùûÂ†µÂ°ûÊâßË°å
  */
 #include "process.h"
 #define MOTOR_RESET_TIMEOUT  90000 //90s
@@ -33,10 +34,10 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 	uint8_t  ucFlag = 0, ucOC_Status = 0;
 	int32_t lSpeed = 0;
 	
-	//≤ª–Ë“™÷¥––∏¥Œª≤Ÿ◊˜
+	//‰∏çÈúÄË¶ÅÊâßË°åÂ§ç‰ΩçÊìç‰Ωú
 	if(g_tTMCStatus.ucMotorResetStartFlag == 0) return 0;
 	
-	//√ø∏Ù1ms¥¶¿Ì“ª¥Œ
+	//ÊØèÈöî1msÂ§ÑÁêÜ‰∏ÄÊ¨°
 	if(ulTick - s_ulTick >= 1)
 	{
 		s_ulTick = ulTick;
@@ -44,68 +45,38 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 		{
 			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
 			{
-				/* ’˝‘⁄∏¥Œª */
+				/* Ê≠£Âú®Â§ç‰Ωç */
 				ucFlag = 1;
 				switch(g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec)
 				{
 					//
 					case MOTOR_RESET_EXEC_1:
 					{
-						//∏¥Œª∆ ºtick
+						//Â§ç‰ΩçËµ∑Âßãtick
 						g_tTMCStatus.tMotorResetInfo[eTMC].ulStartTick = ulTick;
-						//ÀŸ∂»Œ™0
+						//ÈÄüÂ∫¶‰∏∫0
 						TMC5160_WriteInt(eTMC, TMC5160_VMAX, 0);
-						//«Â¡„∏¥Œªƒ£ Ω
+						//Ê∏ÖÈõ∂Â§ç‰ΩçÊ®°Âºè
 						//TMC5160_WriteInt(eTMC, TMC5160_SWMODE, 0);
 						
-						//ºÏ≤Èπ‚ÒÓ◊¥ÃÂ
+						//Ê£ÄÊü•ÂÖâËÄ¶Áä∂‰Ωì
 						ucOC_Status = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_LEFT_SW_TRIGGER_MASK, TMC5160_RAMPSTAT_LEFT_SW_TRIGGER_SHIFT);
-
-#ifdef P_AXIS_REF_POLITY						
-						if(eTMC == TMC_0 || eTMC == TMC_1)
-						{							
-							if(ucOC_Status == 0)
-							{
-						         //π‚ÒÓŒﬁ¥•∑¢
-								 TMC5160_WriteInt(eTMC, TMC5160_SWMODE, 0x0821); //Œ™◊Û≤Œøºµ„£¨»Ì∏¥Œª£¨∏ﬂ”––ß
-								 g_tBoardStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_2;
-								
-							}else{
-								//π‚ÒÓ¥•∑¢“—‘⁄¡„Œª,«–ªªµΩ°∞µÕÀŸªÿÕÀ°±								
-								g_tBoardStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_4;
-							}
-						}else{
-							//TMC_2
-							if(ucOC_Status == 1)
-							{
-						         //π‚ÒÓŒﬁ¥•∑¢
-								TMC5160_WriteInt(eTMC, TMC5160_SWMODE, 0x0825); //ƒ£øÈ»˝£∫Œ™◊Û≤Œøºµ„£¨»Ì∏¥Œª£¨µÕ”––ß°£ ƒ£øÈ1°¢2£∫¥•∑¢ ±Œ™1£¨∏ﬂ”––ß°£
-								 g_tBoardStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_2;
-								
-							}else{
-								//π‚ÒÓ¥•∑¢“—‘⁄¡„Œª£¨«–ªªµΩ°∞µÕÀŸªÿÕÀ°±
-								g_tBoardStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_4;
-							}
-						}
-#else
 						if(ucOC_Status == 0)
 						{
-							 //π‚ÒÓŒﬁ¥•∑¢
-							 //TMC5160_WriteInt(eTMC, TMC5160_SWMODE, 0x0821); //Œ™◊Û≤Œøºµ„£¨»Ì∏¥Œª£¨∏ﬂ”––ß
+							 //ÂÖâËÄ¶Êó†Ëß¶Âèë
+							 //TMC5160_WriteInt(eTMC, TMC5160_SWMODE, 0x0821); //‰∏∫Â∑¶ÂèÇËÄÉÁÇπÔºåËΩØÂ§ç‰ΩçÔºåÈ´òÊúâÊïà
 							
-							// πƒ‹◊ˆ≤Œøºµ„∏¥Œª
+							//‰ΩøËÉΩÂÅöÂèÇËÄÉÁÇπÂ§ç‰Ωç
 							TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 1);
 							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_2;
 							
 						}else{
-							//π‚ÒÓ¥•∑¢“—‘⁄¡„Œª,«–ªªµΩ°∞µÕÀŸªÿÕÀ°±								
+							//ÂÖâËÄ¶Ëß¶ÂèëÂ∑≤Âú®Èõ∂‰Ωç,ÂàáÊç¢Âà∞‚Äú‰ΩéÈÄüÂõûÈÄÄ‚Äù								
 							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_4;
 						}		
-						
-#endif
 					}
 					break;
-					/* ∏ﬂÀŸªÿ¡„ */
+					/* È´òÈÄüÂõûÈõ∂ */
 					case MOTOR_RESET_EXEC_2:
 					{
 						TMC5160_WriteInt(eTMC, TMC5160_VMAX, 0); 
@@ -113,207 +84,173 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 						TMC5160_WriteInt(eTMC, TMC5160_AMAX ,g_tAxisParamDefault.lResetAcc[eTMC]); 		 //change AMax, so than  stop quickly
 						TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC5160_MODE_VELNEG); 					 //TMC5160_MODE_VELPOS   TMC5160_MODE_VELNEG
 					
-						//«–ªªµΩ3£¨ÀŸ∂» «∑ÒŒ™0
+						//ÂàáÊç¢Âà∞3ÔºåÈÄüÂ∫¶ÊòØÂê¶‰∏∫0
 						g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_3;
 					}
 					break;
-					/* ÀŸ∂» «∑ÒŒ™0 */
+					/* ÈÄüÂ∫¶ÊòØÂê¶‰∏∫0 */
 					case MOTOR_RESET_EXEC_3:
 					{					
 						lSpeed = TMC5160_ReadInt(eTMC, TMC5160_VACTUAL);
 						if(lSpeed == 0)
 						{
-							//«–ªªµΩ
+							//ÂàáÊç¢Âà∞
 							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_4;
 						}
 					}
 					break;				
-					/* µÕÀŸ–˝◊™ªÿÕÀ */
+					/* ‰ΩéÈÄüÊóãËΩ¨ÂõûÈÄÄ */
 					case MOTOR_RESET_EXEC_4:
 					{
 						TMC5160_WriteInt(eTMC, TMC5160_VMAX, g_tAxisParamDefault.lResetSpeedLow[eTMC]*V_CHANGE_CONST);  		// RESET_LOW_SPEED  RESET_HIGH_SPEED
 						//TMC5160_WriteInt(eTMC, TMC5160_AMAX ,RESET_LOW_AMAX); //
 						TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC5160_MODE_VELPOS);  //TMC5160_MODE_VELPOS   TMC5160_MODE_VELNEG
 											
-						//«–ªªµΩ
+						//ÂàáÊç¢Âà∞
 						g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_5;
 					
 					}
 					break;
-					/* ºÏ≤‚µ»¥˝Õ—¿Îπ‚ÒÓ */
+					/* Ê£ÄÊµãÁ≠âÂæÖËÑ±Á¶ªÂÖâËÄ¶ */
 					case MOTOR_RESET_EXEC_5:
 					{					
-						//ºÏ≤Èπ‚ÒÓ◊¥ÃÂ
+						//Ê£ÄÊü•ÂÖâËÄ¶Áä∂‰Ωì
 						ucOC_Status = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_LEFT_SW_TRIGGER_MASK, TMC5160_RAMPSTAT_LEFT_SW_TRIGGER_SHIFT);
-#ifdef P_AXIS_REF_POLITY					
-						if(eTMC == TMC_0 || eTMC == TMC_1)
-						{							
-							if(ucOC_Status == 0)
-							{
-								//º«¬ºµ±«∞Œª÷√
-								s_lTrigglePos = TMC5160_ReadInt(eTMC, TMC5160_XACTUAL);
-						        //π‚ÒÓŒﬁ¥•∑¢(“—Õ—¿Îπ‚ÒÓ)£¨ 
-								g_tBoardStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_6;
-							}
-						}else{
-							//TMC_2
-							if(ucOC_Status == 1)
-							{
-								//º«¬ºµ±«∞Œª÷√
-								s_lTrigglePos = TMC5160_ReadInt(eTMC, TMC5160_XACTUAL);
-						        //π‚ÒÓŒﬁ¥•∑¢£®“—Õ—¿Îπ‚ÒÓ£©
-								g_tBoardStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_6;
-							}
-						}
-#else
 						if(ucOC_Status == 0)
 						{
-							#if 0  //»•µÙπÃ∂®Œª÷√ªÿÕÀ£¨≤Ω÷Ë£°£°£°£°
-								//º«¬ºµ±«∞Œª÷√
+							#if 0  //ÂéªÊéâÂõ∫ÂÆö‰ΩçÁΩÆÂõûÈÄÄÔºåÊ≠•È™§ÔºÅÔºÅÔºÅÔºÅ
+								//ËÆ∞ÂΩïÂΩìÂâç‰ΩçÁΩÆ
 								s_lTrigglePos = TMC5160_ReadInt(eTMC, TMC5160_XACTUAL);
-								//π‚ÒÓŒﬁ¥•∑¢(“—Õ—¿Îπ‚ÒÓ)£¨ 
+								//ÂÖâËÄ¶Êó†Ëß¶Âèë(Â∑≤ËÑ±Á¶ªÂÖâËÄ¶)Ôºå 
 								g_tBoardStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_6;
 							#else
 								TMC5160_WriteInt(eTMC, TMC5160_VMAX, 0);
 								g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_7;
 							#endif
 						}
-#endif
 					}
 					break;	
-					/* ÷¥––πÃ∂®æ‡¿Î */
+					/* ÊâßË°åÂõ∫ÂÆöË∑ùÁ¶ª */
 					case MOTOR_RESET_EXEC_6:
 					{
 						//
 						int32_t lCurPos = TMC5160_ReadInt(eTMC, TMC5160_XACTUAL);
 						if(lCurPos >= s_lTrigglePos + g_tAxisParamDefault.lResetOff[eTMC])
 						{
-							//Õ£÷π
+							//ÂÅúÊ≠¢
 							TMC5160_WriteInt(eTMC, TMC5160_VMAX, 0); 
-							//«–ªªµΩ
+							//ÂàáÊç¢Âà∞
 							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_7;
 						}
 					}
 					break;
-					/* ÀŸ∂» «∑ÒŒ™0 */
+					/* ÈÄüÂ∫¶ÊòØÂê¶‰∏∫0 */
 					case MOTOR_RESET_EXEC_7:
 					{
 						lSpeed = TMC5160_ReadInt(eTMC, TMC5160_VACTUAL);
 						if(lSpeed == 0)
 						{
-							//«–ªªµΩ
+							//ÂàáÊç¢Âà∞
 							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_8;
 						}
 					}
 					break;	
-					/* …Ë÷√∏¥Œªƒ£ Ω */
+					/* ËÆæÁΩÆÂ§ç‰ΩçÊ®°Âºè */
 					case MOTOR_RESET_EXEC_8:
-					{	
-#ifdef P_AXIS_REF_POLITY						
-						if(eTMC == TMC_0 || eTMC == TMC_1)
-						{				
-							TMC5160_WriteInt(eTMC, TMC5160_SWMODE, 0x0821); //Œ™◊Û≤Œøºµ„£¨»Ì∏¥Œª£¨∏ﬂ”––ß							
-						}else{
-							//TMC_2
-							TMC5160_WriteInt(eTMC, TMC5160_SWMODE, 0x0825); //ƒ£øÈ»˝£∫π‚ÒÓ¥•∑¢ ±0£¨µÕ”––ß°£ ƒ£øÈ1°¢2£∫¥•∑¢ ±Œ™1£¨∏ﬂ”––ß°£
-
-						}
-#else
-						
+					{		
 //						uint32_t ulSWMode = 0;
 //						ulSWMode = (0x0800 | (g_tAxisParamDefault.ucRighLimitPolarity[eTMC] << 3) | \
 //									(g_tAxisParamDefault.ucLeftLimitPolarity[eTMC] << 2) | 1);
 						
-						// πƒ‹◊ˆ≤Œøºµ„∏¥Œª
+						//‰ΩøËÉΩÂÅöÂèÇËÄÉÁÇπÂ§ç‰Ωç
 						TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 1);					
-						//TMC5160_WriteInt(eTMC, TMC5160_SWMODE, ulSWMode); //»Ì∏¥Œª£¨ πƒ‹∫Õ…Ë÷√◊Û≤Œøºµ„Õ£÷π, ◊ÛÀ¯¥Ê£¨¥•∑¢º´–‘°£ …Ë÷√”“≤Œøºµ„º´–‘£¨µ´≤ª πƒ‹	
+						//TMC5160_WriteInt(eTMC, TMC5160_SWMODE, ulSWMode); //ËΩØÂ§ç‰ΩçÔºå‰ΩøËÉΩÂíåËÆæÁΩÆÂ∑¶ÂèÇËÄÉÁÇπÂÅúÊ≠¢, Â∑¶ÈîÅÂ≠òÔºåËß¶ÂèëÊûÅÊÄß„ÄÇ ËÆæÁΩÆÂè≥ÂèÇËÄÉÁÇπÊûÅÊÄßÔºå‰ΩÜ‰∏ç‰ΩøËÉΩ	
 						
-#endif
-						//«–ªªµΩ
+						//ÂàáÊç¢Âà∞
 						g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_9;
 					}
 					break;
-					/* µÕÀŸ∏¥Œª */
+					/* ‰ΩéÈÄüÂ§ç‰Ωç */
 					case MOTOR_RESET_EXEC_9:
 					{
 						TMC5160_WriteInt(eTMC, TMC5160_VMAX, g_tAxisParamDefault.lResetSpeedLow[eTMC]*V_CHANGE_CONST);  		// RESET_LOW_SPEED  RESET_HIGH_SPEED
 						TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC5160_MODE_VELNEG);  //TMC5160_MODE_VELPOS   TMC5160_MODE_VELNEG
 					
-						//«–ªªµΩ
+						//ÂàáÊç¢Âà∞
 						g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_10;
 					}
 					break;		
-					/* ÀŸ∂» «∑ÒŒ™0 */					
+					/* ÈÄüÂ∫¶ÊòØÂê¶‰∏∫0 */					
 					case MOTOR_RESET_EXEC_10:
 					{					
 						lSpeed = TMC5160_ReadInt(eTMC, TMC5160_VACTUAL);
 						if(lSpeed == 0)
 						{
-							//«–ªªµΩ
+							//ÂàáÊç¢Âà∞
 							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_11;
 						}
 					}
 					break;
-					/* –ﬁ’˝±„“À */
+					/* ‰øÆÊ≠£‰æøÂÆú */
 					case MOTOR_RESET_EXEC_11:
 					{
-						// µº Œª÷√
+						//ÂÆûÈôÖ‰ΩçÁΩÆ
 						int32_t lXActual = TMC5160_ReadInt(eTMC, TMC5160_XACTUAL);
-						//get XLatch£¨ π‚ÒÓ¥•∑¢Œª÷√
+						//get XLatchÔºå ÂÖâËÄ¶Ëß¶Âèë‰ΩçÁΩÆ
 						int32_t lXLatch = TMC5160_ReadInt(eTMC, TMC5160_XLATCH);
-						//∆´≤Ó
+						//ÂÅèÂ∑Æ
 						int32_t	lDiff = lXActual - lXLatch;
 						
-						//Œª÷√ƒ£ Ω£¨–ﬁ’˝±„“À
+						//‰ΩçÁΩÆÊ®°ÂºèÔºå‰øÆÊ≠£‰æøÂÆú
 						TMC5160_WriteInt(eTMC, TMC5160_XACTUAL, lDiff);
 						TMC5160_WriteInt(eTMC, TMC5160_XTARGET, 0);
 						TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC_MODE_POSITION);
 						TMC_SetPMode_V(eTMC, 1);
 					
-						//«–ªªµΩ
+						//ÂàáÊç¢Âà∞
 						g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_12;
 					}
 					break;		
-					/* –ﬁ’˝ÕÍ≥…£¨ÀŸ∂»=0 */
+					/* ‰øÆÊ≠£ÂÆåÊàêÔºåÈÄüÂ∫¶=0 */
 					case MOTOR_RESET_EXEC_12:
 					{
 					
 						lSpeed = TMC5160_ReadInt(eTMC, TMC5160_VACTUAL);
 						if(lSpeed == 0)
 						{
-							//«–ªªµΩ
+							//ÂàáÊç¢Âà∞
 							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_13;
 						}
 					}
-					/* ∏¥ŒªÕÍ≥…£¨¥¶¿Ì */
+					/* Â§ç‰ΩçÂÆåÊàêÔºåÂ§ÑÁêÜ */
 					case MOTOR_RESET_EXEC_13:
 					{
-						//πÿ±’◊ˆ≤Œøºµ„∏¥Œª
+						//ÂÖ≥Èó≠ÂÅöÂèÇËÄÉÁÇπÂ§ç‰Ωç
 						TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 0);
 						
-						//…Ë÷√Œ™±£≥÷ƒ£ Ω
+						//ËÆæÁΩÆ‰∏∫‰øùÊåÅÊ®°Âºè
 						//TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC_MODE_HOLD);
 						
-						//«Â¡„
+						//Ê∏ÖÈõ∂
 						TMC5160_WriteInt(eTMC, TMC5160_XTARGET, 0);
 						TMC5160_WriteInt(eTMC, TMC5160_XACTUAL, 0);						
 						TMC5160_WriteInt(eTMC, TMC5160_XENC, 0);
-						//ª÷∏¥ÀŸ∂»…Ë÷√
+						//ÊÅ¢Â§çÈÄüÂ∫¶ËÆæÁΩÆ
 						TMC_SetPMode_V(eTMC, 1);
 						g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_FINISH;
 						
-						//…Ë÷√ƒ£ Ω--Œª÷√ƒ£ Ω
+						//ËÆæÁΩÆÊ®°Âºè--‰ΩçÁΩÆÊ®°Âºè
 						TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC_MODE_POSITION); //
-						//‘Ÿ¥ŒΩ´±‡¬Î∆˜«Â¡„
+						//ÂÜçÊ¨°Â∞ÜÁºñÁ†ÅÂô®Ê∏ÖÈõ∂
 						TMC5160_WriteInt(eTMC, TMC5160_XENC, 0);
 					}
 					break;						
 				}		
 				
-				//∏¥Œª≥¨ ±ºÏ≤È
+				//Â§ç‰ΩçË∂ÖÊó∂Ê£ÄÊü•
 				if(ulTick - g_tTMCStatus.tMotorResetInfo[eTMC].ulStartTick >= MOTOR_RESET_TIMEOUT) 
 				{
-					//≥¨ ±
+					//Ë∂ÖÊó∂
 					g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_FAIL;
 					LOG_Error("Motor=%d Reset Timeout", eTMC);
 					return 0;
@@ -321,7 +258,7 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 			}
 		}
 		
-		//À˘”–∏¥Œª“—÷¥––ÕÍ≥…
+		//ÊâÄÊúâÂ§ç‰ΩçÂ∑≤ÊâßË°åÂÆåÊàê
 		if(ucFlag == 0)
 		{
 			g_tTMCStatus.ucMotorResetStartFlag = 0;
@@ -335,17 +272,17 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 
 
 /*
-*	∏¸–¬±‡¬Î∆˜≥£ ˝, ucValidFlag:1=–¥»Îøÿ÷∆∆˜ºƒ¥Ê∆˜£¨º¥£∫¡¢º¥…˙–ß£¨ 0=≤ª–¥»Î£¨≤ª…˙–ß
+*	Êõ¥Êñ∞ÁºñÁ†ÅÂô®Â∏∏Êï∞, ucValidFlag:1=ÂÜôÂÖ•ÊéßÂà∂Âô®ÂØÑÂ≠òÂô®ÔºåÂç≥ÔºöÁ´ãÂç≥ÁîüÊïàÔºå 0=‰∏çÂÜôÂÖ•Ôºå‰∏çÁîüÊïà
 */
 ErrorType_e Update_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *ptAxisParamDefault, uint8_t ucValidFlag)
 {	
 	ErrorType_e eErrorType = ERROR_TYPE_SUCCESS;
 	
-	//±‡¬Î∆˜“Ú◊”
+	//ÁºñÁ†ÅÂô®Âõ†Â≠ê
 	float fMid = (float)((ptAxisParamDefault->usFullStepPerRound[eTMC]) * ptAxisParamDefault->usMicroStepResultion[eTMC])/(float)(ptAxisParamDefault->usEncResultion[eTMC] * (int32_t)4); 
-	//±‡¬Î∆˜“Ú◊”--’˚ ˝≤ø∑÷
+	//ÁºñÁ†ÅÂô®Âõ†Â≠ê--Êï¥Êï∞ÈÉ®ÂàÜ
 	int32_t lInt = (int32_t)fMid;
-	//±‡¬Î∆˜“Ú◊”--–° ˝≤ø∑÷
+	//ÁºñÁ†ÅÂô®Âõ†Â≠ê--Â∞èÊï∞ÈÉ®ÂàÜ
 	float fDecimal = fMid - lInt;
 
 	//
@@ -353,14 +290,14 @@ ErrorType_e Update_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *ptAxisPar
 			 eTMC, ptAxisParamDefault->usFullStepPerRound[eTMC], ptAxisParamDefault->usMicroStepResultion[eTMC], \
 			 ptAxisParamDefault->usEncResultion[eTMC], ptAxisParamDefault->ucEncCountDirect[eTMC]);
 	
-	//º∆À„±‡¬Î∆˜≥£ ˝
+	//ËÆ°ÁÆóÁºñÁ†ÅÂô®Â∏∏Êï∞
 	if(0 == g_tAxisParamDefault.ucEncCountDirect[eTMC])
 	{
-		//’˝œÚ
+		//Ê≠£Âêë
 		ptAxisParamDefault->lEncConstValue[eTMC] = lInt*65536+ (int32_t)(fDecimal*10000);
 		
 	}else if(1 == g_tAxisParamDefault.ucEncCountDirect[eTMC]){
-		//∑¥œÚ		
+		//ÂèçÂêë		
 		ptAxisParamDefault->lEncConstValue[eTMC] = (-(lInt+1))*65536+ (int32_t)(10000-(fDecimal*10000));
 	}
 	
@@ -379,17 +316,17 @@ ErrorType_e Update_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *ptAxisPar
 
 
 /*
-*	∏¸–¬≤¢±£¥Ê±‡¬Î∆˜≥£ ˝
+*	Êõ¥Êñ∞Âπ∂‰øùÂ≠òÁºñÁ†ÅÂô®Â∏∏Êï∞
 */
 ErrorType_e UpdateAndSave_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *ptAxisParamDefault)
 {
-	//∏¸–¬±‡¬Î∆˜≥£ ˝
+	//Êõ¥Êñ∞ÁºñÁ†ÅÂô®Â∏∏Êï∞
 	Update_Enc_ConstValue(eTMC, ptAxisParamDefault, 0);
 	
-	//÷ÿ–¬º∆À„CRC
+	//ÈáçÊñ∞ËÆ°ÁÆóCRC
 	ptAxisParamDefault->usCrc = CRC16((uint8_t*)ptAxisParamDefault, sizeof(AxisParamDefault_t)-2);
 	
-	//±£¥Ê÷·≤Œ ˝
+	//‰øùÂ≠òËΩ¥ÂèÇÊï∞
 	return Save_Axis_Param_Default(ptAxisParamDefault);
 	
 }
@@ -400,42 +337,42 @@ ErrorType_e UpdateAndSave_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *pt
 
 
 /*
-*	÷·≤Œ ˝≥ı ºªØ
+*	ËΩ¥ÂèÇÊï∞ÂàùÂßãÂåñ
 */
 void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefault)
 {
 	TMC_e eTMC = TMC_0;
 	
-	//µ⁄“ª¥Œ…œµÁ£¨≥ı ºªØ£¨±£¥Ê
+	//Á¨¨‰∏ÄÊ¨°‰∏äÁîµÔºåÂàùÂßãÂåñÔºå‰øùÂ≠ò
 	ptAxisParamDefault->ulInitFlag = PARAM_INIT_FLAG;
 	
 #if (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_1301_Common) || (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_1161) 
-	/* µ•÷· */		
+	/* ÂçïËΩ¥ */		
 	
-	//±‡¬Î∆˜œ‡πÿ
-	ptAxisParamDefault->usEncResultion[eTMC]	  = DEFAULT_ENC_RESULTION_1000;   	//±‡¬Î∆˜∑÷±Ê¬ 
-	ptAxisParamDefault->lEncDiff_Threshold[eTMC]  = 100;					    //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
-	ptAxisParamDefault->ucEncCountDirect[eTMC]    = 0;					   		//±‡¬Î∆˜º∆ ˝∑ΩœÚ
-	ptAxisParamDefault->lEncConstValue[eTMC] 	  = DEFAULT_ENC_CONST_VALUE_TMC_0;  //±‡¬Î∆˜≥£ ˝--º∆À„ªÒ»°
+	//ÁºñÁ†ÅÂô®Áõ∏ÂÖ≥
+	ptAxisParamDefault->usEncResultion[eTMC]	  = DEFAULT_ENC_RESULTION_1000;   	//ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá
+	ptAxisParamDefault->lEncDiff_Threshold[eTMC]  = 100;					    //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
+	ptAxisParamDefault->ucEncCountDirect[eTMC]    = 0;					   		//ÁºñÁ†ÅÂô®ËÆ°Êï∞ÊñπÂêë
+	ptAxisParamDefault->lEncConstValue[eTMC] 	  = DEFAULT_ENC_CONST_VALUE_TMC_0;  //ÁºñÁ†ÅÂô®Â∏∏Êï∞--ËÆ°ÁÆóËé∑Âèñ
 
 
-	//≤Œøºµ„-∏¥Œª≤Œ ˝
-	ptAxisParamDefault->lResetSpeedHigh[eTMC] 	= 3500;  //∏¥ŒªÀŸ∂»
-	ptAxisParamDefault->lResetSpeedLow[eTMC]  	= 1500;	 //∏¥ŒªÀŸ∂»  
-	ptAxisParamDefault->lResetAcc[eTMC]      	= 500;   //∏¥Œªº”ÀŸ∂»
-	ptAxisParamDefault->lResetOff[eTMC]  		= 200;	 //∏¥Œª∆´“∆æ‡¿Î
+	//ÂèÇËÄÉÁÇπ-Â§ç‰ΩçÂèÇÊï∞
+	ptAxisParamDefault->lResetSpeedHigh[eTMC] 	= 3500;  //Â§ç‰ΩçÈÄüÂ∫¶
+	ptAxisParamDefault->lResetSpeedLow[eTMC]  	= 1500;	 //Â§ç‰ΩçÈÄüÂ∫¶  
+	ptAxisParamDefault->lResetAcc[eTMC]      	= 500;   //Â§ç‰ΩçÂä†ÈÄüÂ∫¶
+	ptAxisParamDefault->lResetOff[eTMC]  		= 200;	 //Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª
 
-	//µÁ¡˜
-	ptAxisParamDefault->ucIRun[eTMC]	   = 65; //‘À––µÁ¡˜
-	ptAxisParamDefault->ucIHold[eTMC]	   = 8;  //±£≥÷µÁ¡˜
-	ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;   //µÁ¡˜ΩµµΩIHoldÀ˘–Ë ±º‰	
+	//ÁîµÊµÅ
+	ptAxisParamDefault->ucIRun[eTMC]	   = 65; //ËøêË°åÁîµÊµÅ
+	ptAxisParamDefault->ucIHold[eTMC]	   = 8;  //‰øùÊåÅÁîµÊµÅ
+	ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;   //ÁîµÊµÅÈôçÂà∞IHoldÊâÄÈúÄÊó∂Èó¥	
 
-	//≤ΩΩ¯œ∏∑÷°¢√ª◊™»´≤Ω ˝
+	//Ê≠•ËøõÁªÜÂàÜ„ÄÅÊ≤°ËΩ¨ÂÖ®Ê≠•Êï∞
 	ptAxisParamDefault->usMicroStepResultion[eTMC] = 64;//DEFAULT_MICRO_STEP_RESULTION; 
-	ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //»´≤Ω√ø◊™
+	ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //ÂÖ®Ê≠•ÊØèËΩ¨
 
 
-	//¡˘µ„ÀŸ∂»≤Œ ˝£¨”√”⁄Œª÷√ƒ£ Ω
+	//ÂÖ≠ÁÇπÈÄüÂ∫¶ÂèÇÊï∞ÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 	ptAxisParamDefault->lVStart[eTMC] = 0;
 	ptAxisParamDefault->lA1[eTMC] 	  = 500000; 
 	ptAxisParamDefault->lV1[eTMC] 	  = 40000;
@@ -444,47 +381,47 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 	ptAxisParamDefault->lDMax[eTMC]   = 300000; 
 	ptAxisParamDefault->lD1[eTMC] 	  = 500000; 
 	ptAxisParamDefault->lVStop[eTMC]  = 10;
-	//«˝∂Ø∆˜‘À––ƒ£ Ω£¨”√”⁄Œª÷√ƒ£ Ω
+	//È©±Âä®Âô®ËøêË°åÊ®°ÂºèÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 	ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
-	//ÀŸ∂»≤Œ ˝°¢”√”⁄ÀŸ∂»ƒ£ Ω
-	ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//µ⁄∂˛∂Œº”ÀŸ∂»
-	ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//◊Ó¥ÛÀŸ∂»
+	//ÈÄüÂ∫¶ÂèÇÊï∞„ÄÅÁî®‰∫éÈÄüÂ∫¶Ê®°Âºè
+	ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//Á¨¨‰∫åÊÆµÂä†ÈÄüÂ∫¶
+	ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//ÊúÄÂ§ßÈÄüÂ∫¶
 
-	//≤Œøºµ„∏¥Œª
-	ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //”“œﬁŒªº´–‘£¨∏ﬂ”––ß
-	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 1; //◊ÛœﬁŒªº´–‘£¨∏ﬂ”––ß
-	ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //–˝◊™∑ΩœÚ		
+	//ÂèÇËÄÉÁÇπÂ§ç‰Ωç
+	ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //Âè≥Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 1; //Â∑¶Èôê‰ΩçÊûÅÊÄßÔºå‰ΩéÊúâÊïà
+	ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //ÊóãËΩ¨ÊñπÂêë		
 			
 #elif (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_3301_Pipette)
-	/* »˝÷· “∆“∫∆˜ */	
+	/* ‰∏âËΩ¥ ÁßªÊ∂≤Âô® */	
 	for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 	{			
 		if(TMC_0 == eTMC)
 		{
-			/* »˝÷· M0, (Z÷·)*/
+			/* ‰∏âËΩ¥ M0, (ZËΩ¥)*/
 			
-			//±‡¬Î∆˜œ‡πÿ
-			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_720;     //±‡¬Î∆˜∑÷±Ê¬ 
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   	  //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
-			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   	  //±‡¬Î∆˜º∆ ˝∑ΩœÚ
-			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_Z; //±‡¬Î∆˜≥£ ˝--º∆À„ªÒ»°			
+			//ÁºñÁ†ÅÂô®Áõ∏ÂÖ≥
+			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_720;     //ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   	  //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
+			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   	  //ÁºñÁ†ÅÂô®ËÆ°Êï∞ÊñπÂêë
+			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_Z; //ÁºñÁ†ÅÂô®Â∏∏Êï∞--ËÆ°ÁÆóËé∑Âèñ			
 			
-			//≤Œøºµ„-∏¥Œª≤Œ ˝
-			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 15000; //∏¥ŒªÀŸ∂»
-			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000;  //∏¥ŒªÀŸ∂»  
-			ptAxisParamDefault->lResetAcc[eTMC]       = 500;   //∏¥Œªº”ÀŸ∂»
-			ptAxisParamDefault->lResetOff[eTMC]  	  = 800;   //∏¥Œª∆´“∆æ‡¿Î
+			//ÂèÇËÄÉÁÇπ-Â§ç‰ΩçÂèÇÊï∞
+			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 15000; //Â§ç‰ΩçÈÄüÂ∫¶
+			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000;  //Â§ç‰ΩçÈÄüÂ∫¶  
+			ptAxisParamDefault->lResetAcc[eTMC]       = 500;   //Â§ç‰ΩçÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lResetOff[eTMC]  	  = 800;   //Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª
 
-			//µÁ¡˜
-			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //‘À––µÁ¡˜
-			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //±£≥÷µÁ¡˜
-			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //µÁ¡˜ΩµµΩIHoldÀ˘–Ë ±º‰	
+			//ÁîµÊµÅ
+			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //ËøêË°åÁîµÊµÅ
+			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //‰øùÊåÅÁîµÊµÅ
+			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //ÁîµÊµÅÈôçÂà∞IHoldÊâÄÈúÄÊó∂Èó¥	
 			
-			//≤ΩΩ¯œ∏∑÷°¢√ª◊™»´≤Ω ˝
+			//Ê≠•ËøõÁªÜÂàÜ„ÄÅÊ≤°ËΩ¨ÂÖ®Ê≠•Êï∞
 			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64;//DEFAULT_MICRO_STEP_RESULTION; 
-			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //»´≤Ω√ø◊™
+			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //ÂÖ®Ê≠•ÊØèËΩ¨
 			
-			//¡˘µ„ÀŸ∂»≤Œ ˝£¨”√”⁄Œª÷√ƒ£ Ω
+			//ÂÖ≠ÁÇπÈÄüÂ∫¶ÂèÇÊï∞ÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 			ptAxisParamDefault->lVStart[eTMC] = 0;
 			ptAxisParamDefault->lA1[eTMC] 	 = 900000; 
 			ptAxisParamDefault->lV1[eTMC] 	 = 150000;
@@ -493,42 +430,42 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lDMax[eTMC]  = 1200000; 
 			ptAxisParamDefault->lD1[eTMC] 	 = 900000; 
 			ptAxisParamDefault->lVStop[eTMC] = 10;
-			//«˝∂Ø∆˜‘À––ƒ£ Ω
+			//È©±Âä®Âô®ËøêË°åÊ®°Âºè
 			ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
-			//ÀŸ∂»≤Œ ˝°¢”√”⁄ÀŸ∂»ƒ£ Ω
-			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//µ⁄∂˛∂Œº”ÀŸ∂»
-			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//◊Ó¥ÛÀŸ∂»
+			//ÈÄüÂ∫¶ÂèÇÊï∞„ÄÅÁî®‰∫éÈÄüÂ∫¶Ê®°Âºè
+			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//Á¨¨‰∫åÊÆµÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//ÊúÄÂ§ßÈÄüÂ∫¶
 	
-			//≤Œøºµ„∏¥Œª
-			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //”“œﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //◊ÛœﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //–˝◊™∑ΩœÚ
+			//ÂèÇËÄÉÁÇπÂ§ç‰Ωç
+			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //Âè≥Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //Â∑¶Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //ÊóãËΩ¨ÊñπÂêë
 			
 		}else if(TMC_1 == eTMC){
-			/* »˝÷· M1, (Y÷·)*/		
-			//±‡¬Î∆˜œ‡πÿ
-			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;   //±‡¬Î∆˜∑÷±Ê¬ 
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
-			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   //±‡¬Î∆˜º∆ ˝∑ΩœÚ
-			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_Y; //±‡¬Î∆˜≥£ ˝--º∆À„ªÒ»°
+			/* ‰∏âËΩ¥ M1, (YËΩ¥)*/		
+			//ÁºñÁ†ÅÂô®Áõ∏ÂÖ≥
+			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;   //ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
+			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   //ÁºñÁ†ÅÂô®ËÆ°Êï∞ÊñπÂêë
+			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_Y; //ÁºñÁ†ÅÂô®Â∏∏Êï∞--ËÆ°ÁÆóËé∑Âèñ
 		
-			//≤Œøºµ„-∏¥Œª≤Œ ˝
-			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 5000; //∏¥ŒªÀŸ∂»
-			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000; //∏¥ŒªÀŸ∂» 
-			ptAxisParamDefault->lResetAcc[eTMC]       = 500;  //∏¥Œªº”ÀŸ∂»
-			ptAxisParamDefault->lResetOff[eTMC]  	  = 400;  //∏¥Œª∆´“∆æ‡¿Î
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;	//±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
+			//ÂèÇËÄÉÁÇπ-Â§ç‰ΩçÂèÇÊï∞
+			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 5000; //Â§ç‰ΩçÈÄüÂ∫¶
+			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000; //Â§ç‰ΩçÈÄüÂ∫¶ 
+			ptAxisParamDefault->lResetAcc[eTMC]       = 500;  //Â§ç‰ΩçÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lResetOff[eTMC]  	  = 400;  //Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;	//ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
 			
-			//µÁ¡˜
-			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //‘À––µÁ¡˜
-			ptAxisParamDefault->ucIHold[eTMC]	   = 8;  //±£≥÷µÁ¡˜
-			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;   //µÁ¡˜ΩµµΩIHoldÀ˘–Ë ±º‰
+			//ÁîµÊµÅ
+			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //ËøêË°åÁîµÊµÅ
+			ptAxisParamDefault->ucIHold[eTMC]	   = 8;  //‰øùÊåÅÁîµÊµÅ
+			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;   //ÁîµÊµÅÈôçÂà∞IHoldÊâÄÈúÄÊó∂Èó¥
 			
-			//≤ΩΩ¯œ∏∑÷°¢√ª◊™»´≤Ω ˝
-			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64; //ƒ¨»œœ∏∑÷
-			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //»´≤Ω√ø◊™			
+			//Ê≠•ËøõÁªÜÂàÜ„ÄÅÊ≤°ËΩ¨ÂÖ®Ê≠•Êï∞
+			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64; //ÈªòËÆ§ÁªÜÂàÜ
+			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //ÂÖ®Ê≠•ÊØèËΩ¨			
 			
-			//¡˘µ„ÀŸ∂»≤Œ ˝£¨”√”⁄Œª÷√ƒ£ Ω
+			//ÂÖ≠ÁÇπÈÄüÂ∫¶ÂèÇÊï∞ÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 			ptAxisParamDefault->lVStart[eTMC] = 0;
 			ptAxisParamDefault->lA1[eTMC] 	 = 900000; 
 			ptAxisParamDefault->lV1[eTMC] 	 = 80000;
@@ -537,38 +474,38 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lDMax[eTMC]  = 600000;
 			ptAxisParamDefault->lD1[eTMC] 	 = 800000;
 			ptAxisParamDefault->lVStop[eTMC] = 10;
-			//«˝∂Ø∆˜‘À––ƒ£ Ω
+			//È©±Âä®Âô®ËøêË°åÊ®°Âºè
 			ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
-			//ÀŸ∂»≤Œ ˝°¢”√”⁄ÀŸ∂»ƒ£ Ω
-			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//µ⁄∂˛∂Œº”ÀŸ∂»
-			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//◊Ó¥ÛÀŸ∂»
+			//ÈÄüÂ∫¶ÂèÇÊï∞„ÄÅÁî®‰∫éÈÄüÂ∫¶Ê®°Âºè
+			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//Á¨¨‰∫åÊÆµÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//ÊúÄÂ§ßÈÄüÂ∫¶
 			
-			//≤Œøºµ„∏¥Œª
-			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //”“œﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //◊ÛœﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //–˝◊™∑ΩœÚ
+			//ÂèÇËÄÉÁÇπÂ§ç‰Ωç
+			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //Âè≥Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //Â∑¶Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //ÊóãËΩ¨ÊñπÂêë
 				
 		}else if(TMC_2 == eTMC){	
-			/* »˝÷· M1, (P÷·) */
-			//±‡¬Î∆˜œ‡πÿ
-			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;     //±‡¬Î∆˜∑÷±Ê¬ 
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					      //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
-			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					      //±‡¬Î∆˜º∆ ˝∑ΩœÚ
-			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_P; //±‡¬Î∆˜≥£ ˝--º∆À„ªÒ»°
+			/* ‰∏âËΩ¥ M1, (PËΩ¥) */
+			//ÁºñÁ†ÅÂô®Áõ∏ÂÖ≥
+			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;     //ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					      //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
+			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					      //ÁºñÁ†ÅÂô®ËÆ°Êï∞ÊñπÂêë
+			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_P; //ÁºñÁ†ÅÂô®Â∏∏Êï∞--ËÆ°ÁÆóËé∑Âèñ
 		
-			//≤Œøºµ„-∏¥Œª≤Œ ˝
-			ptAxisParamDefault->lResetSpeedHigh[eTMC] 	 = 3500; //∏¥ŒªÀŸ∂»
-			ptAxisParamDefault->lResetSpeedLow[eTMC]  	 = 1500; //∏¥ŒªÀŸ∂»  
-			ptAxisParamDefault->lResetAcc[eTMC]      	 = 800;	 //∏¥Œªº”ÀŸ∂»
-			ptAxisParamDefault->lResetOff[eTMC]  		 = 3200; //∏¥Œª∆´“∆æ‡¿Î			
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 0;	 //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ	
+			//ÂèÇËÄÉÁÇπ-Â§ç‰ΩçÂèÇÊï∞
+			ptAxisParamDefault->lResetSpeedHigh[eTMC] 	 = 3500; //Â§ç‰ΩçÈÄüÂ∫¶
+			ptAxisParamDefault->lResetSpeedLow[eTMC]  	 = 1500; //Â§ç‰ΩçÈÄüÂ∫¶  
+			ptAxisParamDefault->lResetAcc[eTMC]      	 = 800;	 //Â§ç‰ΩçÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lResetOff[eTMC]  		 = 3200; //Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª			
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 0;	 //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº	
 			
-			//µÁ¡˜
-			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //‘À––µÁ¡˜
-			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //±£≥÷µÁ¡˜
-			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //µÁ¡˜ΩµµΩIHoldÀ˘–Ë ±º‰
+			//ÁîµÊµÅ
+			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //ËøêË°åÁîµÊµÅ
+			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //‰øùÊåÅÁîµÊµÅ
+			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //ÁîµÊµÅÈôçÂà∞IHoldÊâÄÈúÄÊó∂Èó¥
 						
-			//¡˘µ„ÀŸ∂»≤Œ ˝,”√”⁄Œª÷√ƒ£ Ω
+			//ÂÖ≠ÁÇπÈÄüÂ∫¶ÂèÇÊï∞,Áî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 			ptAxisParamDefault->lVStart[eTMC] = 0;
 			ptAxisParamDefault->lA1[eTMC] 	  = 500000; 
 			ptAxisParamDefault->lV1[eTMC] 	  = 40000;
@@ -577,54 +514,53 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lDMax[eTMC]   = 300000;
 			ptAxisParamDefault->lD1[eTMC] 	  = 500000;
 			ptAxisParamDefault->lVStop[eTMC]  = 10;
-			//«˝∂Ø∆˜‘À––ƒ£ Ω
+			//È©±Âä®Âô®ËøêË°åÊ®°Âºè
 			ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
-			//ÀŸ∂»≤Œ ˝°¢”√”⁄ÀŸ∂»ƒ£ Ω
-			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//µ⁄∂˛∂Œº”ÀŸ∂»
-			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//◊Ó¥ÛÀŸ∂»
+			//ÈÄüÂ∫¶ÂèÇÊï∞„ÄÅÁî®‰∫éÈÄüÂ∫¶Ê®°Âºè
+			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//Á¨¨‰∫åÊÆµÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//ÊúÄÂ§ßÈÄüÂ∫¶
 			
-			//≤ΩΩ¯œ∏∑÷°¢√ª◊™»´≤Ω ˝
-			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64; //ƒ¨»œœ∏∑÷
-			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND;  //»´≤Ω√ø◊™
+			//Ê≠•ËøõÁªÜÂàÜ„ÄÅÊ≤°ËΩ¨ÂÖ®Ê≠•Êï∞
+			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64; //ÈªòËÆ§ÁªÜÂàÜ
+			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND;  //ÂÖ®Ê≠•ÊØèËΩ¨
 			
-			//≤Œøºµ„∏¥Œª
-			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //”“œﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //◊ÛœﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //–˝◊™∑ΩœÚ
+			//ÂèÇËÄÉÁÇπÂ§ç‰Ωç
+			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //Âè≥Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //Â∑¶Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //ÊóãËΩ¨ÊñπÂêë
 		}
 	}
-	
 #elif (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_3311_Common) 	
-	/* »˝÷· Õ®”√∞Ê */	
+	/* ‰∏âËΩ¥ ÈÄöÁî®Áâà */	
 	for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 	{			
 		if(TMC_0 == eTMC)
 		{
-			/* »˝÷· M0 */
+			/* ‰∏âËΩ¥ M0 */
 			
-			//±‡¬Î∆˜œ‡πÿ
-			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;     //±‡¬Î∆˜∑÷±Ê¬ 
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   	  //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
-			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   	  //±‡¬Î∆˜º∆ ˝∑ΩœÚ
-			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_TMC_0; //±‡¬Î∆˜≥£ ˝--º∆À„ªÒ»°			
+			//ÁºñÁ†ÅÂô®Áõ∏ÂÖ≥
+			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;     //ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   	  //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
+			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   	  //ÁºñÁ†ÅÂô®ËÆ°Êï∞ÊñπÂêë
+			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_TMC_0; //ÁºñÁ†ÅÂô®Â∏∏Êï∞--ËÆ°ÁÆóËé∑Âèñ			
 			
-			//≤Œøºµ„-∏¥Œª≤Œ ˝
-			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 3500; //∏¥ŒªÀŸ∂»
-			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 100;  //∏¥ŒªÀŸ∂»  
-			ptAxisParamDefault->lResetAcc[eTMC]       = 500;   //∏¥Œªº”ÀŸ∂»
-			ptAxisParamDefault->lResetOff[eTMC]  	  = 200;   //∏¥Œª∆´“∆æ‡¿Î
+			//ÂèÇËÄÉÁÇπ-Â§ç‰ΩçÂèÇÊï∞
+			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 3500; //Â§ç‰ΩçÈÄüÂ∫¶
+			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000;  //Â§ç‰ΩçÈÄüÂ∫¶  
+			ptAxisParamDefault->lResetAcc[eTMC]       = 500;   //Â§ç‰ΩçÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lResetOff[eTMC]  	  = 200;   //Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª
 
-			//µÁ¡˜
-			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //‘À––µÁ¡˜
-			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //±£≥÷µÁ¡˜
-			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //µÁ¡˜ΩµµΩIHoldÀ˘–Ë ±º‰	
+			//ÁîµÊµÅ
+			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //ËøêË°åÁîµÊµÅ
+			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //‰øùÊåÅÁîµÊµÅ
+			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //ÁîµÊµÅÈôçÂà∞IHoldÊâÄÈúÄÊó∂Èó¥	
 			
-			//≤ΩΩ¯œ∏∑÷°¢√ª◊™»´≤Ω ˝
+			//Ê≠•ËøõÁªÜÂàÜ„ÄÅÊ≤°ËΩ¨ÂÖ®Ê≠•Êï∞
 			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64;//DEFAULT_MICRO_STEP_RESULTION; 
-			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //»´≤Ω√ø◊™
+			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //ÂÖ®Ê≠•ÊØèËΩ¨
 			
 			
-			//¡˘µ„ÀŸ∂»≤Œ ˝£¨”√”⁄Œª÷√ƒ£ Ω
+			//ÂÖ≠ÁÇπÈÄüÂ∫¶ÂèÇÊï∞ÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 			ptAxisParamDefault->lVStart[eTMC] = 0;
 			ptAxisParamDefault->lA1[eTMC] 	 = 200000; 
 			ptAxisParamDefault->lV1[eTMC] 	 = 35000;
@@ -633,42 +569,42 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lDMax[eTMC]  = 95000; 
 			ptAxisParamDefault->lD1[eTMC] 	 = 200000; 
 			ptAxisParamDefault->lVStop[eTMC] = 10;
-			//«˝∂Ø∆˜‘À––ƒ£ Ω
+			//È©±Âä®Âô®ËøêË°åÊ®°Âºè
 			ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
-			//ÀŸ∂»≤Œ ˝°¢”√”⁄ÀŸ∂»ƒ£ Ω
-			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//µ⁄∂˛∂Œº”ÀŸ∂»
-			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//◊Ó¥ÛÀŸ∂»
+			//ÈÄüÂ∫¶ÂèÇÊï∞„ÄÅÁî®‰∫éÈÄüÂ∫¶Ê®°Âºè
+			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//Á¨¨‰∫åÊÆµÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//ÊúÄÂ§ßÈÄüÂ∫¶
 			
-			//≤Œøºµ„∏¥Œª
-			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //”“œﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //◊ÛœﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //–˝◊™∑ΩœÚ
+			//ÂèÇËÄÉÁÇπÂ§ç‰Ωç
+			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //Âè≥Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //Â∑¶Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //ÊóãËΩ¨ÊñπÂêë
 			
 		}else if(TMC_1 == eTMC){
-			/* »˝÷· M1, (Y÷·)*/		
-			//±‡¬Î∆˜œ‡πÿ
-			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;   //±‡¬Î∆˜∑÷±Ê¬ 
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
-			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   //±‡¬Î∆˜º∆ ˝∑ΩœÚ
-			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_TMC_1; //±‡¬Î∆˜≥£ ˝--º∆À„ªÒ»°
+			/* ‰∏âËΩ¥ M1, (YËΩ¥)*/		
+			//ÁºñÁ†ÅÂô®Áõ∏ÂÖ≥
+			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;   //ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
+			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   //ÁºñÁ†ÅÂô®ËÆ°Êï∞ÊñπÂêë
+			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_TMC_1; //ÁºñÁ†ÅÂô®Â∏∏Êï∞--ËÆ°ÁÆóËé∑Âèñ
 		
-			//≤Œøºµ„-∏¥Œª≤Œ ˝
-			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 35000; //∏¥ŒªÀŸ∂»
-			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000; //∏¥ŒªÀŸ∂» 
-			ptAxisParamDefault->lResetAcc[eTMC]       = 500;  //∏¥Œªº”ÀŸ∂»
-			ptAxisParamDefault->lResetOff[eTMC]  	  = 400;  //∏¥Œª∆´“∆æ‡¿Î
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;	//±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
+			//ÂèÇËÄÉÁÇπ-Â§ç‰ΩçÂèÇÊï∞
+			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 35000; //Â§ç‰ΩçÈÄüÂ∫¶
+			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000; //Â§ç‰ΩçÈÄüÂ∫¶ 
+			ptAxisParamDefault->lResetAcc[eTMC]       = 500;  //Â§ç‰ΩçÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lResetOff[eTMC]  	  = 400;  //Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;	//ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
 			
-			//µÁ¡˜
-			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //‘À––µÁ¡˜
-			ptAxisParamDefault->ucIHold[eTMC]	   = 8;  //±£≥÷µÁ¡˜
-			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;   //µÁ¡˜ΩµµΩIHoldÀ˘–Ë ±º‰
+			//ÁîµÊµÅ
+			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //ËøêË°åÁîµÊµÅ
+			ptAxisParamDefault->ucIHold[eTMC]	   = 8;  //‰øùÊåÅÁîµÊµÅ
+			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;   //ÁîµÊµÅÈôçÂà∞IHoldÊâÄÈúÄÊó∂Èó¥
 			
-			//≤ΩΩ¯œ∏∑÷°¢√ª◊™»´≤Ω ˝
-			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64; //ƒ¨»œœ∏∑÷
-			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //»´≤Ω√ø◊™			
+			//Ê≠•ËøõÁªÜÂàÜ„ÄÅÊ≤°ËΩ¨ÂÖ®Ê≠•Êï∞
+			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64; //ÈªòËÆ§ÁªÜÂàÜ
+			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //ÂÖ®Ê≠•ÊØèËΩ¨			
 			
-			//¡˘µ„ÀŸ∂»≤Œ ˝£¨”√”⁄Œª÷√ƒ£ Ω
+			//ÂÖ≠ÁÇπÈÄüÂ∫¶ÂèÇÊï∞ÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 			ptAxisParamDefault->lVStart[eTMC] = 0;
 			ptAxisParamDefault->lA1[eTMC] 	 = 900000; 
 			ptAxisParamDefault->lV1[eTMC] 	 = 80000;
@@ -677,38 +613,38 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lDMax[eTMC]  = 600000;
 			ptAxisParamDefault->lD1[eTMC] 	 = 800000;
 			ptAxisParamDefault->lVStop[eTMC] = 10;
-			//«˝∂Ø∆˜‘À––ƒ£ Ω
+			//È©±Âä®Âô®ËøêË°åÊ®°Âºè
 			ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
-			//ÀŸ∂»≤Œ ˝°¢”√”⁄ÀŸ∂»ƒ£ Ω
-			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//µ⁄∂˛∂Œº”ÀŸ∂»
-			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//◊Ó¥ÛÀŸ∂»
+			//ÈÄüÂ∫¶ÂèÇÊï∞„ÄÅÁî®‰∫éÈÄüÂ∫¶Ê®°Âºè
+			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//Á¨¨‰∫åÊÆµÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//ÊúÄÂ§ßÈÄüÂ∫¶
 			
-			//≤Œøºµ„∏¥Œª
-			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //”“œﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //◊ÛœﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //–˝◊™∑ΩœÚ
+			//ÂèÇËÄÉÁÇπÂ§ç‰Ωç
+			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //Âè≥Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //Â∑¶Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //ÊóãËΩ¨ÊñπÂêë
 				
 		}else if(TMC_2 == eTMC){	
-			/* »˝÷· M1, (P÷·) */
-			//±‡¬Î∆˜œ‡πÿ
-			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;     //±‡¬Î∆˜∑÷±Ê¬ 
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					      //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ
-			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					      //±‡¬Î∆˜º∆ ˝∑ΩœÚ
-			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_TMC_2; //±‡¬Î∆˜≥£ ˝--º∆À„ªÒ»°
+			/* ‰∏âËΩ¥ M1, (PËΩ¥) */
+			//ÁºñÁ†ÅÂô®Áõ∏ÂÖ≥
+			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_1000;     //ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					      //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº
+			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					      //ÁºñÁ†ÅÂô®ËÆ°Êï∞ÊñπÂêë
+			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_TMC_2; //ÁºñÁ†ÅÂô®Â∏∏Êï∞--ËÆ°ÁÆóËé∑Âèñ
 		
-			//≤Œøºµ„-∏¥Œª≤Œ ˝
-			ptAxisParamDefault->lResetSpeedHigh[eTMC] 	 = 3500; //∏¥ŒªÀŸ∂»
-			ptAxisParamDefault->lResetSpeedLow[eTMC]  	 = 1500; //∏¥ŒªÀŸ∂»  
-			ptAxisParamDefault->lResetAcc[eTMC]      	 = 800;	 //∏¥Œªº”ÀŸ∂»
-			ptAxisParamDefault->lResetOff[eTMC]  		 = 3200; //∏¥Œª∆´“∆æ‡¿Î			
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 0;	 //±‡¬Î∆˜ºÏ≤‚ ß≤Ω£¨„–÷µ	
+			//ÂèÇËÄÉÁÇπ-Â§ç‰ΩçÂèÇÊï∞
+			ptAxisParamDefault->lResetSpeedHigh[eTMC] 	 = 3500; //Â§ç‰ΩçÈÄüÂ∫¶
+			ptAxisParamDefault->lResetSpeedLow[eTMC]  	 = 1500; //Â§ç‰ΩçÈÄüÂ∫¶  
+			ptAxisParamDefault->lResetAcc[eTMC]      	 = 800;	 //Â§ç‰ΩçÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lResetOff[eTMC]  		 = 3200; //Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª			
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 0;	 //ÁºñÁ†ÅÂô®Ê£ÄÊµãÂ§±Ê≠•ÔºåÈòàÂÄº	
 			
-			//µÁ¡˜
-			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //‘À––µÁ¡˜
-			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //±£≥÷µÁ¡˜
-			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //µÁ¡˜ΩµµΩIHoldÀ˘–Ë ±º‰
+			//ÁîµÊµÅ
+			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //ËøêË°åÁîµÊµÅ
+			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //‰øùÊåÅÁîµÊµÅ
+			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //ÁîµÊµÅÈôçÂà∞IHoldÊâÄÈúÄÊó∂Èó¥
 						
-			//¡˘µ„ÀŸ∂»≤Œ ˝£¨”√”⁄Œª÷√ƒ£ Ω
+			//ÂÖ≠ÁÇπÈÄüÂ∫¶ÂèÇÊï∞ÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 			ptAxisParamDefault->lVStart[eTMC] = 0;
 			ptAxisParamDefault->lA1[eTMC] 	  = 500000; 
 			ptAxisParamDefault->lV1[eTMC] 	  = 40000;
@@ -717,20 +653,20 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lDMax[eTMC]   = 300000;
 			ptAxisParamDefault->lD1[eTMC] 	  = 500000;
 			ptAxisParamDefault->lVStop[eTMC]  = 10;
-			//«˝∂Ø∆˜‘À––ƒ£ Ω
+			//È©±Âä®Âô®ËøêË°åÊ®°Âºè
 			ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
-			//ÀŸ∂»≤Œ ˝°¢”√”⁄ÀŸ∂»ƒ£ Ω
-			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//µ⁄∂˛∂Œº”ÀŸ∂»
-			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//◊Ó¥ÛÀŸ∂»
+			//ÈÄüÂ∫¶ÂèÇÊï∞„ÄÅÁî®‰∫éÈÄüÂ∫¶Ê®°Âºè
+			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//Á¨¨‰∫åÊÆµÂä†ÈÄüÂ∫¶
+			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//ÊúÄÂ§ßÈÄüÂ∫¶
 			
-			//≤ΩΩ¯œ∏∑÷°¢√ª◊™»´≤Ω ˝
-			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64; //ƒ¨»œœ∏∑÷
-			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND;  //»´≤Ω√ø◊™
+			//Ê≠•ËøõÁªÜÂàÜ„ÄÅÊ≤°ËΩ¨ÂÖ®Ê≠•Êï∞
+			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64; //ÈªòËÆ§ÁªÜÂàÜ
+			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND;  //ÂÖ®Ê≠•ÊØèËΩ¨
 			
-			//≤Œøºµ„∏¥Œª
-			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //”“œﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //◊ÛœﬁŒªº´–‘£¨∏ﬂ”––ß
-			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //–˝◊™∑ΩœÚ
+			//ÂèÇËÄÉÁÇπÂ§ç‰Ωç
+			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //Âè≥Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //Â∑¶Èôê‰ΩçÊûÅÊÄßÔºåÈ´òÊúâÊïà
+			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //ÊóãËΩ¨ÊñπÂêë
 		}
 	}
 
@@ -744,7 +680,7 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 
 
 /*
-*	÷·≤Œ ˝≥ı ºªØ
+*	ËΩ¥ÂèÇÊï∞ÂàùÂßãÂåñ
 */
 ErrorType_e Axis_Param_Default_Init(void)
 {
@@ -754,7 +690,7 @@ ErrorType_e Axis_Param_Default_Init(void)
 
 
 
-//ºƒ¥Ê∆˜≥ı ºªØ
+//ÂØÑÂ≠òÂô®ÂàùÂßãÂåñ
 void ShadowRegister_Init(__IO AxisParamDefault_t *ptAxisParamDefault)
 {
 	extern TMC5160_t g_taTMC5160[TMC_MODULE_END];
@@ -777,13 +713,13 @@ void ShadowRegister_Init(__IO AxisParamDefault_t *ptAxisParamDefault)
 
 
 ///*
-//*	÷·≤Œ ˝
+//*	ËΩ¥ÂèÇÊï∞
 //*/
 //ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 //{
 //	ErrorType_e eError = ERROR_TYPE_SUCCESS;
 //	
-//	//≤Œ ˝ºÏ≤‚
+//	//ÂèÇÊï∞Ê£ÄÊµã
 //	if(eTMC >= TMC_END)
 //	{
 //		LOG_Error("TMC DeviceID=%d Is Error", eTMC);
@@ -816,7 +752,7 @@ void ShadowRegister_Init(__IO AxisParamDefault_t *ptAxisParamDefault)
 
 
 /*
-*	≥È≤Œ ˝…Ë÷√
+*	ÊäΩÂèÇÊï∞ËÆæÁΩÆ
 */
 ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 //ErrorType_e TMC5160_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
@@ -830,7 +766,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 	ErrorType_e eError = ERROR_TYPE_SUCCESS;
 
 	
-	//≤Œ ˝ºÏ≤‚
+	//ÂèÇÊï∞Ê£ÄÊµã
 	if(eTMC >= TMC_END)
 	{
 		LOG_Error("TMC DeviceID=%d Is Error", eTMC);
@@ -840,9 +776,9 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 
 	switch(ucType)
 	{
-	/*** Œª÷√œ‡πÿ  ***/
+	/*** ‰ΩçÁΩÆÁõ∏ÂÖ≥  ***/
 	case 0x00:
-		// ƒø±ÍŒª÷√£¨Target position
+		// ÁõÆÊ†á‰ΩçÁΩÆÔºåTarget position
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_ReadInt(eTMC, TMC5160_XTARGET);
 		} else if(eReadWrite == TMC_WRITE) {
@@ -850,7 +786,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 	case 0x01:
-		//  µº Œª÷√£¨Actual position
+		// ÂÆûÈôÖ‰ΩçÁΩÆÔºåActual position
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_ReadInt(eTMC, TMC5160_XACTUAL);
 		} else if(eReadWrite == TMC_WRITE) {
@@ -859,7 +795,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;
 		
 	case 0x02:
-		// µΩ¥Ô◊Ó¥ÛŒª÷√±Í÷æ£¨RO
+		// Âà∞ËææÊúÄÂ§ß‰ΩçÁΩÆÊ†áÂøóÔºåRO
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
 			//LOG_Info("RAMP_STAT=%X", TMC_ReadInt(eTMC, TMC5160_RAMPSTAT));
@@ -870,9 +806,9 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;
 			
 		
-	/*** ±‡¬Î∆˜ ***/
+	/*** ÁºñÁ†ÅÂô® ***/
 	case 0x03:
-		//±‡¬Î∆˜÷µ£¨ Encoder position
+		//ÁºñÁ†ÅÂô®ÂÄºÔºå Encoder position
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_ReadInt(eTMC, TMC5160_XENC);
 		} else if(eReadWrite == TMC_WRITE) {
@@ -880,29 +816,29 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 	case 0x04:
-		// ±‡¬Î∆˜∑÷±Ê¬  Encoder Resolution
+		// ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá Encoder Resolution
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.usEncResultion[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			if(g_tAxisParamDefault.usEncResultion[eTMC] != puData->lData)
 			{
-				//÷µ≤ªÕ¨£¨–Ë∏¸–¬
+				//ÂÄº‰∏çÂêåÔºåÈúÄÊõ¥Êñ∞
 				g_tAxisParamDefault.usEncResultion[eTMC] = puData->lData;
-				//±£¥Ê∏¸–¬µƒ≤Œ ˝
+				//‰øùÂ≠òÊõ¥Êñ∞ÁöÑÂèÇÊï∞
 				Update_Enc_ConstValue(eTMC, &g_tAxisParamDefault, 1);
 			}
 		}
 		break;	
 		
 	case 0x05:		
-		// ±‡¬Î∆˜∑¥œÚ
+		// ÁºñÁ†ÅÂô®ÂèçÂêë
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.ucEncCountDirect[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			if(puData->lData == 0 || puData->lData == 1)
 			{
 				g_tAxisParamDefault.ucEncCountDirect[eTMC] = puData->lData;
-				//∏¸–¬µƒ≤Œ ˝
+				//Êõ¥Êñ∞ÁöÑÂèÇÊï∞
 				Update_Enc_ConstValue(eTMC, &g_tAxisParamDefault, 1);
 			}else{
 				
@@ -912,7 +848,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;	
 	case 0x06:
-		// ∂™≤Ω„–÷µ 
+		// ‰∏¢Ê≠•ÈòàÂÄº 
 		if(eReadWrite == TMC_READ) {
 			
 			puData->lData = g_tAxisParamDefault.lEncDiff_Threshold[eTMC];
@@ -923,7 +859,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;		
 		
 	case 0x07:
-		// ∂™≤Ω÷µ£®¥Û–°£© 
+		// ‰∏¢Ê≠•ÂÄºÔºàÂ§ßÂ∞èÔºâ 
 		if(eReadWrite == TMC_READ) {
 			int32_t lXEnc = 0, lXActual = 0, lDiff = 0;
 			
@@ -940,14 +876,14 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;	
 	case 0x08:
-		//∂™≤Ω±Í÷æŒª
+		//‰∏¢Ê≠•Ê†áÂøó‰Ωç
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_ENC_STATUS, TMC5160_DEVIATION_WARN_MASK, TMC5160_DEVIATION_WARN_SHIFT);
 		}else if(eReadWrite == TMC_WRITE) {
 			
-			//–Ë¥¶¿Ì∂™≤Ω£¨ «XENC∫ÕXVACTUAL–°”⁄ ß≤Ω„–÷µ£¨‘Ÿ–¥1£¨«Â≥˝∏√±Í÷æŒª°£ªÚπÿ±’∂™≤ΩºÏ≤‚π¶ƒ‹£¨‘Ÿ÷¥––‘À∂Ø£¨‘Ÿ«Â≥˝∏√Œª°£			
+			//ÈúÄÂ§ÑÁêÜ‰∏¢Ê≠•ÔºåÊòØXENCÂíåXVACTUALÂ∞è‰∫éÂ§±Ê≠•ÈòàÂÄºÔºåÂÜçÂÜô1ÔºåÊ∏ÖÈô§ËØ•Ê†áÂøó‰Ωç„ÄÇÊàñÂÖ≥Èó≠‰∏¢Ê≠•Ê£ÄÊµãÂäüËÉΩÔºåÂÜçÊâßË°åËøêÂä®ÔºåÂÜçÊ∏ÖÈô§ËØ•‰Ωç„ÄÇ			
 			
-			//«Â≥˝∂™≤Ω±Í÷æŒª
+			//Ê∏ÖÈô§‰∏¢Ê≠•Ê†áÂøó‰Ωç
 			//TMC5160_FIELD_UPDATE(eTMC, TMC5160_ENC_STATUS, TMC5160_DEVIATION_WARN_MASK, TMC5160_DEVIATION_WARN_SHIFT, puData->lData);
 			LOG_Error("Enc Diff Do not Be Write");
 			return ERROR_TYPE_RW_RIGHT;
@@ -956,9 +892,9 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		
 		
 		
-	/*** ∏¥Œªœ‡πÿ ***/
+	/*** Â§ç‰ΩçÁõ∏ÂÖ≥ ***/
 	case 0x10:
-		//∏¥ŒªÀŸ∂»  µÕ
+		//Â§ç‰ΩçÈÄüÂ∫¶  ‰Ωé
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lResetSpeedLow[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
@@ -966,7 +902,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;	
 	case 0x11:
-		//∏¥ŒªÀŸ∂»  ∏ﬂ
+		//Â§ç‰ΩçÈÄüÂ∫¶  È´ò
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lResetSpeedHigh[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
@@ -974,7 +910,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;		
 	case 0x12:
-		//∏¥Œª∆´“∆æ‡¿Î
+		//Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lResetOff[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
@@ -982,7 +918,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;		
 	case 0x13:
-		//∏¥Œªº”ÀŸ∂»
+		//Â§ç‰ΩçÂä†ÈÄüÂ∫¶
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lResetAcc[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
@@ -990,7 +926,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;				
 	case 0x14:
-		//∏¥Œª◊¥Ã¨£®±Í÷æŒª£©
+		//Â§ç‰ΩçÁä∂ÊÄÅÔºàÊ†áÂøó‰ΩçÔºâ
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus;
 		}else if(eReadWrite == TMC_WRITE) {
@@ -1001,9 +937,9 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 
 		
 		
-	/*** µÁ¡˜œ‡πÿ ****/	
+	/*** ÁîµÊµÅÁõ∏ÂÖ≥ ****/	
 	case 0x20:
-		//‘À––µÁ¡˜
+		//ËøêË°åÁîµÊµÅ
 		if(eReadWrite == TMC_READ) {
 			//puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IRUN_MASK, TMC5160_IRUN_SHIFT);
 			puData->lData = g_tAxisParamDefault.ucIRun[eTMC];
@@ -1014,7 +950,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 	case 0x21:
-		//±£≥÷µÁ¡˜
+		//‰øùÊåÅÁîµÊµÅ
 		if(eReadWrite == TMC_READ) {
 			//puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IHOLD_MASK, TMC5160_IHOLD_SHIFT);
 			puData->lData = g_tAxisParamDefault.ucIHold[eTMC];
@@ -1025,7 +961,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 	case 0x22:
-		//µÁ¡˜«–ªª ±º‰
+		//ÁîµÊµÅÂàáÊç¢Êó∂Èó¥
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.ucIHoldDelay[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1034,7 +970,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;		
 //	case 0x22:
-//		//µÁ¡˜Œ¢µ˜ Global Current Scaler
+//		//ÁîµÊµÅÂæÆË∞É Global Current Scaler
 //		if(eReadWrite == TMC_READ) {
 //			puData->lData = g_taTMC5160[eTMC].laShadowRegister[TMC5160_GLOBAL_SCALER];
 //		}else if(eReadWrite == TMC_WRITE) {
@@ -1042,7 +978,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 //		}
 //		break;		
 	case 0x23:
-		// ≤ΩΩ¯œ∏∑÷ Microstep Resolution
+		// Ê≠•ËøõÁªÜÂàÜ Microstep Resolution
 		if(eReadWrite == TMC_READ) {
 			uint8_t ucMicroStep_Rg = 0;
 			ucMicroStep_Rg = TMC5160_FIELD_READ(eTMC, TMC5160_CHOPCONF, TMC5160_MRES_MASK, TMC5160_MRES_SHIFT);
@@ -1051,10 +987,10 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			uint16_t usMicroStep = puData->lData;
 			uint8_t ucMicroStep_Rg = 0;
 			
-			//…Ë÷√∏¸–¬
+			//ËÆæÁΩÆÊõ¥Êñ∞
 //			if(usMicroStep != g_tAxisParamDefault.usMicroStepResultion[eTMC])
 //			{
-				//Ω´∑÷±Ê¬ …Ë÷√÷µ  ◊™ªª≥… ºƒ¥Ê∆˜∑÷±Ê¬ ÷µ
+				//Â∞ÜÂàÜËæ®ÁéáËÆæÁΩÆÂÄº  ËΩ¨Êç¢Êàê ÂØÑÂ≠òÂô®ÂàÜËæ®ÁéáÂÄº
 				eError = MicroStep_SetValue2Register(usMicroStep, &ucMicroStep_Rg);
 				if(eError != ERROR_TYPE_SUCCESS)
 				{
@@ -1062,10 +998,10 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 					return ERROR_TYPE_DATA;
 				}
 			
-				//–¥»Îºƒ¥Ê∆˜
+				//ÂÜôÂÖ•ÂØÑÂ≠òÂô®
 				eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_CHOPCONF, TMC5160_MRES_MASK, TMC5160_MRES_SHIFT, ucMicroStep_Rg);
 				g_tAxisParamDefault.usMicroStepResultion[eTMC] = usMicroStep;
-				//±£¥Ê∏¸–¬µƒ≤Œ ˝
+				//‰øùÂ≠òÊõ¥Êñ∞ÁöÑÂèÇÊï∞
 				Update_Enc_ConstValue(eTMC, &g_tAxisParamDefault, 1);
 				//LOG_Info("Micro Step Resolution=%d", usMicroStep);
 			//}		
@@ -1073,14 +1009,14 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;		
 	case 0x24:
 	{
-		//µÁª˙√ª◊™»´≤Ω ˝
+		//ÁîµÊú∫Ê≤°ËΩ¨ÂÖ®Ê≠•Êï∞
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.usFullStepPerRound[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
 //			if(puData->lData != g_tAxisParamDefault.usFullStepPerRound[eTMC])
 //			{
 				g_tAxisParamDefault.usFullStepPerRound[eTMC] = puData->lData;
-				//±£¥Ê∏¸–¬µƒ≤Œ ˝
+				//‰øùÂ≠òÊõ¥Êñ∞ÁöÑÂèÇÊï∞
 				Update_Enc_ConstValue(eTMC, &g_tAxisParamDefault,1);
 //				LOG_Info("Full Step Per Round=%d", puData->lData);
 //			}
@@ -1089,9 +1025,9 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 	break;
 		
 		
-	/*** ¡˘µ„º”ÀŸœ‡πÿ ***/		
+	/*** ÂÖ≠ÁÇπÂä†ÈÄüÁõ∏ÂÖ≥ ***/		
 	case 0x30:
-		// ø™ ºÀŸ∂» Velocity VSTART
+		// ÂºÄÂßãÈÄüÂ∫¶ Velocity VSTART
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lVStart[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1100,7 +1036,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 	case 0x31:
-		// µ⁄“ªΩ◊∂Œº”ÀŸ∂»A1  Acceleration A1
+		// Á¨¨‰∏ÄÈò∂ÊÆµÂä†ÈÄüÂ∫¶A1  Acceleration A1
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lA1[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1109,7 +1045,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 	case 0x32:
-		// ªªµ≤ÀŸ∂» Velocity V1
+		// Êç¢Êå°ÈÄüÂ∫¶ Velocity V1
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lV1[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1118,35 +1054,35 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;		
 	case 0x33:
-		// µ⁄∂˛Ω◊∂Œº”ÀŸ∂» AMAX  Maximum acceleration£¨  ”√”⁄Œª÷√ƒ£ Ω
+		// Á¨¨‰∫åÈò∂ÊÆµÂä†ÈÄüÂ∫¶ AMAX  Maximum accelerationÔºå  Áî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lAMax[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			if(g_tAxisParamDefault.ucMode[eTMC] == TMC_MODE_POSITION)
 			{
-				//»Áπ˚µ±«∞¥¶”⁄Œª÷√ƒ£ Ω£¨‘Ú¡¢º¥…˙–ß
+				//Â¶ÇÊûúÂΩìÂâçÂ§Ñ‰∫é‰ΩçÁΩÆÊ®°ÂºèÔºåÂàôÁ´ãÂç≥ÁîüÊïà
 				eError = TMC5160_WriteInt(eTMC, TMC5160_AMAX, (puData->lData)*A_CHANGE_CONST);
 			}
-			// π”√ ±£¨…˙–ß
+			//‰ΩøÁî®Êó∂ÔºåÁîüÊïà
 			g_tAxisParamDefault.lAMax[eTMC] = puData->lData;
 		}
 		break;
 	case 0x34:
-		// ƒø±Í£®◊Ó¥Û£©ÀŸ∂» VMAX  Target speed, ”√”⁄Œª÷√ƒ£ Ω
+		// ÁõÆÊ†áÔºàÊúÄÂ§ßÔºâÈÄüÂ∫¶ VMAX  Target speed, Áî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lVMax[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			if(g_tAxisParamDefault.ucMode[eTMC] == TMC_MODE_POSITION)
 			{
-				//»Áπ˚µ±«∞¥¶”⁄Œª÷√ƒ£ Ω£¨‘Ú¡¢º¥…˙–ß
+				//Â¶ÇÊûúÂΩìÂâçÂ§Ñ‰∫é‰ΩçÁΩÆÊ®°ÂºèÔºåÂàôÁ´ãÂç≥ÁîüÊïà
 				eError = TMC5160_WriteInt(eTMC, TMC5160_VMAX, abs(puData->lData)*V_CHANGE_CONST);
 			}
-			// π”√ ±£¨…˙–ß
+			//‰ΩøÁî®Êó∂ÔºåÁîüÊïà
 			g_tAxisParamDefault.lVMax[eTMC] = abs(puData->lData);
 		}
 		break;
 	case 0x35:
-		//µ⁄∂˛Ω◊∂ŒºıÀŸ∂» DMAX, Maximum Deceleration
+		//Á¨¨‰∫åÈò∂ÊÆµÂáèÈÄüÂ∫¶ DMAX, Maximum Deceleration
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lDMax[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1155,7 +1091,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;		
 	case 0x36:
-		//µ⁄“ªΩ◊∂ŒºıÀŸ∂» Deceleration D1
+		//Á¨¨‰∏ÄÈò∂ÊÆµÂáèÈÄüÂ∫¶ Deceleration D1
 		if(eReadWrite == TMC_READ) {			
 			puData->lData = g_tAxisParamDefault.lD1[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1164,10 +1100,12 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;			
 	case 0x37:
-		// Õ£÷πÀŸ∂» Velocity VSTOP
+		// ÂÅúÊ≠¢ÈÄüÂ∫¶ Velocity VSTOP
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lVStop[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
+			//ÂÅúÊ≠¢ÈÄüÂ∫¶‰∏çËÉΩËÆæÁΩÆ0ÔºåÂÖ∑‰ΩìÂéüÂõ†Âíåtmc5160ÊúâÂÖ≥
+			if(puData->lData == 0) return ERROR_TYPE_DATA;
 			eError = TMC5160_WriteInt(eTMC, TMC5160_VSTOP, (puData->lData)*V_CHANGE_CONST);
 			g_tAxisParamDefault.lVStop[eTMC] = puData->lData;
 		}
@@ -1182,7 +1120,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;		
 
 	case 0x39:
-		// µ±«∞ µº ÀŸ∂» Actual speed
+		// ÂΩìÂâçÂÆûÈôÖÈÄüÂ∫¶ Actual speed
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_ReadInt(eTMC, TMC5160_VACTUAL)/V_CHANGE_CONST;
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1210,30 +1148,30 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;
 
 	case 0x40:
-		// ÀŸ∂»ƒ£ Ωœ¬£¨º”ÀŸ∂»÷µ
+		// ÈÄüÂ∫¶Ê®°Âºè‰∏ãÔºåÂä†ÈÄüÂ∫¶ÂÄº
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lAMax_VMode[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			if(g_tAxisParamDefault.ucMode[eTMC] == TMC_MODE_VELNEG || g_tAxisParamDefault.ucMode[eTMC] == TMC_MODE_VELPOS)
 			{
-				//»Áπ˚µ±«∞Œ™ÀŸ∂»ƒ£ Ω£¨¡¢º¥…˙–ß
+				//Â¶ÇÊûúÂΩìÂâç‰∏∫ÈÄüÂ∫¶Ê®°ÂºèÔºåÁ´ãÂç≥ÁîüÊïà
 				eError = TMC5160_WriteInt(eTMC, TMC5160_AMAX, (puData->lData)*A_CHANGE_CONST);
 			}
-			// π”√ ±£¨…˙–ß
+			//‰ΩøÁî®Êó∂ÔºåÁîüÊïà
 			g_tAxisParamDefault.lAMax_VMode[eTMC] = puData->lData;
 		}
 		break;
 	case 0x41:
-		// ÀŸ∂»ƒ£ Ωœ¬£¨ƒø±Í£®◊Ó¥Û£©ÀŸ∂» VMAX  Target speed
+		// ÈÄüÂ∫¶Ê®°Âºè‰∏ãÔºåÁõÆÊ†áÔºàÊúÄÂ§ßÔºâÈÄüÂ∫¶ VMAX  Target speed
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.lVMax[eTMC];
 		} else if(eReadWrite == TMC_WRITE){
 			if(g_tAxisParamDefault.ucMode[eTMC] == TMC_MODE_VELNEG || g_tAxisParamDefault.ucMode[eTMC] == TMC_MODE_VELPOS)
 			{
-				//»Áπ˚µ±«∞Œ™ÀŸ∂»ƒ£ Ω£¨¡¢º¥…˙–ß
+				//Â¶ÇÊûúÂΩìÂâç‰∏∫ÈÄüÂ∫¶Ê®°ÂºèÔºåÁ´ãÂç≥ÁîüÊïà
 				eError = TMC5160_WriteInt(eTMC, TMC5160_VMAX, abs(puData->lData)*V_CHANGE_CONST);
 			}
-			// π”√ ±£¨…˙–ß
+			//‰ΩøÁî®Êó∂ÔºåÁîüÊïà
 			g_tAxisParamDefault.lVMax_VMode[eTMC] = abs(puData->lData);
 		}
 		break;
@@ -1252,7 +1190,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 
 
 		
-	/***  ≤Œøºø™πÿœ‡πÿ ***/	
+	/***  ÂèÇËÄÉÂºÄÂÖ≥Áõ∏ÂÖ≥ ***/	
 //	case 0x50:
 //		// SW_MODE Register
 //		if(eReadWrite == TMC_READ) {
@@ -1284,7 +1222,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 //		break;
 //		
 	case 0x54:
-		// ”“œﬁŒªº´–‘ right limit switch polarity
+		// Âè≥Èôê‰ΩçÊûÅÊÄß right limit switch polarity
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_R_MASK, TMC5160_POL_STOP_R_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1299,7 +1237,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 	case 0x55:
-		// ◊ÛœﬁŒªº´–‘ left limit switch polarity
+		// Â∑¶Èôê‰ΩçÊûÅÊÄß left limit switch polarity
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_L_MASK, TMC5160_POL_STOP_L_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1315,7 +1253,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;
 
 	case 0x56:
-		// ”“œﬁŒª¥•∑¢±Í÷æ right limit triggle flag
+		// Âè≥Èôê‰ΩçËß¶ÂèëÊ†áÂøó right limit triggle flag
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_STATUS_STOP_R_MASK, TMC5160_STATUS_STOP_R_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1325,7 +1263,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;
 
 	case 0x57:
-		// ◊ÛœﬁŒª¥•∑¢±Í÷æ
+		// Â∑¶Èôê‰ΩçËß¶ÂèëÊ†áÂøó
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1334,7 +1272,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 	case 0x58:
-		// µÁª˙ πƒ‹
+		// ÁîµÊú∫‰ΩøËÉΩ
 		if(eReadWrite == TMC_READ) {	
 			puData->lData = g_tTMCStatus.ucEnableFlag[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1353,7 +1291,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		break;
 
 	case 0x59:
-		// µÁª˙∑¥œÚ
+		// ÁîµÊú∫ÂèçÂêë
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_GCONF, TMC5160_SHAFT_MASK, TMC5160_SHAFT_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1368,20 +1306,20 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		}
 		break;
 
-	case 0x5A:
-		// ªÒ»°TMC5160µƒºƒ¥Ê∆˜µƒ÷µ
-		if(eReadWrite == TMC_READ) {
-			uint8_t ucAddr = puData->lData;
-			
-			if(CheckRegister_Addr(ucAddr) != ERROR_TYPE_SUCCESS) return ERROR_TYPE_DATA;
-			puData->lData = TMC5160_ReadInt(eTMC, puData->lData);
-			
-		} else if(eReadWrite == TMC_WRITE) {
-			return ERROR_TYPE_DATA;
-		}
-		break;
+//	case 0x5A:
+//		// Ëé∑ÂèñTMC5160ÁöÑÂØÑÂ≠òÂô®ÁöÑÂÄº
+//		if(eReadWrite == TMC_READ) {
+//			uint8_t ucAddr = puData->lData;
+//			
+//			if(CheckRegister_Addr(ucAddr) != ERROR_TYPE_SUCCESS) return ERROR_TYPE_DATA;
+//			puData->lData = TMC5160_ReadInt(eTMC, puData->lData);
+//			
+//		} else if(eReadWrite == TMC_WRITE) {
+//			return ERROR_TYPE_DATA;
+//		}
+//		break;
 		
-	/***  ’∂≤®œ‡πÿ ***/	
+	/***  Êñ©Ê≥¢Áõ∏ÂÖ≥ ***/	
 /*
 	case 60:
 		// Speed threshold for high speed mode
@@ -1478,7 +1416,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			{
 				*plValue = (TMC5160_ReadInt(eTMC, TMC5160_CHOPCONF) >> TMC5160_TFD_ALL_SHIFT) & TMC5160_TFD_ALL_MASK;
 				if(buffer & TMC5160_TFD_3_SHIFT)
-					*plValue |= 1<<3; // MSB wird zu plValue dazugef®πgt
+					*plValue |= 1<<3; // MSB wird zu plValue dazugef√ºgt
 			}
 		} else if(eReadWrite == TMC_WRITE) {
 			if(TMC5160_ReadInt(eTMC, TMC5160_CHOPCONF) & (1<<14))
@@ -1487,7 +1425,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			}
 			else
 			{
-				TMC5160_FIELD_UPDATE(eTMC, TMC5160_CHOPCONF, TMC5160_TFD_3_MASK, TMC5160_TFD_3_SHIFT, (*plValue & (1<<3))); // MSB wird zu plValue dazugef®πgt
+				TMC5160_FIELD_UPDATE(eTMC, TMC5160_CHOPCONF, TMC5160_TFD_3_MASK, TMC5160_TFD_3_SHIFT, (*plValue & (1<<3))); // MSB wird zu plValue dazugef√ºgt
 				TMC5160_FIELD_UPDATE(eTMC, TMC5160_CHOPCONF, TMC5160_TFD_ALL_MASK, TMC5160_TFD_ALL_SHIFT, *plValue);
 			}
 		}
@@ -1504,7 +1442,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			{
 				*plValue = (buffer >> TMC5160_OFFSET_SHIFT) & TMC5160_OFFSET_MASK;
 				if(buffer & (1 << TMC5160_TFD_3_SHIFT))
-					*plValue |= 1<<3; // MSB wird zu plValue dazugef®πgt
+					*plValue |= 1<<3; // MSB wird zu plValue dazugef√ºgt
 			}
 		} else if(eReadWrite == TMC_WRITE) {
 			if(buffer & (1 << TMC5160_CHM_SHIFT))
@@ -1632,7 +1570,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 
 
 		
-	/***  PWMœ‡πÿ ***/	
+	/***  PWMÁõ∏ÂÖ≥ ***/	
 /* 
 	case 185:
 		// Chopper synchronization
@@ -1753,13 +1691,13 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 
 
 ///*
-//*	…Ë÷√ƒ¨»œ÷·≤Œ ˝
+//*	ËÆæÁΩÆÈªòËÆ§ËΩ¥ÂèÇÊï∞
 //*/
 //ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 //{
 //	ErrorType_e eError = ERROR_TYPE_SUCCESS;
 //	
-//	//≤Œ ˝ºÏ≤‚
+//	//ÂèÇÊï∞Ê£ÄÊµã
 //	if(eTMC >= TMC_END)
 //	{
 //		LOG_Error("TMC DeviceID=%d Is Error", eTMC);
@@ -1789,7 +1727,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 
 
 /*
-*	…Ë÷√ƒ¨»œ÷·≤Œ ˝
+*	ËÆæÁΩÆÈªòËÆ§ËΩ¥ÂèÇÊï∞
 */
 ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 //ErrorType_e TMC5160_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
@@ -1801,14 +1739,14 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 	ErrorType_e eErrorType = ERROR_TYPE_SUCCESS;
 	uint8_t ucSaveFlag = 0;
 	
-	//≤Œ ˝ºÏ≤‚
+	//ÂèÇÊï∞Ê£ÄÊµã
 	if(eTMC >= TMC_END)
 	{
 		LOG_Error("TMC DeviceID=%d Is Error", eTMC);
 		return ERROR_TYPE_DEVICE_ID;
 	}
 	
-	//∂¡»°ƒ¨»œ÷·≤Œ ˝
+	//ËØªÂèñÈªòËÆ§ËΩ¥ÂèÇÊï∞
 	if(ERROR_TYPE_SUCCESS != Read_Axis_Param_Default(&tAxisParamDefault))
 	{
 		return ERROR_TYPE_CRC;
@@ -1819,17 +1757,17 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 	switch(ucType)
 	{
 
-	/*** ±‡¬Î∆˜≤Œ ˝ ***/
+	/*** ÁºñÁ†ÅÂô®ÂèÇÊï∞ ***/
 	case 0x04:
-		// ±‡¬Î∆˜∑÷±Ê¬  Encoder Resolution
+		// ÁºñÁ†ÅÂô®ÂàÜËæ®Áéá Encoder Resolution
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.usEncResultion[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			if(tAxisParamDefault.usEncResultion[eTMC] != puData->lData)
 			{
-				//÷µ≤ªÕ¨£¨–Ë∏¸–¬
+				//ÂÄº‰∏çÂêåÔºåÈúÄÊõ¥Êñ∞
 				tAxisParamDefault.usEncResultion[eTMC] = puData->lData;
-				//∏¸–¬µƒ≤Œ ˝
+				//Êõ¥Êñ∞ÁöÑÂèÇÊï∞
 				Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
 				ucSaveFlag = 1;
 			}
@@ -1837,7 +1775,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		break;	
 		
 	case 0x05:		
-		// ±‡¬Î∆˜∑¥œÚ
+		// ÁºñÁ†ÅÂô®ÂèçÂêë
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.ucEncCountDirect[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1846,7 +1784,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				if(tAxisParamDefault.ucEncCountDirect[eTMC] != puData->lData)
 				{
 					tAxisParamDefault.ucEncCountDirect[eTMC] = puData->lData;
-					//∏¸–¬µƒ≤Œ ˝
+					//Êõ¥Êñ∞ÁöÑÂèÇÊï∞
 					Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
 					ucSaveFlag = 1;
 				}
@@ -1857,7 +1795,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;	
 	case 0x06:
-		// ∂™≤Ω„–÷µ 
+		// ‰∏¢Ê≠•ÈòàÂÄº 
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lEncDiff_Threshold[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -1872,9 +1810,9 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		
 		
 		
-	/*** ∏¥Œªœ‡πÿ ***/
+	/*** Â§ç‰ΩçÁõ∏ÂÖ≥ ***/
 	case 0x10:
-		//∏¥ŒªÀŸ∂»  µÕ
+		//Â§ç‰ΩçÈÄüÂ∫¶  ‰Ωé
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lResetSpeedLow[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
@@ -1886,7 +1824,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;	
 	case 0x11:
-		//∏¥ŒªÀŸ∂»  ∏ﬂ
+		//Â§ç‰ΩçÈÄüÂ∫¶  È´ò
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lResetSpeedHigh[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
@@ -1898,7 +1836,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;		
 	case 0x12:
-		//∏¥Œª∆´“∆æ‡¿Î
+		//Â§ç‰ΩçÂÅèÁßªË∑ùÁ¶ª
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lResetOff[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
@@ -1910,7 +1848,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;		
 	case 0x13:
-		//∏¥Œªº”ÀŸ∂»
+		//Â§ç‰ΩçÂä†ÈÄüÂ∫¶
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lResetAcc[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
@@ -1923,7 +1861,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		break;				
 		
 		
-	/*** µÁ¡˜œ‡πÿ ****/	
+	/*** ÁîµÊµÅÁõ∏ÂÖ≥ ****/	
 	case 0x19:
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.ucIHoldDelay[eTMC];
@@ -1936,19 +1874,19 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;
 	case 0x20:
-		//‘À––µÁ¡˜
+		//ËøêË°åÁîµÊµÅ
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.ucIRun[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			
-			//≤Œ ˝ºÏ≤¡
+			//ÂèÇÊï∞Ê£ÄÊì¶
 			if(puData->lData > CURRENT_MAX_VALUE)
 			{
 				LOG_Error("Current Set Value=%d More than %d", puData->lData, CURRENT_CHANGE_CONST);
 				return ERROR_TYPE_DATA;
 			}
 			
-			//…Ë÷√≤Œ ˝
+			//ËÆæÁΩÆÂèÇÊï∞
 			if(tAxisParamDefault.ucIRun[eTMC] != puData->lData)
 			{				
 				tAxisParamDefault.ucIRun[eTMC] = puData->lData;
@@ -1957,18 +1895,18 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;
 	case 0x21:
-		//±£≥÷µÁ¡˜
+		//‰øùÊåÅÁîµÊµÅ
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.ucIHold[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
-			//≤Œ ˝ºÏ≤¡
+			//ÂèÇÊï∞Ê£ÄÊì¶
 			if(puData->lData > CURRENT_MAX_VALUE)
 			{
 				LOG_Error("Current Set Value=%d More than %d", puData->lData, CURRENT_CHANGE_CONST);
 				return ERROR_TYPE_DATA;
 			}
 			
-			//…Ë÷√≤Œ ˝
+			//ËÆæÁΩÆÂèÇÊï∞
 			if(tAxisParamDefault.ucIHold[eTMC] != puData->lData)
 			{
 				tAxisParamDefault.ucIHold[eTMC] = puData->lData;
@@ -1978,17 +1916,17 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		break;		
 		
 	case 0x23:
-		// ≤ΩΩ¯œ∏∑÷ Microstep Resolution
+		// Ê≠•ËøõÁªÜÂàÜ Microstep Resolution
 		if(eReadWrite == TMC_READ) {		
 			puData->lData = tAxisParamDefault.usMicroStepResultion[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			uint16_t usMicroStep = puData->lData;
 			uint8_t ucMicroStep_Rg = 0;
 			
-			//…Ë÷√∏¸–¬
+			//ËÆæÁΩÆÊõ¥Êñ∞
 			if(usMicroStep != tAxisParamDefault.usMicroStepResultion[eTMC])
 			{
-				//Ω´∑÷±Ê¬ …Ë÷√÷µ  ◊™ªª≥… ºƒ¥Ê∆˜∑÷±Ê¬ ÷µ
+				//Â∞ÜÂàÜËæ®ÁéáËÆæÁΩÆÂÄº  ËΩ¨Êç¢Êàê ÂØÑÂ≠òÂô®ÂàÜËæ®ÁéáÂÄº
 				eErrorType = MicroStep_SetValue2Register(usMicroStep, &ucMicroStep_Rg);
 				if(eErrorType != ERROR_TYPE_SUCCESS)
 				{
@@ -1996,9 +1934,9 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 					return ERROR_TYPE_DATA;
 				}
 			
-				//–¥»Îºƒ¥Ê∆˜
+				//ÂÜôÂÖ•ÂØÑÂ≠òÂô®
 				tAxisParamDefault.usMicroStepResultion[eTMC] = usMicroStep;
-				//±£¥Ê∏¸–¬µƒ≤Œ ˝
+				//‰øùÂ≠òÊõ¥Êñ∞ÁöÑÂèÇÊï∞
 				Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
 				ucSaveFlag = 1;
 //				LOG_Info("Micro Step Resolution=%d", usMicroStep);
@@ -2007,14 +1945,14 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		break;		
 	case 0x24:
 	{
-		//µÁª˙√ª◊™»´≤Ω ˝
+		//ÁîµÊú∫Ê≤°ËΩ¨ÂÖ®Ê≠•Êï∞
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.usFullStepPerRound[eTMC];
 		}else if(eReadWrite == TMC_WRITE) {
 			if(puData->lData != tAxisParamDefault.usFullStepPerRound[eTMC])
 			{
 				tAxisParamDefault.usFullStepPerRound[eTMC] = puData->lData;
-				//±£¥Ê∏¸–¬µƒ≤Œ ˝
+				//‰øùÂ≠òÊõ¥Êñ∞ÁöÑÂèÇÊï∞
 				Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
 				ucSaveFlag = 1;
 //				LOG_Info("Full Step Per Round=%d", puData->lData);
@@ -2024,9 +1962,9 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 	break;
 		
 		
-	/*** ¡˘µ„º”ÀŸœ‡πÿ ***/		
+	/*** ÂÖ≠ÁÇπÂä†ÈÄüÁõ∏ÂÖ≥ ***/		
 	case 0x30:
-		// ø™ ºÀŸ∂» Velocity VSTART
+		// ÂºÄÂßãÈÄüÂ∫¶ Velocity VSTART
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lVStart[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2038,7 +1976,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;
 	case 0x31:
-		// µ⁄“ªΩ◊∂Œº”ÀŸ∂»A1  Acceleration A1
+		// Á¨¨‰∏ÄÈò∂ÊÆµÂä†ÈÄüÂ∫¶A1  Acceleration A1
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lA1[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2050,7 +1988,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;
 	case 0x32:
-		// ªªµ≤ÀŸ∂» Velocity V1
+		// Êç¢Êå°ÈÄüÂ∫¶ Velocity V1
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lV1[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2062,7 +2000,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;		
 	case 0x33:
-		// µ⁄∂˛Ω◊∂Œº”ÀŸ∂» AMAX  Maximum acceleration£¨”√”⁄Œª÷√ƒ£ Ω
+		// Á¨¨‰∫åÈò∂ÊÆµÂä†ÈÄüÂ∫¶ AMAX  Maximum accelerationÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lAMax[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2074,7 +2012,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;
 	case 0x34:
-		// ƒø±Í£®◊Ó¥Û£©ÀŸ∂» VMAX  Target speed£¨”√”⁄Œª÷√ƒ£ Ω
+		// ÁõÆÊ†áÔºàÊúÄÂ§ßÔºâÈÄüÂ∫¶ VMAX  Target speedÔºåÁî®‰∫é‰ΩçÁΩÆÊ®°Âºè
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lVMax[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2086,7 +2024,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;
 	case 0x35:
-		//µ⁄∂˛Ω◊∂ŒºıÀŸ∂» DMAX, Maximum Deceleration
+		//Á¨¨‰∫åÈò∂ÊÆµÂáèÈÄüÂ∫¶ DMAX, Maximum Deceleration
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lDMax[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2098,19 +2036,21 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;		
 	case 0x36:
-		//µ⁄“ªΩ◊∂ŒºıÀŸ∂» Deceleration D1
+		//Á¨¨‰∏ÄÈò∂ÊÆµÂáèÈÄüÂ∫¶ Deceleration D1
 		if(eReadWrite == TMC_READ) {			
 			puData->lData = tAxisParamDefault.lD1[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
 			if(tAxisParamDefault.lD1[eTMC] != puData->lData)
 			{
+				//Áî±‰∫éTMC5160ÁöÑÂÖ≥Á≥ªÔºåÂÅúÊ≠¢ÈÄüÂ∫¶‰∏çËÉΩËÆæÁΩÆ‰∏∫0ÔºåÂê¶Âàô‰∏çËøêÂä®
+				if(puData->lData == 0) return ERROR_TYPE_DATA;
 				tAxisParamDefault.lD1[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
 		}
 		break;			
 	case 0x37:
-		// Õ£÷πÀŸ∂» Velocity VSTOP
+		// ÂÅúÊ≠¢ÈÄüÂ∫¶ Velocity VSTOP
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lVStop[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2132,7 +2072,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;		
 	case 0x40:
-		// ÀŸ∂»ƒ£ Ωœ¬£¨º”ÀŸ∂»÷µ
+		// ÈÄüÂ∫¶Ê®°Âºè‰∏ãÔºåÂä†ÈÄüÂ∫¶ÂÄº
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lAMax_VMode[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2144,7 +2084,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;
 	case 0x41:
-		// ÀŸ∂»ƒ£ Ωœ¬£¨ƒø±Í£®◊Ó¥Û£©ÀŸ∂» VMAX  Target speed
+		// ÈÄüÂ∫¶Ê®°Âºè‰∏ãÔºåÁõÆÊ†áÔºàÊúÄÂ§ßÔºâÈÄüÂ∫¶ VMAX  Target speed
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lVMax_VMode[eTMC];
 		} else if(eReadWrite == TMC_WRITE){
@@ -2157,9 +2097,9 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		break;
 	
 
-	/***  ◊Û”“œﬁŒª  ***/
+	/***  Â∑¶Âè≥Èôê‰Ωç  ***/
 	case 0x54:
-		// ”“œﬁŒªº´–‘ right limit switch polarity
+		// Âè≥Èôê‰ΩçÊûÅÊÄß right limit switch polarity
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.ucRighLimitPolarity[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2177,7 +2117,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		}
 		break;
 	case 0x55:
-		// ◊ÛœﬁŒªº´–‘ left limit switch polarity
+		// Â∑¶Èôê‰ΩçÊûÅÊÄß left limit switch polarity
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.ucLeftLimitPolarity[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2197,7 +2137,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 
 
 	case 0x59:
-		// µÁª˙∑¥œÚ
+		// ÁîµÊú∫ÂèçÂêë
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.ucRotateDirect[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
@@ -2225,13 +2165,13 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 	}
 	
 
-	/* ±£¥Ê */
+	/* ‰øùÂ≠ò */
 	if(ucSaveFlag == 1)
 	{
-		//÷ÿ–¬º∆À„CRC
+		//ÈáçÊñ∞ËÆ°ÁÆóCRC
 		tAxisParamDefault.usCrc = CRC16((uint8_t*)&tAxisParamDefault, sizeof(AxisParamDefault_t)-2);
 	
-		//±£¥Ê÷·≤Œ ˝
+		//‰øùÂ≠òËΩ¥ÂèÇÊï∞
 		//Param_Write(EN_SAVE_PARAM_TYPE_AXIS, (uint8_t*)&g_tAxisParamDefault, sizeof(AxisParamDefault_t));
 		Save_Axis_Param_Default(&tAxisParamDefault);
 	}
@@ -2243,7 +2183,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 
 
 /*
-*	«Â≥˝EEPROM±£¥Êµƒ÷·≤Œ ˝
+*	Ê∏ÖÈô§EEPROM‰øùÂ≠òÁöÑËΩ¥ÂèÇÊï∞
 */
 void ClearAndSave_Default_Axis_Params(void)
 {
@@ -2261,7 +2201,7 @@ void ClearAndSave_Default_Axis_Params(void)
 
 /* 
 * 
-*  ∂¡»°ƒ¨»œ÷·≤Œ ˝ 
+*  ËØªÂèñÈªòËÆ§ËΩ¥ÂèÇÊï∞ 
 *
 */
 ErrorType_e Read_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
@@ -2270,40 +2210,40 @@ ErrorType_e Read_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 	uint8_t ucNum = 0;
 	uint16_t usCrc = 0;
 	
-	//∂¡»°≤Œ ˝	
+	//ËØªÂèñÂèÇÊï∞	
 	do{
-		//º∆ ˝
+		//ËÆ°Êï∞
 		ucNum++;
 		
 		memset((void*)ptAxisParamDefault, 0, sizeof(AxisParamDefault_t));
 		Param_Read(EN_SAVE_PARAM_TYPE_AXIS, (uint8_t*)ptAxisParamDefault, sizeof(AxisParamDefault_t));
 		usCrc = CRC16((uint8_t*)ptAxisParamDefault, sizeof(AxisParamDefault_t)-2);
 		
-		// ˝æ›–£—È
+		//Êï∞ÊçÆÊ†°È™å
 		if(usCrc == ptAxisParamDefault->usCrc)
 		{
 			return ERROR_TYPE_SUCCESS;			
 		}else{
-			rt_thread_delay(2);//HAL_Delay(2);
+			rt_thread_mdelay(2);//HAL_Delay(2);
 		}
 		
 	}while(ucNum < 3);
 
 	
-	//µ⁄“ª¥Œ…œµÁ
+	//Á¨¨‰∏ÄÊ¨°‰∏äÁîµ
 	if(usCrc != ptAxisParamDefault->usCrc && ptAxisParamDefault->ulInitFlag != PARAM_INIT_FLAG)
 	{
 		Axis_Param_Fixed_SetDefault_Value(ptAxisParamDefault);
 		
-		//±£¥Ê÷·≤Œ ˝
-		return Save_Axis_Param_Default(ptAxisParamDefault);
+		//‰øùÂ≠òËΩ¥ÂèÇÊï∞
+		//return Save_Axis_Param_Default(ptAxisParamDefault);
 	}
 
 	
-	// ˝æ›–£—ÈºÏ≤‚
+	//Êï∞ÊçÆÊ†°È™åÊ£ÄÊµã
 	if(ucNum >= 3)
 	{
-		// ˝æ›–£—È ß∞‹
+		//Êï∞ÊçÆÊ†°È™åÂ§±Ë¥•
 //		LOG_Warn("EEPROM Axis Default Param CRC Error");
 		return ERROR_TYPE_EEPROM;
 	}
@@ -2314,7 +2254,7 @@ ErrorType_e Read_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 
 /* 
 * 
-*  ±£¥Êƒ¨»œ÷·≤Œ ˝ 
+*  ‰øùÂ≠òÈªòËÆ§ËΩ¥ÂèÇÊï∞ 
 *
 */
 ErrorType_e Save_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
@@ -2324,34 +2264,34 @@ ErrorType_e Save_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 	uint16_t usWriteCrc = 0, usReadCrc = 0;
 	AxisParamDefault_t  tAxisParamDefault = {0};
 	
-	//º∆ ˝‘≠ º ˝æ›CRC
+	//ËÆ°Êï∞ÂéüÂßãÊï∞ÊçÆCRC
 	usWriteCrc = ptAxisParamDefault->usCrc;
 	
-	//∂¡»°≤Œ ˝	
+	//ËØªÂèñÂèÇÊï∞	
 	do{
-		//º∆ ˝
+		//ËÆ°Êï∞
 		ucNum++;
 		
-		//–¥»Î
+		//ÂÜôÂÖ•
 		memmove((void*)&tAxisParamDefault, (void*)ptAxisParamDefault, sizeof(AxisParamDefault_t));
 		Param_Write(EN_SAVE_PARAM_TYPE_AXIS, (uint8_t*)&tAxisParamDefault, sizeof(AxisParamDefault_t));
 			
-		//∂¡»°
+		//ËØªÂèñ
 		memset((void*)&tAxisParamDefault, 0, sizeof(AxisParamDefault_t));
 		Param_Read(EN_SAVE_PARAM_TYPE_AXIS, (uint8_t*)&tAxisParamDefault, sizeof(AxisParamDefault_t));
 		usReadCrc = CRC16((uint8_t*)&tAxisParamDefault, sizeof(AxisParamDefault_t)-2);
 		
-		//∂‘±»«∞∫Ûcrc
+		//ÂØπÊØîÂâçÂêécrc
 		if(usWriteCrc == usReadCrc || usReadCrc == tAxisParamDefault.usCrc)
 		{
 			return ERROR_TYPE_SUCCESS;
 		}else{
-			rt_thread_delay(2);//HAL_Delay(2);
+			rt_thread_mdelay(2);//HAL_Delay(2);
 		}
 		
-	}while(ucNum < 3);  //◊Ó∂‡÷ÿ∏¥3¥Œ
+	}while(ucNum < 3);  //ÊúÄÂ§öÈáçÂ§ç3Ê¨°
 
-	//±£¥Ê ß∞‹
+	//‰øùÂ≠òÂ§±Ë¥•
 	if(ucNum >= 3)
 	{
 		LOG_Error("Save Process Fail");
@@ -2366,7 +2306,7 @@ ErrorType_e Save_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 
 
 /*
-*	¡˜≥Ã≤Œ ˝ «Â≥˝
+*	ÊµÅÁ®ãÂèÇÊï∞ Ê∏ÖÈô§
 */
 void Process_Param_SetDefault_Value(__IO Process_t *ptProcess)
 {
@@ -2383,7 +2323,7 @@ void Process_Param_SetDefault_Value(__IO Process_t *ptProcess)
 
 
 /*
-*	«Â≥˝EEPROM±£¥Êµƒ¡˜≥Ã
+*	Ê∏ÖÈô§EEPROM‰øùÂ≠òÁöÑÊµÅÁ®ã
 */
 void ClearAndSave_Default_Process(void)
 {
@@ -2395,7 +2335,7 @@ void ClearAndSave_Default_Process(void)
 
 
 /*
-*	¡˜≥Ã≥ı ºªØ
+*	ÊµÅÁ®ãÂàùÂßãÂåñ
 */
 ErrorType_e Process_Init(void)
 {
@@ -2407,7 +2347,7 @@ ErrorType_e Process_Init(void)
 
   
 /*
-*	…Ë÷√RAM÷–¡˜≥Ã£¨∏˘æ›Index»Œ“‚≤Â»Î◊”¡˜≥Ã£¨≤Œ ˝µƒÀ≥–Ú±ÿ–Î∞¥÷∏¡Ó¥´≤ŒÀ≥–Ú
+*	ËÆæÁΩÆRAM‰∏≠ÊµÅÁ®ãÔºåÊ†πÊçÆIndex‰ªªÊÑèÊèíÂÖ•Â≠êÊµÅÁ®ãÔºåÂèÇÊï∞ÁöÑÈ°∫Â∫èÂøÖÈ°ªÊåâÊåá‰ª§‰º†ÂèÇÈ°∫Â∫è
 */
 ErrorType_e Set_Process(RecvFrame_t *ptRecvFrame)
 {
@@ -2416,30 +2356,30 @@ ErrorType_e Set_Process(RecvFrame_t *ptRecvFrame)
 	uint8_t ucIndex = ptRecvFrame->ucType & 0x7F;
 	if(ucIndex > SUB_PROCESS_MAX_CMD_NUM)
 	{
-		//◊Ó¥Û÷ß≥÷128÷∏¡Ó
+		//ÊúÄÂ§ßÊîØÊåÅ127Êåá‰ª§
 		LOG_Error("SubProcess Index=%d Error", ucIndex);
 		return ERROR_TYPE_DATA;
 	}
 			
 	if(ptRecvFrame->ucType & 0x80)
 	{
-		//≤Œ ˝
+		//ÂèÇÊï∞
 		//if(g_tProcess.taSubProcess[ucIndex].ucParamNum != 0xFF && g_tProcess.taSubProcess[ucIndex].ucParamNum >= SUB_PROCESS_MAX_PARAM_NUM)
 		if( g_tProcess.taSubProcess[ucIndex].ucParamNum >= SUB_PROCESS_MAX_PARAM_NUM)
 		{
-			//≤Œ ˝∏ˆ ˝£¨◊Ó∂‡3∏ˆ
+			//ÂèÇÊï∞‰∏™Êï∞ÔºåÊúÄÂ§ö4‰∏™
 			LOG_Error("SubProcess Parma Index=%d Error", g_tProcess.taSubProcess[ucIndex].ucParamNum);
 			return ERROR_TYPE_EXEC;
 		}
 		
-		//ªÒ»°≤Œ ˝
+		//Ëé∑ÂèñÂèÇÊï∞
 		g_tProcess.taSubProcess[ucIndex].uParam[g_tProcess.taSubProcess[ucIndex].ucParamNum++].lData = ptRecvFrame->uData.lData;
 	
 	}else{
-		//÷∏¡Ó
+		//Êåá‰ª§
 		memset((void*)&g_tProcess.taSubProcess[ucIndex], 0, sizeof(SubProcess_t));
 		g_tProcess.taSubProcess[ucIndex].ucCmd = ptRecvFrame->uData.ucData[0];
-		//–ﬁ∏ƒªÚ∏≥÷µ÷∏¡Ó ±£¨≤Œ ˝∏ˆ ˝–Ë÷√¡„
+		//‰øÆÊîπÊàñËµãÂÄºÊåá‰ª§Êó∂ÔºåÂèÇÊï∞‰∏™Êï∞ÈúÄÁΩÆÈõ∂
 		//g_tProcess.taSubProcess[ucIndex].ucParamNum = 0xFF;
 	
 	}
@@ -2454,19 +2394,19 @@ ErrorType_e Set_Process(RecvFrame_t *ptRecvFrame)
 
 
 /*
-*	∂¡»° RAM¡˜≥Ã
+*	ËØªÂèñ RAMÊµÅÁ®ã
 */
 ErrorType_e Get_Process(uint8_t ucIndex, SubProcess_t *ptSubProcess)
 {
 	//
 	if(ucIndex > SUB_PROCESS_MAX_CMD_NUM)
 	{
-		//◊Ó¥Û÷ß≥÷128÷∏¡Ó
+		//ÊúÄÂ§ßÊîØÊåÅ128Êåá‰ª§
 		LOG_Error("SubProcess Index=%d Error", ucIndex);
 		return ERROR_TYPE_DATA;
 	}
 		
-	//ªÒ»°÷∏¡Ó
+	//Ëé∑ÂèñÊåá‰ª§
 	memmove((void*)ptSubProcess, (void*)&g_tProcess.taSubProcess[ucIndex], sizeof(SubProcess_t));
 	return ERROR_TYPE_SUCCESS;
 	
@@ -2477,7 +2417,7 @@ ErrorType_e Get_Process(uint8_t ucIndex, SubProcess_t *ptSubProcess)
 
 
 /*
-*	÷¥––¡˜≥Ã--øÿ÷∆
+*	ÊâßË°åÊµÅÁ®ã--ÊéßÂà∂
 */
 
 ErrorType_e Exec_Process_Ctrl(uint8_t ucType)
@@ -2489,13 +2429,13 @@ ErrorType_e Exec_Process_Ctrl(uint8_t ucType)
 	{
 		case 0x00:
 		{
-			//Õ£÷π
+			//ÂÅúÊ≠¢
 			g_tProcess.eProcessStatus = EN_PROCESS_STATUS_STOP;
 		}
 		break;
 		case 0x01:
 		{
-			//‘À––
+			//ËøêË°å
 			g_tProcess.eProcessStatus = EN_PROCESS_STATUS_EXEC;
 		}
 		break;		
@@ -2515,7 +2455,7 @@ ErrorType_e Exec_Process_Ctrl(uint8_t ucType)
 
 
 /*
-*	∂¡»°¡˜≥Ã
+*	ËØªÂèñÊµÅÁ®ã
 */
 ErrorType_e Read_Process(__IO Process_t *ptProcess)
 {
@@ -2523,9 +2463,9 @@ ErrorType_e Read_Process(__IO Process_t *ptProcess)
 	uint8_t ucNum = 0;
 	uint16_t usCrc = 0;
 
-	//∂¡»°¡˜≥Ã	
+	//ËØªÂèñÊµÅÁ®ã	
 	do{
-		//º∆ ˝
+		//ËÆ°Êï∞
 		ucNum++;
 		
 		memset((void*)ptProcess, 0, sizeof(Process_t));
@@ -2533,26 +2473,26 @@ ErrorType_e Read_Process(__IO Process_t *ptProcess)
 		usCrc = CRC16((uint8_t*)ptProcess, sizeof(Process_t)-2);
 		
 		
-		// ˝æ›–£—È
+		//Êï∞ÊçÆÊ†°È™å
 		if(usCrc == ptProcess->usCrc)
 		{
 			return ERROR_TYPE_SUCCESS;			
 		}else{
-			rt_thread_delay(2);//HAL_Delay(2);
+			rt_thread_mdelay(2);//HAL_Delay(2);
 		}
 	}while(ucNum < 3);
 	
 	
-	//µ⁄“ª¥Œ…œµÁ
+	//Á¨¨‰∏ÄÊ¨°‰∏äÁîµ
 	if(usCrc != ptProcess->usCrc && ptProcess->ulInitFlag != PARAM_INIT_FLAG)
 	{
 		Process_Param_SetDefault_Value(ptProcess);
-		//±£¥Ê÷·≤Œ ˝
-		return Save_Process(ptProcess);
+		//‰øùÂ≠òËΩ¥ÂèÇÊï∞
+		//return Save_Process(ptProcess);
 	}
 	
 
-	// ˝æ›–£—ÈºÏ≤‚
+	//Êï∞ÊçÆÊ†°È™åÊ£ÄÊµã
 	if(ucNum >= 3)
 	{
 //		LOG_Warn("EEPROM Process Data CRC Error");
@@ -2564,7 +2504,7 @@ ErrorType_e Read_Process(__IO Process_t *ptProcess)
 
 
 /*
-*	±£¥Ê¡˜≥ÃµΩEEPROM÷–
+*	‰øùÂ≠òÊµÅÁ®ãÂà∞EEPROM‰∏≠
 */
 ErrorType_e Save_Process(__IO Process_t *ptProccess)
 {
@@ -2575,32 +2515,32 @@ ErrorType_e Save_Process(__IO Process_t *ptProccess)
 	Process_t tProcess = {0};
 	
 	usWriteCrc = ptProccess->usCrc;
-	//±£¥Ê
+	//‰øùÂ≠ò
 	do{
-		//º∆ ˝
+		//ËÆ°Êï∞
 		ucNum++;
 		
-		//–¥»Î
+		//ÂÜôÂÖ•
 		memmove((void*)&tProcess, (void*)ptProccess, sizeof(Process_t));
 		Param_Write(EN_SAVE_PARAM_TYPE_PROCESS, (uint8_t*)&tProcess, sizeof(Process_t));
 		
-		//∂¡»°
+		//ËØªÂèñ
 		memset((void*)&tProcess, 0, sizeof(Process_t));
 		Param_Read(EN_SAVE_PARAM_TYPE_PROCESS, (uint8_t*)&tProcess, sizeof(Process_t));
 		usReadCrc = CRC16((uint8_t*)&tProcess, sizeof(Process_t)-2);
 		
-		//∂‘±»«∞∫Ûcrc
+		//ÂØπÊØîÂâçÂêécrc
 		if(usWriteCrc == usReadCrc || usReadCrc == tProcess.usCrc)
 		{
 			return ERROR_TYPE_SUCCESS;
 		}else{
-			rt_thread_delay(2);//HAL_Delay(2);
+			rt_thread_mdelay(2);//HAL_Delay(2);
 		}
 		
-	}while(ucNum < 3);  //◊Ó∂‡÷ÿ∏¥3¥Œ
+	}while(ucNum < 3);  //ÊúÄÂ§öÈáçÂ§ç3Ê¨°
 	
 	
-	//±£¥Ê ß∞‹
+	//‰øùÂ≠òÂ§±Ë¥•
 	if(ucNum >= 3)
 	{
 		LOG_Error("Save Process Fail");
@@ -2614,11 +2554,11 @@ ErrorType_e Save_Process(__IO Process_t *ptProccess)
 
 
 /*
-*	…æ≥˝EEPROM÷–¡˜≥Ã ˝æ›
+*	Âà†Èô§EEPROM‰∏≠ÊµÅÁ®ãÊï∞ÊçÆ
 */
 void Del_Process(void)
 {
-	//…æ≥˝
+	//Âà†Èô§
 	memset((void*)&g_tProcess, 0, sizeof(Process_t));
 	g_tProcess.ulInitFlag	  = PARAM_INIT_FLAG;
 	g_tProcess.eProcessStatus = EN_PROCESS_STATUS_CLEAR;
@@ -2631,7 +2571,7 @@ void Del_Process(void)
 
 
 /*
-*	«Â≥˝RAM÷–µƒ¡˜≥Ã ˝æ›
+*	Ê∏ÖÈô§RAM‰∏≠ÁöÑÊµÅÁ®ãÊï∞ÊçÆ
 */
 void Clear_Process(void)
 {
@@ -2644,7 +2584,7 @@ void Clear_Process(void)
 
 
 /*
-*	÷¥––¡˜≥Ã
+*	ÊâßË°åÊµÅÁ®ã
 */
 void Exec_Process(void)
 {
@@ -2654,7 +2594,7 @@ void Exec_Process(void)
 
   
 /*
-*	Õ£÷π¡˜≥Ã
+*	ÂÅúÊ≠¢ÊµÅÁ®ã
 */
 void Stop_Process(void)
 {
@@ -2668,7 +2608,7 @@ void Stop_Process(void)
 
 
 /*
-*	÷¥––¡˜≥Ã--øÿ÷∆
+*	ÊâßË°åÊµÅÁ®ã--ÊéßÂà∂
 */
 
 ErrorType_e Exec_Process_Clear_Or_Save(uint8_t ucType)
@@ -2680,20 +2620,20 @@ ErrorType_e Exec_Process_Clear_Or_Save(uint8_t ucType)
 	{	
 		case 0x00:
 		{
-			//«Âø’RAM÷–µƒ÷¥––¡˜≥Ã
+			//Ê∏ÖÁ©∫RAM‰∏≠ÁöÑÊâßË°åÊµÅÁ®ã
 			Clear_Process();
 		}
 		break;
 		case 0x01:
 		{
-			//«Âø’RAM∫ÕEEPROM÷–µƒ÷¥––¡˜≥Ã
+			//Ê∏ÖÁ©∫RAMÂíåEEPROM‰∏≠ÁöÑÊâßË°åÊµÅÁ®ã
 			Del_Process();
 		
 		}
 		break;		
 		case 0x02:
 		{
-			//Ω´RAM÷¥––¡˜≥Ã±£¥ÊµΩEEPROM÷–
+			//Â∞ÜRAMÊâßË°åÊµÅÁ®ã‰øùÂ≠òÂà∞EEPROM‰∏≠
 			g_tProcess.ulInitFlag = PARAM_INIT_FLAG;
 			g_tProcess.eProcessStatus = EN_PROCESS_STATUS_READY;
 			g_tProcess.usCrc = CRC16((uint8_t*)&g_tProcess, sizeof(Process_t)-2);
@@ -2718,18 +2658,20 @@ ErrorType_e Exec_Process_Clear_Or_Save(uint8_t ucType)
 
 
 /*
-*	¡˜≥Ã¥¶¿Ì
+*	ÊµÅÁ®ãÂ§ÑÁêÜ
 */
 ErrorType_e Process_Handle(uint32_t ulTicks)
 {
 	extern __IO  AxisParamDefault_t g_tAxisParamDefault;
-	extern BoardStatus_t g_tBoardStatus;
-	extern GlobalParam_t g_tGlobalParam;
+	extern __IO BoardStatus_t g_tBoardStatus;
+	extern __IO GlobalParam_t g_tGlobalParam;
 	extern __IO TMCStatus_t g_tTMCStatus;
+	
+	
 	static ProcessStatus_e s_eProcessStatus = EN_PROCESS_STATUS_READY;
-	static uint8_t s_ucIndex = 0;	//–ËÃ¯◊™µƒ±Í«©
-	static uint8_t s_ucFlag = 0;	//÷¥––œ¬Ãı÷∏¡Ó±Í÷æ
-	static uint32_t s_ulTick = 0;	//TickµŒ¥º∆ ±
+	static uint8_t s_ucIndex = 0;	//ÈúÄË∑≥ËΩ¨ÁöÑÊ†áÁ≠æ
+	static uint8_t s_ucFlag = 0;	//ÊâßË°å‰∏ãÊù°Êåá‰ª§Ê†áÂøó
+	static uint32_t s_ulTick = 0;	//TickÊª¥Á≠îËÆ°Êó∂
 	static Data4Byte_u s_uResult = {0};
 	
 	uint8_t ucType = 0;
@@ -2749,23 +2691,29 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 	
 	if(EN_PROCESS_STATUS_EXEC == g_tProcess.eProcessStatus)
 	{
-		//÷¥––¡˜≥Ã
+		//ÊâßË°åÊµÅÁ®ã
 		
-		//ºÏ≤‚¡˜≥Ã «∑ÒŒ™ø’
+		//Ê£ÄÊµãÊµÅÁ®ãÊòØÂê¶‰∏∫Á©∫
 //		if(0 == g_tProcess.ucSubProcessNum)
 //		{
 //			LOG_Warn("SubProcess is Empty, Num=%d", g_tProcess.ucSubProcessNum);
 //			return eError;
 //		}
 		
-		//÷¥––◊”¡˜≥Ã
+		//ÊâßË°åÂ≠êÊµÅÁ®ã
 //		SubProcess_Handle(ulTicks, &g_tProcess.taSubProcess[s_ucIndex]);
 			
 		//
+		if(s_ucIndex >= SUB_PROCESS_MAX_CMD_NUM)
+		{
+			g_tProcess.eProcessStatus = EN_PROCESS_STATUS_FINISHED;
+			s_ucIndex = 0;
+			return eError;
+		}
 		memmove((void*)&tSubProcess, (void*)&g_tProcess.taSubProcess[s_ucIndex], sizeof(SubProcess_t));
 		//if(tSubProcess.ucDeviceID > ) LOG_Warn("DeviceID=%d is Error", tSubProcess.ucDeviceID);
 		
-//		/* ≤Œ ˝ºÏ≤‚ */
+//		/* ÂèÇÊï∞Ê£ÄÊµã */
 //		if(tSubProcess.ucDeviceID >= TMC_MODULE_END && (tSubProcess.ucCmd != CMD_GET_IO_STATUS || \
 //			tSubProcess.ucCmd != CMD_SET_IO_STATUS || tSubProcess.ucCmd != CMD_SET_GLOBAL_PARAM ||  \
 //			tSubProcess.ucCmd != CMD_GET_GLOBAL_PARAM)) 
@@ -2783,13 +2731,13 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			/**********************/
 			case CMD_ROTATE:  //0x10
 			{
-//				//µ⁄“ª¥Œ‘À––£¨–Ë÷ÿ–¬…Ë÷√µÁ¡˜≤Œ ˝
+//				//Á¨¨‰∏ÄÊ¨°ËøêË°åÔºåÈúÄÈáçÊñ∞ËÆæÁΩÆÁîµÊµÅÂèÇÊï∞
 //				if(g_tBoardStatus.ucMotorMoveFlag[eTMC] == 0)
 //				{
 //					TMC5160_I_Set(eTMC);
 //					g_tBoardStatus.ucMotorMoveFlag[eTMC] = 1;				
 //				}
-				//–˝◊™ 
+				//ÊóãËΩ¨ 
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
 				ucType = tSubProcess.uParam[1].ucData[0];
 				lValue = tSubProcess.uParam[2].lData;
@@ -2800,31 +2748,31 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			break;
 			case CMD_MOVE_POSITION_WITHOUT_ENC:  //0x11
 			{
-				//πÿ±’±‡¬Î∆˜ ß≤ΩºÏ≤‚π¶ƒ‹
+				//ÂÖ≥Èó≠ÁºñÁ†ÅÂô®Â§±Ê≠•Ê£ÄÊµãÂäüËÉΩ
 				TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0);
 				
-				//µ⁄“ª¥Œ‘À––£¨–Ë÷ÿ–¬…Ë÷√µÁ¡˜≤Œ ˝
+				//Á¨¨‰∏ÄÊ¨°ËøêË°åÔºåÈúÄÈáçÊñ∞ËÆæÁΩÆÁîµÊµÅÂèÇÊï∞
 //				if(g_tBoardStatus.ucMotorMoveFlag[eTMC] == 0)
 //				{
 //					TMC5160_I_Set(eTMC);
 //					g_tBoardStatus.ucMotorMoveFlag[eTMC] = 1;				
 //				}
 			
-				//“∆∂Ø	
+				//ÁßªÂä®	
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
 				ucType = tSubProcess.uParam[1].ucData[0];
 				lValue = tSubProcess.uParam[2].lData;
 				
-				TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0); //πÿ±’±‡¬Î∆˜ ß≤ΩºÏ≤‚π¶ƒ‹
+				TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0); //ÂÖ≥Èó≠ÁºñÁ†ÅÂô®Â§±Ê≠•Ê£ÄÊµãÂäüËÉΩ
 				if(0 == ucType)
 				{
-					//æ¯∂‘∆´“∆
+					//ÁªùÂØπÂÅèÁßª
 					TMC_MoveTo(eTMC, lValue);
 				}else if(1 == ucType){
-					//œ‡∂‘∆´“∆
+					//Áõ∏ÂØπÂÅèÁßª
 					TMC_MoveBy(eTMC, lValue);
 				}else if(2 == ucType){
-					//ª∫≥Â÷µ£¨“∆∂Ø
+					//ÁºìÂÜ≤ÂÄºÔºåÁßªÂä®
 					TMC_MoveTo(eTMC, s_uResult.lData);
 					
 				}
@@ -2833,33 +2781,33 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			break;
 			case CMD_MOVE_POSITION_WITH_ENC:  //0x12
 			{
-				//±‡¬Î∆˜ ß≤Ω„–÷µ, ∏√÷µŒ™¡„£¨‘Úπÿ±’∏√π¶ƒ‹			
+				//ÁºñÁ†ÅÂô®Â§±Ê≠•ÈòàÂÄº, ËØ•ÂÄº‰∏∫Èõ∂ÔºåÂàôÂÖ≥Èó≠ËØ•ÂäüËÉΩ			
 				TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, g_tAxisParamDefault.lEncDiff_Threshold[eTMC]);
 	//			LOG_Info("ENC Deviation Start: Motor=%d, EncDiff=%d, Steps=%d, CurStep=%d", \
 						eTMC, g_tAxisParamDefault.lEncDiff_Threshold[eTMC], ptRecvFrame->uData.lData, TMC5160_ReadInt(eTMC, TMC5160_XACTUAL));
 		
-				//µ⁄“ª¥Œ‘À––£¨–Ë÷ÿ–¬…Ë÷√µÁ¡˜≤Œ ˝
+				//Á¨¨‰∏ÄÊ¨°ËøêË°åÔºåÈúÄÈáçÊñ∞ËÆæÁΩÆÁîµÊµÅÂèÇÊï∞
 //				if(g_tBoardStatus.ucMotorMoveFlag[eTMC] == 0)
 //				{
 //					TMC5160_I_Set(eTMC);
 //					g_tBoardStatus.ucMotorMoveFlag[eTMC] = 1;				
 //				}
 			
-				//“∆∂Ø		
+				//ÁßªÂä®		
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
 				ucType = tSubProcess.uParam[1].ucData[0];
 				lValue = tSubProcess.uParam[2].lData;
 				
-				TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, g_tAxisParamDefault.lEncDiff_Threshold[eTMC]); //…Ë÷√±‡¬Î∆˜ ß≤ΩºÏ≤‚π¶ƒ‹
+				TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, g_tAxisParamDefault.lEncDiff_Threshold[eTMC]); //ËÆæÁΩÆÁºñÁ†ÅÂô®Â§±Ê≠•Ê£ÄÊµãÂäüËÉΩ
 				if(0 == ucType)
 				{
-					//æ¯∂‘∆´“∆
+					//ÁªùÂØπÂÅèÁßª
 					TMC_MoveTo(eTMC, lValue);
 				}else if(1 == ucType){
-					//œ‡∂‘∆´“∆
+					//Áõ∏ÂØπÂÅèÁßª
 					TMC_MoveBy(eTMC, lValue);
 				}else if(2 == ucType){
-					//ª∫≥Â÷µ£¨“∆∂Ø
+					//ÁºìÂÜ≤ÂÄºÔºåÁßªÂä®
 					TMC_MoveTo(eTMC, s_uResult.lData);
 					
 				}
@@ -2868,36 +2816,36 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			break;
 			case CMD_STOP:   //0x13
 			{
-				//Õ£÷π
+				//ÂÅúÊ≠¢
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
 				TMC_Stop(eTMC);
 			}
 			break;
 			case CMD_MOTOR_RESET: //0x14
 			{
-				//∏¥Œª£¨µΩ‘≠µ„£®≤ŒøºŒª÷√£©
+				//Â§ç‰ΩçÔºåÂà∞ÂéüÁÇπÔºàÂèÇËÄÉ‰ΩçÁΩÆÔºâ
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
 				TMC_Reset(eTMC, TMC_REF_LEFT);  //TMC_REF_RIGHT   TMC_REF_LEFT
 			}
 			break;
-			case CMD_URGENT_STOP: //0x15
+			case CMD_URGENT_STOP:
 			{
-				//º±Õ£
+				//ÊÄ•ÂÅú
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
-				ErrorType_e Urgent_Stop(TMC_e eTMC);
+				Urgent_Stop(eTMC);
 			}
 			
 			
 			/**********************/
 			case CMD_QUERY_BOARD_TYPE:  //0x21
 			{
-				//≤È—Ø∞Âø®¿‡–Õ
+				//Êü•ËØ¢ÊùøÂç°Á±ªÂûã
 				s_uResult.ulData = Get_Module_Type();				
 			}
 			break;		
 			case CMD_HARD_SOFT_VERSION:  //0x22
 			{
-				//≤È—Ø»Ì”≤º˛∞Ê±æ
+				//Êü•ËØ¢ËΩØÁ°¨‰ª∂ÁâàÊú¨
 				Get_Soft_HardWare_Version(s_uResult.ucData);				
 			}
 			break;
@@ -2906,7 +2854,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			/**********************/
 			case CMD_SET_AXIS_PARAM:  //0x30
 			{
-				//…Ë÷√÷·≤Œ ˝
+				//ËÆæÁΩÆËΩ¥ÂèÇÊï∞
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
 				ucType = tSubProcess.uParam[1].ucData[0];
 				
@@ -2917,7 +2865,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			break;
 			case CMD_GET_AXIS_PARAM:  //0x31
 			{
-				//ªÒ»°÷·≤Œ ˝
+				//Ëé∑ÂèñËΩ¥ÂèÇÊï∞
 				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
 				ucType = tSubProcess.uParam[1].ucData[0];
 				
@@ -2926,7 +2874,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			break;
 			case CMD_SET_GLOBAL_PARAM:  //0x33
 			{
-				//…Ë÷√»´æ÷≤Œ ˝
+				//ËÆæÁΩÆÂÖ®Â±ÄÂèÇÊï∞
 				Bank_e eBank   = (Bank_e)tSubProcess.uParam[0].ucData[0];
 				ucType = tSubProcess.uParam[1].ucData[0];
 				lValue = tSubProcess.uParam[2].lData;
@@ -2936,7 +2884,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			break;
 			case CMD_GET_GLOBAL_PARAM:  //0x34
 			{
-				//≤È—Øƒ£øÈ≤Œ ˝
+				//Êü•ËØ¢Ê®°ÂùóÂèÇÊï∞
 				Bank_e eBank   = (Bank_e)tSubProcess.uParam[0].ucData[0];
 				ucType = tSubProcess.uParam[1].ucData[0];
 				//lValue = tSubProcess.uParam[2].lData;
@@ -2946,7 +2894,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			break;			
 			case CMD_SET_IO_STATUS:  //0x34
 			{
-				//…Ë÷√IO◊¥Ã¨
+				//ËÆæÁΩÆIOÁä∂ÊÄÅ
 				uint8_t ucIO_ID = tSubProcess.uParam[0].ucData[0];
 				lValue = tSubProcess.uParam[1].ucData[0];
 				
@@ -2967,15 +2915,15 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			
 //			case CMD_GET_IO_STATUS:  //0x35
 //			{
-//				//≤È—ØIO◊¥Ã¨
+//				//Êü•ËØ¢IOÁä∂ÊÄÅ
 //				uint16_t usOutState = 0, usInState = 0;
 //			
-//				//ªÒ»° ‰≥ˆIO◊¥Ã¨
+//				//Ëé∑ÂèñËæìÂá∫IOÁä∂ÊÄÅ
 //				Get_Out_IO(&usOutState);
-//				//ªÒ»° ‰»ÎIO◊¥Ã¨
+//				//Ëé∑ÂèñËæìÂÖ•IOÁä∂ÊÄÅ
 //				Get_In_IO(&usInState);
 //				
-//				//IO◊¥Ã¨
+//				//IOÁä∂ÊÄÅ
 //				s_uResult.ucData[0] = usOutState;
 //				s_uResult.ucData[1] = usOutState >> 8;;
 //				s_uResult.ucData[2] = usInState;
@@ -3001,235 +2949,243 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 //				Module_Error_Handle(tSubProcess.ucDeviceID, s_tResult.uResult.ulValue);
 //			}
 //			break;
+		
+		case CMD_QUERY_STATUS://50
+		{
+			//status
+			s_uResult.ulData = g_tTMCStatus.ulBoardStatus;
+			
+		}
+		break;
 			
 			
-			/**********************/
-			case CMD_LABEL:
-			{
-				//Ã¯◊™±Í«©, ±Í«©¥¯µƒ≤Œ ˝:label_index£¨«–ªªµΩ∏√subprocess
-				//s_ucIndex++;
-				s_ucFlag = 0;
+		/**********************/
+		case CMD_LABEL: //90
+		{
+			//Ë∑≥ËΩ¨Ê†áÁ≠æ, Ê†áÁ≠æÂ∏¶ÁöÑÂèÇÊï∞:label_indexÔºåÂàáÊç¢Âà∞ËØ•subprocess
+			//s_ucIndex++;
+			s_ucFlag = 0;
+		
+		}
+		break;
+		case CMD_WAIT:
+		{
+			eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
+			ucType = tSubProcess.uParam[1].ucData[0];
+			lValue = tSubProcess.uParam[2].lData;
 			
-			}
-			break;
-			case CMD_WAIT:
-			{
-				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
-				ucType = tSubProcess.uParam[1].ucData[0];
-				lValue = tSubProcess.uParam[2].lData;
-				
-				//
-			    if(0 == ucType){ //wait reset finished			
-					if(1 == g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus)
-					{
-						//∏¥ŒªÕÍ≥…
-						//LOG_Info("Motor Reset Finished");
-						s_ucFlag = 0;
-						
-					}else{
-						//Œ¥ÕÍ≥…
-						s_ucFlag = 1;					
-					}	
-				}else if(1 == ucType){ //wait move finished						
-					if(1 == TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT))
-					{
-						//move ≤Ω ˝ÕÍ≥…
-						//LOG_Info("Move Step Finished");
-						s_ucFlag = 0;
-						
-					}else{
-						//Œ¥ÕÍ≥…
-						s_ucFlag = 1;					
-					}
-				}else if(2 == ucType){ //wait speed reach max value
-					if(1 == TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_VELOCITY_IS_ZERO_MASK, TMC5160_RAMPSTAT_VELOCITY_IS_ZERO_SHIFT))
-					{
-						//µΩ¥Ô◊Ó¥ÛÀŸ∂»
-						//LOG_Info("Reach Max Speed");
-						s_ucFlag = 0;
-						
-					}else{
-						//Œ¥ÕÍ≥…
-						s_ucFlag = 1;					
-					}
-				}else if(3 == ucType){ //wait speed = 0
-					if(0 == TMC5160_ReadInt(eTMC, TMC5160_VACTUAL))
-					{
-						//ÀŸ∂»Œ™¡„
-						//LOG_Info("Speed Is ZERO");
-						s_ucFlag = 0;
-						
-					}else{
-						//Œ¥ÕÍ≥…
-						s_ucFlag = 1;					
-					}
-				}
-			}
-			break;
-			case CMD_DELAY:
-			{
-				if(0 == s_ucFlag)
+			//
+			if(0 == ucType){ //wait reset finished			
+				if(1 == g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus)
 				{
-					//—” ±Œ¥¥ÔµΩ
-					ulValue = tSubProcess.uParam[0].ulData;
-					s_ulTick = ulTicks + ulValue;
-					s_ucFlag = 1;
+					//Â§ç‰ΩçÂÆåÊàê
+					//LOG_Info("Motor Reset Finished");
+					s_ucFlag = 0;
 					
 				}else{
-					if(ulTicks >= s_ulTick)
-					{
-						//—” ±µΩ¥Ô
-						s_ucFlag = 0;
-						s_ulTick = ulTicks;
-						//s_ucIndex++;
-					}
-				}
-			}
-			break;
-			case CMD_CALC:
-			{
-				//÷µº∆À„
-				ucType = tSubProcess.uParam[0].ucData[0];
-				lValue = tSubProcess.uParam[1].lData;
-				
-				//…œ“ª¥ŒΩ·π˚ tResult.uResult.ulValue ;
-				switch(ucType)
+					//Êú™ÂÆåÊàê
+					s_ucFlag = 1;					
+				}	
+			}else if(1 == ucType){ //wait move finished						
+				if(1 == TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT))
 				{
-					case EN_CALC_ADD: //
-					{
-						s_uResult.ulData += lValue;
-					}
-					break;
-					case EN_CALC_SUB:
-					{
-						s_uResult.ulData -= lValue;
-					}
-					break;
-					case EN_CALC_MUL:
-					{
-						s_uResult.ulData *= lValue;
-					}
-					break;
-					case EN_CALC_DIV:
-					{
-						if(lValue != 0)
-							s_uResult.ulData /= lValue;
-					}
-					break;
-					case EN_CALC_MOD:
-					{
-						if(lValue < 0)
-							s_uResult.ulData = -lValue;
-						else 
-							s_uResult.ulData = lValue;
-					}
-					break;
-					case EN_CALC_AND:
-					{
-						s_uResult.ulData &= lValue;
-					}
-					break;
-					case EN_CALC_OR:
-					{
-						s_uResult.ulData |= lValue;
-					}
-					break;
-					case EN_CALC_XOR:
-					{
-						s_uResult.ulData ^= lValue;
-					}
-					break;
-					case EN_CALC_NOT:
-					{
-						s_uResult.ulData = !lValue;
-					}
-					break;		
-					case EN_CALC_RIGHT_LIFT:
-					{
-						//”“Œª“∆
-						s_uResult.ulData >>= lValue;
-					}
-					break;
-					case EN_CALC_LEFT_LIFT:
-					{
-						//◊ÛŒª“∆
-						s_uResult.ulData <<= lValue;
+					//move Ê≠•Êï∞ÂÆåÊàê
+					//LOG_Info("Move Step Finished");
+					s_ucFlag = 0;
 					
-					}
-					break;
-					default:
-					{
-						g_tTMCStatus.ucExecProcessStatus = 1;
-						LOG_Error("CMD_CALC unkonwn Type=%d", ucType);
-					}
+				}else{
+					//Êú™ÂÆåÊàê
+					s_ucFlag = 1;					
+				}
+			}else if(2 == ucType){ //wait speed reach max value
+				if(1 == TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_VELOCITY_IS_ZERO_MASK, TMC5160_RAMPSTAT_VELOCITY_IS_ZERO_SHIFT))
+				{
+					//Âà∞ËææÊúÄÂ§ßÈÄüÂ∫¶
+					//LOG_Info("Reach Max Speed");
+					s_ucFlag = 0;
+					
+				}else{
+					//Êú™ÂÆåÊàê
+					s_ucFlag = 1;					
+				}
+			}else if(3 == ucType){ //wait speed = 0
+				if(0 == TMC5160_ReadInt(eTMC, TMC5160_VACTUAL))
+				{
+					//ÈÄüÂ∫¶‰∏∫Èõ∂
+					//LOG_Info("Speed Is ZERO");
+					s_ucFlag = 0;
+					
+				}else{
+					//Êú™ÂÆåÊàê
+					s_ucFlag = 1;					
 				}
 			}
-			break;
-			case CMD_JA:
+		}
+		break;
+		case CMD_DELAY:
+		{
+			if(0 == s_ucFlag)
 			{
-				//ŒﬁÃıº˛Ã¯◊™
-				uint8_t ucLabelIndex = tSubProcess.uParam[0].ucData[0];
-			    s_ucIndex = ucLabelIndex;
-			}
-			break;
-			case CMD_JC:
-			{
-				//Ãıº˛Ã¯◊™
-				//÷µ±»Ωœ
-				ucType = tSubProcess.uParam[0].ucData[0]; //±»Ωœ∑Ω Ω
-				lValue = tSubProcess.uParam[1].lData; 	  //±»Ωœ÷µ
-				uint8_t ucLabelIndex = tSubProcess.uParam[2].ucData[0];	//±Í«©index
-				//LOG_Debug("Type=%d, CompareV=%d, Label=%d, Result=%d",ucType, lValue, ucLabelIndex, s_uResult.lData);
-				switch(ucType)
+				//Âª∂Êó∂Êú™ËææÂà∞
+				ulValue = tSubProcess.uParam[0].ulData;
+				s_ulTick = ulTicks + ulValue;
+				s_ucFlag = 1;
+				
+			}else{
+				if(ulTicks >= s_ulTick)
 				{
-					case EN_COMPARE_JC_EQ: //µ»”⁄
+					//Âª∂Êó∂Âà∞Ëææ
+					s_ucFlag = 0;
+					s_ulTick = ulTicks;
+					//s_ucIndex++;
+				}
+			}
+		}
+		break;
+		case CMD_CALC:
+		{
+			//ÂÄºËÆ°ÁÆó
+			ucType = tSubProcess.uParam[0].ucData[0];
+			lValue = tSubProcess.uParam[1].lData;
+			
+			//‰∏ä‰∏ÄÊ¨°ÁªìÊûú tResult.uResult.ulValue ;
+			switch(ucType)
+			{
+				case EN_CALC_ADD: //
+				{
+					s_uResult.ulData += lValue;
+				}
+				break;
+				case EN_CALC_SUB:
+				{
+					s_uResult.ulData -= lValue;
+				}
+				break;
+				case EN_CALC_MUL:
+				{
+					s_uResult.ulData *= lValue;
+				}
+				break;
+				case EN_CALC_DIV:
+				{
+					if(lValue != 0)
+						s_uResult.ulData /= lValue;
+				}
+				break;
+				case EN_CALC_MOD:
+				{
+					if(lValue < 0)
+						s_uResult.ulData = -lValue;
+					else 
+						s_uResult.ulData = lValue;
+				}
+				break;
+				case EN_CALC_AND:
+				{
+					s_uResult.ulData &= lValue;
+				}
+				break;
+				case EN_CALC_OR:
+				{
+					s_uResult.ulData |= lValue;
+				}
+				break;
+				case EN_CALC_XOR:
+				{
+					s_uResult.ulData ^= lValue;
+				}
+				break;
+				case EN_CALC_NOT:
+				{
+					s_uResult.ulData = !lValue;
+				}
+				break;		
+				case EN_CALC_RIGHT_LIFT:
+				{
+					//Âè≥‰ΩçÁßª
+					s_uResult.ulData >>= lValue;
+				}
+				break;
+				case EN_CALC_LEFT_LIFT:
+				{
+					//Â∑¶‰ΩçÁßª
+					s_uResult.ulData <<= lValue;
+				
+				}
+				break;
+				default:
+				{
+					g_tTMCStatus.ucExecProcessStatus = 1;
+					LOG_Error("CMD_CALC unkonwn Type=%d", ucType);
+				}
+			}
+		}
+		break;
+		case CMD_JA:
+		{
+			//Êó†Êù°‰ª∂Ë∑≥ËΩ¨
+			uint8_t ucLabelIndex = tSubProcess.uParam[0].ucData[0];
+			s_ucIndex = ucLabelIndex;
+		}
+		break;
+		case CMD_JC:
+		{
+			//Êù°‰ª∂Ë∑≥ËΩ¨
+			//ÂÄºÊØîËæÉ
+			ucType = tSubProcess.uParam[0].ucData[0]; //ÊØîËæÉÊñπÂºè
+			lValue = tSubProcess.uParam[1].lData; 	  //ÊØîËæÉÂÄº
+			uint8_t ucLabelIndex = tSubProcess.uParam[2].ucData[0];	//Ê†áÁ≠æindex
+			//LOG_Debug("Type=%d, CompareV=%d, Label=%d, Result=%d",ucType, lValue, ucLabelIndex, s_uResult.lData);
+			switch(ucType)
+			{
+				case EN_COMPARE_JC_EQ: //Á≠â‰∫é
+				{
+					if(s_uResult.ulData == lValue)
 					{
-						if(s_uResult.ulData == lValue)
-						{
-							s_ucIndex = ucLabelIndex;
-						}
+						s_ucIndex = ucLabelIndex;
 					}
-					break;
-					case EN_COMPARE_JC_NE: //≤ªµ»”⁄
+				}
+				break;
+				case EN_COMPARE_JC_NE: //‰∏çÁ≠â‰∫é
+				{
+					if(s_uResult.ulData != lValue)
 					{
-						if(s_uResult.ulData != lValue)
-						{
-							s_ucIndex = ucLabelIndex;
-						}
+						s_ucIndex = ucLabelIndex;
 					}
-					break;
-					case EN_COMPARE_JC_GT: //¥Û”⁄
+				}
+				break;
+				case EN_COMPARE_JC_GT: //Â§ß‰∫é
+				{
+					if(s_uResult.ulData > lValue)
 					{
-						if(s_uResult.ulData > lValue)
-						{
-							s_ucIndex = ucLabelIndex;
-						}
+						s_ucIndex = ucLabelIndex;
 					}
-					break;
-					case EN_COMPARE_JC_GE: //¥Û”⁄µ»”⁄
+				}
+				break;
+				case EN_COMPARE_JC_GE: //Â§ß‰∫éÁ≠â‰∫é
+				{
+					if(s_uResult.ulData >= lValue)
 					{
-						if(s_uResult.ulData >= lValue)
-						{
-							s_ucIndex = ucLabelIndex;
-						}
+						s_ucIndex = ucLabelIndex;
 					}
-					break;
-					case EN_COMPARE_JC_LT: //–°”⁄
+				}
+				break;
+				case EN_COMPARE_JC_LT: //Â∞è‰∫é
+				{
+					if(s_uResult.ulData < lValue)
 					{
-						if(s_uResult.ulData < lValue)
-						{
-							s_ucIndex = ucLabelIndex;
-						}
+						s_ucIndex = ucLabelIndex;
 					}
-					break;
-					case EN_COMPARE_JC_LE: //–°”⁄µ»”⁄
+				}
+				break;
+				case EN_COMPARE_JC_LE: //Â∞è‰∫éÁ≠â‰∫é
+				{
+					if(s_uResult.ulData <= lValue)
 					{
-						if(s_uResult.ulData <= lValue)
-						{
-							s_ucIndex = ucLabelIndex;
-						}
+						s_ucIndex = ucLabelIndex;
 					}
-					break;
+				}
+				break;
 //					case EN_COMPARE_JC_ETO:
 //					{
 //					
@@ -3250,100 +3206,100 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 //					
 //					}
 //					break;
-					default:
-					{
-						g_tTMCStatus.ucExecProcessStatus = 2;
-						LOG_Error("unKonwn Type=%d", ucType);
-					}
-					break;
-				}
-			}
-			break;
-			case CMD_SET_AXIS_PARAM_AAP:  //0x97
-			{
-				//…Ë÷√÷·≤Œ ˝
-				eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
-				TMC_AxisParam(eTMC, TMC_WRITE, ucType, &s_uResult);  
-				//LOG_Debug("Axis Param Add(%X)  %d", ucType, tSubProcess.uParam[2].lData);
-
-			}
-			break;
-			case CMD_SET_GLOBAL_PARAM_AGP:  //0x98
-			{
-				//…Ë÷√»´æ÷≤Œ ˝
-				Bank_e eBank   = (Bank_e)tSubProcess.uParam[0].ucData[0];
-				ucType = tSubProcess.uParam[1].ucData[0];
-				
-				
-				TMC_Global_Param(eBank, TMC_WRITE, ucType, &s_uResult);
-			}
-			break;
-			case CMD_TIME_COUNT:
-			{
-				//∆Ù∂Øº∆ ±∆˜
-				ucType = tSubProcess.uParam[0].ucData[0]; //±‡∫≈
-				ulValue = tSubProcess.uParam[1].ulData; //º∆ ± ±º‰
-				
-				//º∆ ±–≈œ¢
-				g_tProtcessTimeCount.ulStartFlag[ucType] = 1;
-				g_tProtcessTimeCount.ulTriggerFlag[ucType] = 0;
-				g_tProtcessTimeCount.ulStartTick[ucType] = rt_tick_get();//HAL_GetTick();
-				g_tProtcessTimeCount.ulThreshTick[ucType] = ulValue;
-						
-			}
-			break;
-			case CMD_TIME_COUNT_A:
-			{
-				//∆Ù∂Øº∆ ±∆˜--ª∫¥Ê÷µ∑Ω Ω
-				ucType = tSubProcess.uParam[0].ucData[0]; //±‡∫≈
-				
-				//º∆ ±–≈œ¢
-				g_tProtcessTimeCount.ulStartFlag[ucType] = 1;
-				g_tProtcessTimeCount.ulTriggerFlag[ucType] = 0;
-				g_tProtcessTimeCount.ulStartTick[ucType] = rt_tick_get();//HAL_GetTick();
-				g_tProtcessTimeCount.ulThreshTick[ucType] = s_uResult.ulData;									
-			}
-			break;
-			case CMD_TIME_COUNT_CHECK:
-			{
-				//º∆ ±∆˜µΩ ±ºÏ≤‚
-				ucType = tSubProcess.uParam[0].ucData[0]; //±‡∫≈
-				if(g_tProtcessTimeCount.ulTriggerFlag[ucType] == 1)
+				default:
 				{
-					//¥•∑¢
-					s_uResult.ulData = 1;		
-				}else{
-					//Œ¥¥•∑¢
-					s_uResult.ulData = 0;					
+					g_tTMCStatus.ucExecProcessStatus = 2;
+					LOG_Error("unKonwn Type=%d", ucType);
 				}
+				break;
 			}
-			break;
-			default:
+		}
+		break;
+		case CMD_SET_AXIS_PARAM_AAP:  //0x97
+		{
+			//ËÆæÁΩÆËΩ¥ÂèÇÊï∞
+			eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
+			TMC_AxisParam(eTMC, TMC_WRITE, ucType, &s_uResult);  
+			//LOG_Debug("Axis Param Add(%X)  %d", ucType, tSubProcess.uParam[2].lData);
+
+		}
+		break;
+		case CMD_SET_GLOBAL_PARAM_AGP:  //0x98
+		{
+			//ËÆæÁΩÆÂÖ®Â±ÄÂèÇÊï∞
+			Bank_e eBank   = (Bank_e)tSubProcess.uParam[0].ucData[0];
+			ucType = tSubProcess.uParam[1].ucData[0];
+			
+			
+			TMC_Global_Param(eBank, TMC_WRITE, ucType, &s_uResult);
+		}
+		break;
+		case CMD_TIME_COUNT:
+		{
+			//ÂêØÂä®ËÆ°Êó∂Âô®
+			ucType = tSubProcess.uParam[0].ucData[0]; //ÁºñÂè∑
+			ulValue = tSubProcess.uParam[1].ulData; //ËÆ°Êó∂Êó∂Èó¥
+			
+			//ËÆ°Êó∂‰ø°ÊÅØ
+			g_tProtcessTimeCount.ulStartFlag[ucType] = 1;
+			g_tProtcessTimeCount.ulTriggerFlag[ucType] = 0;
+			g_tProtcessTimeCount.ulStartTick[ucType] = rt_tick_get();// HAL_GetTick();
+			g_tProtcessTimeCount.ulThreshTick[ucType] = ulValue;
+					
+		}
+		break;
+		case CMD_TIME_COUNT_A:
+		{
+			//ÂêØÂä®ËÆ°Êó∂Âô®--ÁºìÂ≠òÂÄºÊñπÂºè
+			ucType = tSubProcess.uParam[0].ucData[0]; //ÁºñÂè∑
+			
+			//ËÆ°Êó∂‰ø°ÊÅØ
+			g_tProtcessTimeCount.ulStartFlag[ucType] = 1;
+			g_tProtcessTimeCount.ulTriggerFlag[ucType] = 0;
+			g_tProtcessTimeCount.ulStartTick[ucType] = rt_tick_get();//HAL_GetTick();
+			g_tProtcessTimeCount.ulThreshTick[ucType] = s_uResult.ulData;									
+		}
+		break;
+		case CMD_TIME_COUNT_CHECK:
+		{
+			//ËÆ°Êó∂Âô®Âà∞Êó∂Ê£ÄÊµã
+			ucType = tSubProcess.uParam[0].ucData[0]; //ÁºñÂè∑
+			if(g_tProtcessTimeCount.ulTriggerFlag[ucType] == 1)
 			{
-				g_tTMCStatus.ucExecProcessStatus = 3;
-//				LOG_Warn("nuKnown CMD=%d", tSubProcess.ucCmd);
+				//Ëß¶Âèë
+				s_uResult.ulData = 1;		
+			}else{
+				//Êú™Ëß¶Âèë
+				s_uResult.ulData = 0;					
 			}
-			break;
+		}
+		break;
+		default:
+		{
+			g_tTMCStatus.ucExecProcessStatus = 3;
+			//LOG_Warn("nuKnown CMD=%d", tSubProcess.ucCmd);
+		}
+		break;
 			
 		} //switch cmd
 			
-		//÷¥––œ¬“ªÃı÷∏¡Ó
+		//ÊâßË°å‰∏ã‰∏ÄÊù°Êåá‰ª§
 	    if(0 == s_ucFlag) s_ucIndex++; 
 		
 	}else if(EN_PROCESS_STATUS_STOP == g_tProcess.eProcessStatus){
 		if(EN_PROCESS_STATUS_EXEC == s_eProcessStatus)
 		{
-			//”…÷¥––µΩÕ£÷π£¨÷¥––…∆∫Ûπ§◊˜
+			//Áî±ÊâßË°åÂà∞ÂÅúÊ≠¢ÔºåÊâßË°åÂñÑÂêéÂ∑•‰Ωú
 			
 		}
 		s_ucIndex = 0;
 		
 	}else{
-		//∆‰À˚◊¥Ã¨£¨≤ª–Ë“™÷¥––
+		//ÂÖ∂‰ªñÁä∂ÊÄÅÔºå‰∏çÈúÄË¶ÅÊâßË°å
 		s_ucIndex = 0;
 	}
 	
-	//÷¥––ÕÍ“ª¬÷∫Û£¨¥”–¬ø™ º÷¥––
+	//ÊâßË°åÂÆå‰∏ÄËΩÆÂêéÔºå‰ªéÊñ∞ÂºÄÂßãÊâßË°å
 //	if(s_ucIndex >= g_tProcess.ucSubProcessNum) s_ucIndex = 0;
 	s_eProcessStatus = g_tProcess.eProcessStatus;
 	
@@ -3352,8 +3308,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 	{
 		if(1 == g_tProtcessTimeCount.ulStartFlag[i])
 		{
-			 //if(HAL_GetTick() > (g_tProtcessTimeCount.ulStartTick[i] + g_tProtcessTimeCount.ulThreshTick[i]))
-			if(rt_tick_get() > (g_tProtcessTimeCount.ulStartTick[i] + g_tProtcessTimeCount.ulThreshTick[i]))
+			 if(rt_tick_get() > (g_tProtcessTimeCount.ulStartTick[i] + g_tProtcessTimeCount.ulThreshTick[i]))
 			 {
 				g_tProtcessTimeCount.ulTriggerFlag[i] = 1;
 				g_tProtcessTimeCount.ulStartFlag[i] = 0;

@@ -105,7 +105,7 @@ ErrorType_e Read_LLDParam(__IO LLDParam_t *ptLLDParam)
 			return ERROR_TYPE_SUCCESS;
 		}else{
 			//HAL_Delay(2);
-			rt_thread_delay(2);
+			rt_thread_mdelay(2);
 		}
 		
 	}while(ucNum < 3);
@@ -166,7 +166,7 @@ ErrorType_e Save_LLDParam(__IO LLDParam_t *ptLLDParam)
 			return ERROR_TYPE_SUCCESS;
 		}else{
 			//HAL_Delay(2);
-			rt_thread_delay(2);
+			rt_thread_mdelay(2);
 		}
 		
 	}while(ucNum < 3);  //最多重复3次
@@ -211,7 +211,7 @@ ErrorType_e LLD_Param(ReadWrite_e eReadWrite, uint8_t ucType, int32_t *plValue)
 			}
 		}
 		break;
-		case 1: //模块Can ID，发送
+		case 1: //模块Can ID，接收
 		{
 			if(eReadWrite == TMC_READ)
 			{
@@ -226,7 +226,7 @@ ErrorType_e LLD_Param(ReadWrite_e eReadWrite, uint8_t ucType, int32_t *plValue)
 			}
 		}
 		break;
-		case 2://模块Can ID，接受
+		case 2://模块Can ID，发送
 		{
 			if(eReadWrite == TMC_READ)
 			{

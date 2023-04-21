@@ -18,12 +18,12 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 //程序编译时间
 //程序名称和版本号
 #if defined DEBUG
-const char SoftWareName[SOFTWARE_NAME_LEN] = "LLD001";
-const uint16_t SoftWareVer[SOFTWARE_VER_LEN] = {3, 0, 0};
+const char SoftWareName[SOFTWARE_NAME_LEN] = "LLD002";
+const uint16_t SoftWareVer[SOFTWARE_VER_LEN] = {1, 0, 0};
 #else    //被占用很大的RO data空间，等待优化
 const char CompileInfo[3][17] __attribute__((at(0x8004000))) = { "CompileTime&Date:", __DATE__, __TIME__ };
-const char SoftWareChar[SOFTWARE_NAME_LEN] __attribute__((at(0x8004040))) = "LLD001";
-const uint16_t SoftWareVer[SOFTWARE_VER_LEN] __attribute__((at(0x8004058))) = {3, 0, 0};
+const char SoftWareChar[SOFTWARE_NAME_LEN] __attribute__((at(0x8004040))) = "LLD002";
+const uint16_t SoftWareVer[SOFTWARE_VER_LEN] __attribute__((at(0x8004058))) = {1, 0, 0};
 #endif
 
 

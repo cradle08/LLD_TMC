@@ -1326,7 +1326,7 @@ ErrorType_e MicroStep_SetValue2Register(uint16_t usMicroStep, uint8_t *pucMicroS
  */
 void TMC_Delay(uint32_t ulMS)
 {
-	rt_thread_delay(ulMS); //HAL_Delay(ulMS);
+	rt_thread_mdelay(ulMS); //HAL_Delay(ulMS);
 }
 
 

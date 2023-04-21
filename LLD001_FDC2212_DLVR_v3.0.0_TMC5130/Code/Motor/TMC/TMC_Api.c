@@ -206,7 +206,7 @@ void TMC_Init(void)
 		g_tTMCStatus.ucEnableFlag[eTMC] = 1;
 		
 		//Print_6PV_Register(eTMC);
-		rt_thread_delay(100);//HAL_Delay(100);
+		rt_thread_mdelay(100);//HAL_Delay(100);
 	}	
 	
 //	HAL_Delay(1000);

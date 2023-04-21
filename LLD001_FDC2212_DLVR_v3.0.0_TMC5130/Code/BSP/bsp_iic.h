@@ -18,18 +18,22 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 //宏定义-----------------------------------------------------------------------//
 //I2C标准传输速度，100kbit/s
-#define  IIC1_SPEED                    100000 
-#define  IIC2_SPEED                    100000 
+#define  IIC1_SPEED                    100000
+#define  IIC2_SPEED                    100000
 //I2C快速传输速度，400kbit/s
-//#define  IIC1_SPEED                     400000 
+//#define  IIC1_SPEED                    400000
+//#define  IIC2_SPEED                    400000 
+
 
 //这个地址只要与STM32外挂的I2C器件地址不一样即可
 #define  I2Cx_OWN_ADDRESS7             0X0A   
 
 
 //等待超时时间
-//0x1000，72MHz时钟，示波器实测1.952ms
+//0x1000，72MHz时钟，示波器实测1.952ms（增加P电机控制后，疑似IIC通信时序被打断）
 #define  I2CT_FLAG_TIMEOUT             ((uint32_t)0x1000)
+//#define  I2CT_FLAG_TIMEOUT             ((uint32_t)0x4000)    //实测仍然失败
+//#define  I2CT_FLAG_TIMEOUT             ((uint32_t)0x6000)    //实测仍然失败
 //0x1000 * 10=0xA000，72MHz时钟，示波器实测19.44ms
 #define  I2CT_LONG_TIMEOUT             ((uint32_t)(2 * I2CT_FLAG_TIMEOUT))
 
