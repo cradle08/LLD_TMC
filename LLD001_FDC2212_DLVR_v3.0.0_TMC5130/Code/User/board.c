@@ -78,7 +78,7 @@ void rt_hw_board_init()
 //	USART1_Config();                             //串口配置
 //	USART2_Config();
 	
-	CAN_MonInit();
+//	CAN_MonInit();
 	
 	ADCx_Init();
 

@@ -105,12 +105,12 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //Can应用通信地址（电机部分）
-#define  CAN_BROADCAST_ID_MOTOR        0
+#define  CAN_BROADCAST_ID_MOTOR        0x7FE
 #define  CAN_MSG_DATA_LENGTH		   8
 
 
 //Can应用通信地址（液面探测部分）
-#define  LLD_CAN_BROADCAST_ID_MOTOR    0x7FE
+#define  LLD_CAN_BROADCAST_ID_MOTOR    0x00
 
 
 

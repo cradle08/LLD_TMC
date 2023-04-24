@@ -470,15 +470,42 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 	ErrorType_e eError = ERROR_TYPE_SUCCESS;
 	TMC_e eTMC = TMC_0;
 	
-	//
-	eTMC = (TMC_e)ptRecvFrame->ucDeviceID;
-	//参数检测
-	if(eTMC >= TMC_MODULE_END)
+	
+	/* device id参数检测 */
+	if(ptRecvFrame->ucCmd == CMD_SET_GLOBAL_PARAM || ptRecvFrame->ucCmd == CMD_GET_GLOBAL_PARAM)
 	{
-		//LOG_Error("TMC DeviceID=%d Is Err", eTMC);
-		ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
-		return ucSendFlag;
+		//全局参数bank检查
+		if(ptRecvFrame->ucDeviceID >= MODULE_MAX_BANK_NUM)
+		{
+			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
+			return ucSendFlag;
+		}
+	}else if(ptRecvFrame->ucCmd == CMD_SET_IO_STATUS || ptRecvFrame->ucCmd == CMD_GET_OUTPUT_IO_STATUS){
+		//输出IO num检查
+		if(ptRecvFrame->ucDeviceID >= MODULE_MAX_OUT_IO_NUM)
+		{
+			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
+			return ucSendFlag;
+		}
+		
+	}else if(ptRecvFrame->ucCmd == CMD_GET_INPUT_IO_STATUS){
+		//输入IO num 检查
+		if(ptRecvFrame->ucDeviceID >= MODULE_MAX_IN_IO_NUM)
+		{
+			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
+			return ucSendFlag;
+		}
+	}else{
+		//电机id检查
+		eTMC = (TMC_e)ptRecvFrame->ucDeviceID;
+		if(eTMC >= TMC_MODULE_END)
+		{
+			//LOG_Error("TMC DeviceID=%d Is Err", eTMC);
+			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
+			return ucSendFlag;
+		}
 	}
+	
 	
 	//指令处理	
 	switch(ptRecvFrame->ucCmd)
@@ -508,14 +535,7 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //电机在复位中，不执行移动指令
 				return ucSendFlag;
 			}	
-			
-			
-			//检查电机是否真实启动
-			if(PLLD_ABS_START == AirSenPara.ABS_Start_End)
-			{
-				AirSenPara.ABS_Real_Start_End = PLLD_ABS_START;
-			}
-			
+				
 			
 			//关闭编码器失步检测功能
 			TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0);
@@ -899,7 +919,7 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 			}
 		}
 		break;
-		case CMD_SHAKE_WITH_SN: //0x82
+		case CMD_SHAKE_WITH_SN: //抖动 0x82
 		{
 			uint8_t i = 0, ucFlag = 0;
 			uint16_t usCount = 0;
@@ -993,57 +1013,57 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 			//ptSendFrame->ucType = Recv_CanID();
 		}
 		break;
-		case 0xF1://液面探测参数 读
-		{
-			int32_t lValue = 0;
-			ptSendFrame->ucStatus = LLD_Param(TMC_READ, ptRecvFrame->ucType, &lValue);
-			ptSendFrame->uData.lData = lValue;
-		}
-		break;
 		case CMD_TEST: // 0xFE
-		{		
-			
-//			LOG_Info("Start ...");
+		{
 			if(0 == ptRecvFrame->ucType)
 			{
-				//打印六点加速值
-				TMC5160_PrintSixPoint_V(eTMC);
-			}else if(1 == ptRecvFrame->ucType){
-				//打印所有寄存器值
-				Print_AllRegister_Value(eTMC);
-			}else if(2 == ptRecvFrame->ucType){
-
-				//打印CAN通信，收发统计信息
-//				LOG_Debug("Recv: S=%d, E=%d, F=%d, O=%d", g_tBoardStatus.tCanMsgCount_Info.ulRecvSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvErrorNum, \
-														  g_tBoardStatus.tCanMsgCount_Info.ulRecvFailNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvOverNum);
-//				LOG_Debug("Send: S=%d, F=%d", g_tBoardStatus.tCanMsgCount_Info.ulSendSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulSendFailNum);
-			}else if(3 == ptRecvFrame->ucType){
-				// TMC SPI通信测试
-				ErrorType_e eError = ERROR_TYPE_SUCCESS;
-				uint32_t i = 0, ulV = 0, ulNum = ptRecvFrame->uData.ulData;
-				
-				if(MSG_TYPE_CAN == eMsgType)
-				{
-					Can_Send_Msg(ptSendFrame);
-					ucSendFlag = 1;
-				}
-				//
-				eError = ERROR_TYPE_SUCCESS;
-				for(i = 0; i < ulNum; i++)
-				{
-					ulV = rand();
-					eError = TMC5160_WriteInt(eTMC, TMC5160_VSTOP, ulV);  
-					if(eError != ERROR_TYPE_SUCCESS)
-					{
-						ptSendFrame->ucStatus = eError;
-						if(MSG_TYPE_CAN == eMsgType)
-						{
-							Can_Send_Msg(ptSendFrame);
-						}
-						rt_thread_mdelay(3);//HAL_Delay(3);
-					}
-				}
+				uint8_t ucAddr = ptRecvFrame->uData.lData;
+			
+				if(CheckRegister_Addr(ucAddr) != ERROR_TYPE_SUCCESS) return ERROR_TYPE_DATA;
+				ptSendFrame->uData.lData = TMC5160_ReadInt(eTMC, ucAddr);
 			}
+		
+//			LOG_Info("Start ...");
+//			if(0 == ptRecvFrame->ucType)
+//			{
+//				//打印六点加速值
+//				TMC5160_PrintSixPoint_V(eTMC);
+//			}else if(1 == ptRecvFrame->ucType){
+//				//打印所有寄存器值
+//				Print_AllRegister_Value(eTMC);
+//			}else if(2 == ptRecvFrame->ucType){
+
+//				//打印CAN通信，收发统计信息
+//				LOG_Debug("Recv: S=%d, E=%d, F=%d, O=%d", g_tBoardStatus.tCanMsgCount_Info.ulRecvSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvErrorNum, \
+//														  g_tBoardStatus.tCanMsgCount_Info.ulRecvFailNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvOverNum);
+//				LOG_Debug("Send: S=%d, F=%d", g_tBoardStatus.tCanMsgCount_Info.ulSendSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulSendFailNum);
+//			}else if(3 == ptRecvFrame->ucType){
+//				// TMC SPI通信测试
+//				ErrorType_e eError = ERROR_TYPE_SUCCESS;
+//				uint32_t i = 0, ulV = 0, ulNum = ptRecvFrame->uData.ulData;
+//				
+//				if(MSG_TYPE_CAN == eMsgType)
+//				{
+//					Can_Send_Msg(ptSendFrame);
+//					ucSendFlag = 1;
+//				}
+//				//
+//				eError = ERROR_TYPE_SUCCESS;
+//				for(i = 0; i < ulNum; i++)
+//				{
+//					ulV = rand();
+//					eError = TMC5160_WriteInt(eTMC, TMC5160_VSTOP, ulV);  
+//					if(eError != ERROR_TYPE_SUCCESS)
+//					{
+//						ptSendFrame->ucStatus = eError;
+//						if(MSG_TYPE_CAN == eMsgType)
+//						{
+//							Can_Send_Msg(ptSendFrame);
+//						}
+//						HAL_Delay(3);
+//					}
+//				}
+//			}
 		}
 		break;
 		default:
@@ -1076,7 +1096,7 @@ void Event_Process(void)
     {
         case MSG_TYPE_NULL:
         {
-			__disable_irq();
+//			__disable_irq();
 			e = SysEventGet();
 			if(e)
 			{
@@ -1088,7 +1108,7 @@ void Event_Process(void)
 			{
 				;
 			}
-			__enable_irq();
+//			__enable_irq();
 		}
 		break;
 		
@@ -1121,7 +1141,7 @@ void Event_Process(void)
 				MonCan.Motor.IsReSend = true;
 				//发送邮箱满
 				//CAN_Config(CAN1, &MonCan.Confg);
-				CAN_Config(CAN1);
+//				CAN_Config(CAN1);
 			}
 			else
 			{

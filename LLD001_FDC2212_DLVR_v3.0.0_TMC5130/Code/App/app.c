@@ -174,7 +174,7 @@ void Motor_App_Init(void)
 		//读取数据异常
 		g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;
 	}
-	//Read_Global_Param2(&g_tGlobalParam);
+//	EPPROM_Data_Reset();
 //	LOG_Info("Can: Baud=%d, RecvID=%d, SendID=%d", g_tGlobalParam.eCanBaud, g_tGlobalParam.ulRecvCanID, g_tGlobalParam.ulSendCanID);
 
 	//默认轴参数
