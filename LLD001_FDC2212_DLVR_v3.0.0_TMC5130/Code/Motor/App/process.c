@@ -1184,7 +1184,7 @@ void LED_Shine(uint16_t usCount, uint32_t ulTime)
 	for(uint16_t i = 0; i < usCount; i++)
 	{
 		//指示灯闪烁
-//@todo		SYS_LED_TRIGGER;
+		SYS_LED_TRIGGER;
 		rt_thread_mdelay(ulTime);//HAL_Delay(ulTime);
 	}
 }
