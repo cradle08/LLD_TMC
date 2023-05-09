@@ -91,7 +91,7 @@ void TMC5160_PrintSixPoint_V(TMC_e eTMC)
 {
 	if(eTMC >= TMC_MODULE_END)
 	{
-		LOG_Error("unKonwn TMC NUM=%d", eTMC);
+//		LOG_Error("unKonwn TMC NUM=%d", eTMC);
 		return;
 	}
 	
@@ -897,10 +897,12 @@ ErrorType_e TMC5160_WriteInt(TMC_e eTMC, uint8_t ucAddr, int32_t lValue)
 //		LOG_Warn("TMC5160_Write Failure %d Time", ucNum);
 		if(ucNum == 3)
 		{
-			LOG_Error("TMC5160_Write Failure %d Time", ucNum);
+//			LOG_Error("TMC5160_Write Failure %d Time", ucNum);
 			return ERROR_TYPE_TMC_RW;
 		}
 	}
+	
+	//g_taTMC5160[eTMC].laShadowRegister[ucAddr] = lValue;
 	
 	return eErrorType;
 }
@@ -1306,7 +1308,7 @@ ErrorType_e MicroStep_SetValue2Register(uint16_t usMicroStep, uint8_t *pucMicroS
 		break;
 		default:
 		{
-			LOG_Error("unKnow Micro Step SetValue=%d", usMicroStep);
+//			LOG_Error("unKnow Micro Step SetValue=%d", usMicroStep);
 			return ERROR_TYPE_DATA;
 		}
 		//break;

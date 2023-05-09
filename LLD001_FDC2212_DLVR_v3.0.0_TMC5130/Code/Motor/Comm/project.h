@@ -17,9 +17,9 @@ extern "C" {
 /* 
 *  程序支持的，TMC步进电机模块类型
 */
-#define MODULE_TYPE_TMC_STEP_MOTOR_1161				0x00001161		//TMC步进电机模块, 单轴板,1.6A,01号板 --液体探测板单轴
+
 #define MODULE_TYPE_TMC_STEP_MOTOR_1301_Common		0x00001301		//TMC步进电机模块, 单轴板,3A,01号板 --通用单轴
-#define MODULE_TYPE_TMC_STEP_MOTOR_1161				0x00001161		//TMC步进电机模块, 单轴板,6A,01号板 --液面探测驱动板（电机部分）
+#define MODULE_TYPE_TMC_STEP_MOTOR_1161				0x00001161		//TMC步进电机模块, 单轴板,1.6A,01号板 --液面探测驱动板（电机部分）
 #define MODULE_TYPE_TMC_STEP_MOTOR_2301_Pipette		0x00002301		//TMC步进电机模块, 二轴板,3A,01号板 --移液器二轴
 #define MODULE_TYPE_TMC_STEP_MOTOR_3301_Pipette		0x00003301		//TMC步进电机模块, 三轴板,3A,01号板 --移液器三轴
 #define MODULE_TYPE_TMC_STEP_MOTOR_3311_Common		0x00003311		//TMC步进电机模块, 三轴板,3A,02号板 --通用三轴
@@ -27,7 +27,7 @@ extern "C" {
 
 
 //MCU的UUID地址
-#define MCU_UUID_FLASH_ADDR							0x1FFFF7E8    //0x1FFFF7E0	//0x1FFFF7E8
+#define MCU_UUID_FLASH_ADDR							0x1FFFF7E8
 
 /*
 *
@@ -56,7 +56,7 @@ extern "C" {
 
 
 
-#define PROJECT_TAG									"28bbeb5"
+#define PROJECT_TAG									"a2c7b22"
 
 
   

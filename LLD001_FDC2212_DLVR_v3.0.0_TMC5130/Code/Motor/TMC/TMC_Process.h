@@ -57,6 +57,7 @@ typedef __packed struct {
 	int32_t	lResetSpeedLow[TMC_MODULE_END];		//复位低速	
 	int32_t lResetAcc[TMC_MODULE_END];			//复位加速度
 	int32_t	lResetOff[TMC_MODULE_END];			//复位偏移距离
+	uint32_t 	lZeroOff[TMC_MODULE_END];		//复位之后，零位偏移
 	
 	//电流
 	uint8_t ucIRun[TMC_MODULE_END];		  //运行电流
@@ -91,8 +92,13 @@ typedef __packed struct {
 	uint8_t ucLeftLimitPolarity[TMC_MODULE_END]; //左限位极性，高有效
 	uint8_t ucRotateDirect[TMC_MODULE_END];		 //旋转方向
 	
+	uint32_t lRes0[TMC_MODULE_END];		//保留字段0
+	uint32_t lRes1[TMC_MODULE_END];		//保留字段1
+	
 	//校验值
 	uint16_t 	usCrc;							//CRC16 校验码
+	
+
 
 } AxisParamDefault_t;
 

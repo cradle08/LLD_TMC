@@ -60,7 +60,7 @@ ErrorType_e TMC_Mode_Set(TMC_e eIndex, TMC_Work_Mode_e eMode)
 void Print_Register_Value(TMC_e eTMC,  uint8_t ucAddr)
 {
 	int32_t lValue = TMC_ReadInt(eTMC, ucAddr);
-////	LOG_Info("Addr(%X): %X=%d", ucAddr, lValue, lValue);
+//	LOG_Info("Addr(%X): %X=%d", ucAddr, lValue, lValue);
 
 }
 
@@ -75,7 +75,7 @@ void Print_AllRegister_Value(TMC_e eTMC)
 	{
 		Print_Register_Value(eTMC, i);
 	}
-////	LOG_Info("-------------------------");
+//	LOG_Info("-------------------------");
 
 }
 
@@ -90,7 +90,7 @@ void TMC_SetVMode_V(TMC_e eTMC, uint8_t ucOpt)
 	
 	if(eTMC >= TMC_MODULE_END)
 	{
-		LOG_Error("unKonwn TMC NUM=%d", eTMC);
+//		LOG_Error("unKonwn TMC NUM=%d", eTMC);
 		return;
 	}
 	
@@ -115,7 +115,7 @@ void TMC_SetPMode_V(TMC_e eTMC, uint8_t ucOpt)
 	
 	if(eTMC >= TMC_MODULE_END)
 	{
-		LOG_Error("unKonwn TMC NUM=%d", eTMC);
+//		LOG_Error("unKonwn TMC NUM=%d", eTMC);
 		return;
 	}
 	
@@ -421,7 +421,7 @@ ErrorType_e TMC_Rotate(TMC_e eTMC, RotateDirect_e eDirect, uint32_t lVelocity)
 	//参数检测--旋转方向
 	if(eDirect != ROTATE_DIRECT_CLOCKWISE && eDirect != ROTATE_DIRECT_ANTI_CLOCKWISE)
 	{
-		LOG_Error("Rotate Direct=%d Is Error", eDirect);
+//		LOG_Error("Rotate Direct=%d Is Error", eDirect);
 		return ERROR_TYPE_TYPE;
 	}
 	
@@ -439,7 +439,7 @@ ErrorType_e TMC_Rotate(TMC_e eTMC, RotateDirect_e eDirect, uint32_t lVelocity)
 		break;
 		default:
 		{
-			LOG_Error("TMC DeviceID=%d Is Error", eTMC);
+//			LOG_Error("TMC DeviceID=%d Is Error", eTMC);
 			return ERROR_TYPE_DEVICE_ID;
 		}
 //		break;
@@ -500,12 +500,12 @@ ErrorType_e TMC_Stop_Urgent(TMC_e eTMC)
 			//HAL_Delay(1);
 			TMC_WriteInt(eTMC, TMC5160_VMAX, 0);
 			TMC_Enable(eTMC);
-////			LOG_Info("Urgent XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
+//			LOG_Info("Urgent XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
 		}
 		break;
 		default:
 		{
-			LOG_Error("TMC DeviceID=%d Is Error", eTMC);
+//			LOG_Error("TMC DeviceID=%d Is Error", eTMC);
 			return ERROR_TYPE_DEVICE_ID;
 		}
 		//break;
@@ -535,7 +535,7 @@ ErrorType_e TMC_MoveTo(TMC_e eTMC, int32_t lPosition)
 		break;
 		default:
 		{
-			LOG_Error("TMC DeviceID=%d Is Error", eTMC);
+//			LOG_Error("TMC DeviceID=%d Is Error", eTMC);
 			return ERROR_TYPE_DEVICE_ID;
 		}
 		//break;
@@ -565,7 +565,7 @@ ErrorType_e TMC_MoveBy(TMC_e eTMC, int32_t lTicks)
 		break;
 		default:
 		{
-			LOG_Error("TMC DeviceID=%d Is Error", eTMC);
+//			LOG_Error("TMC DeviceID=%d Is Error", eTMC);
 			return ERROR_TYPE_DEVICE_ID;
 		}
 		//break;

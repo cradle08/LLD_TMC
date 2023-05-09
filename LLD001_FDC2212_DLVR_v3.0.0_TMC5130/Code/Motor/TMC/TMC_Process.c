@@ -191,7 +191,7 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 						}
 					}
 					break;
-					/* 修正便宜 */
+					/* 修正偏移，零位偏移 */
 					case MOTOR_RESET_EXEC_11:
 					{
 						//实际位置
@@ -199,7 +199,10 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 						//get XLatch， 光耦触发位置
 						int32_t lXLatch = TMC5160_ReadInt(eTMC, TMC5160_XLATCH);
 						//偏差
-						int32_t	lDiff = lXActual - lXLatch;
+						int32_t	lDiff = (lXActual - lXLatch) + g_tAxisParamDefault.lZeroOff[eTMC];
+						
+						//关闭做参考点复位
+						TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 0);
 						
 						//位置模式，修正便宜
 						TMC5160_WriteInt(eTMC, TMC5160_XACTUAL, lDiff);
@@ -214,18 +217,25 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 					/* 修正完成，速度=0 */
 					case MOTOR_RESET_EXEC_12:
 					{
-					
-						lSpeed = TMC5160_ReadInt(eTMC, TMC5160_VACTUAL);
-						if(lSpeed == 0)
+						if(1 == TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT))
 						{
 							//切换到
 							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_13;
 						}
+					
+//						lSpeed = TMC5160_ReadInt(eTMC, TMC5160_VACTUAL);
+//						if(lSpeed == 0)
+//						{
+//							//切换到
+//							g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec = MOTOR_RESET_EXEC_13;
+//						}
 					}
+					break;					
+					
 					/* 复位完成，处理 */
 					case MOTOR_RESET_EXEC_13:
 					{
-						//关闭做参考点复位
+						//再次关闭做参考点复位
 						TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 0);
 						
 						//设置为保持模式
@@ -252,7 +262,9 @@ uint8_t Motor_Reset_Handle(uint32_t ulTick)
 				{
 					//超时
 					g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_FAIL;
-					LOG_Error("Motor=%d Reset Timeout", eTMC);
+					//LOG_Error("Motor=%d Reset Timeout", eTMC);
+					//关闭做参考点复位
+					TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 0);
 					return 0;
 				}
 			}
@@ -291,12 +303,12 @@ ErrorType_e Update_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *ptAxisPar
 			 ptAxisParamDefault->usEncResultion[eTMC], ptAxisParamDefault->ucEncCountDirect[eTMC]);
 	
 	//计算编码器常数
-	if(0 == g_tAxisParamDefault.ucEncCountDirect[eTMC])
+	if(0 ==  ptAxisParamDefault->ucEncCountDirect[eTMC])
 	{
 		//正向
 		ptAxisParamDefault->lEncConstValue[eTMC] = lInt*65536+ (int32_t)(fDecimal*10000);
 		
-	}else if(1 == g_tAxisParamDefault.ucEncCountDirect[eTMC]){
+	}else if(1 == ptAxisParamDefault->ucEncCountDirect[eTMC]){
 		//反向		
 		ptAxisParamDefault->lEncConstValue[eTMC] = (-(lInt+1))*65536+ (int32_t)(10000-(fDecimal*10000));
 	}
@@ -305,7 +317,7 @@ ErrorType_e Update_Enc_ConstValue(TMC_e eTMC, __IO AxisParamDefault_t *ptAxisPar
 	//LOG_Info("EncConst %d", ptAxisParamDefault->lEncConstValue[eTMC]);
 	if(1 == ucValidFlag)
 	{
-		eErrorType = TMC_WriteInt(eTMC, TMC5160_ENC_CONST, g_tAxisParamDefault.lEncConstValue[eTMC]);
+		eErrorType = TMC_WriteInt(eTMC, TMC5160_ENC_CONST, ptAxisParamDefault->lEncConstValue[eTMC]);
 	}
 	return eErrorType;
 }
@@ -389,11 +401,15 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 
 	//参考点复位
 	ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
-	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 1; //左限位极性，低有效
-	ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向		
+	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
+	ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向	
+
+	ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
+	ptAxisParamDefault->lRes1[eTMC] = 0; //保留字段1
+
 			
-#elif (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_3301_Pipette)
-	/* 三轴 移液器 */	
+#elif (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_2301_Pipette)
+	/* 二轴 移液器 */	
 	for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
 	{			
 		if(TMC_0 == eTMC)
@@ -410,7 +426,8 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 15000; //复位速度
 			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000;  //复位速度  
 			ptAxisParamDefault->lResetAcc[eTMC]       = 500;   //复位加速度
-			ptAxisParamDefault->lResetOff[eTMC]  	  = 800;   //复位偏移距离
+			ptAxisParamDefault->lResetOff[eTMC]  	  = 200;   //复位偏移距离
+			ptAxisParamDefault->lZeroOff[eTMC]  	  = 0;	 //复位后，零点偏移距离
 
 			//电流
 			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //运行电流
@@ -441,6 +458,59 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
 			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向
 			
+#elif (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_3301_Pipette)
+	/* 三轴 移液器 */	
+	for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
+	{			
+		if(TMC_0 == eTMC)
+		{
+			/* 三轴 M0, (Z轴)*/
+			
+			//编码器相关
+			ptAxisParamDefault->usEncResultion[eTMC]	 = DEFAULT_ENC_RESULTION_720;     //编码器分辨率
+			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;					   	  //编码器检测失步，阈值
+			ptAxisParamDefault->ucEncCountDirect[eTMC]   = 0;					   	  //编码器计数方向
+			ptAxisParamDefault->lEncConstValue[eTMC] 	 = DEFAULT_ENC_CONST_VALUE_Z; //编码器常数--计算获取			
+			
+			//参考点-复位参数
+			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 15000; //复位速度
+			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000;  //复位速度  
+			ptAxisParamDefault->lResetAcc[eTMC]       = 500;   //复位加速度
+			ptAxisParamDefault->lResetOff[eTMC]  	  = 800;   //复位偏移距离
+			ptAxisParamDefault->lZeroOff[eTMC]  	  = 0;	 //复位后，零点偏移距离
+
+			//电流
+			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //运行电流
+			ptAxisParamDefault->ucIHold[eTMC]	   = 8; //保持电流
+			ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;  //电流降到IHold所需时间	
+			
+			//步进细分、没转全步数
+			ptAxisParamDefault->usMicroStepResultion[eTMC] = 64;//DEFAULT_MICRO_STEP_RESULTION; 
+			ptAxisParamDefault->usFullStepPerRound[eTMC]   = DEFAULT_FULL_STEP_PER_ROUND; //全步每转
+			
+			//六点速度参数，用于位置模式
+			ptAxisParamDefault->lVStart[eTMC] = 0;
+			ptAxisParamDefault->lA1[eTMC] 	 = 900000; 
+			ptAxisParamDefault->lV1[eTMC] 	 = 150000;
+			ptAxisParamDefault->lAMax[eTMC]  = 1200000; 
+			ptAxisParamDefault->lVMax[eTMC]  = 243200;
+			ptAxisParamDefault->lDMax[eTMC]  = 1200000; 
+			ptAxisParamDefault->lD1[eTMC] 	 = 900000; 
+			ptAxisParamDefault->lVStop[eTMC] = 10;
+			//驱动器运行模式
+			ptAxisParamDefault->ucMode[eTMC] = TMC_MODE_POSITION;
+			//速度参数、用于速度模式
+			ptAxisParamDefault->lAMax_VMode[eTMC] = ptAxisParamDefault->lAMax[eTMC];	//第二段加速度
+			ptAxisParamDefault->lVMax_VMode[eTMC] = ptAxisParamDefault->lVMax[eTMC];	//最大速度
+	
+			//参考点复位
+			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
+			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
+			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向			
+						
+			ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
+			ptAxisParamDefault->lRes1[eTMC] = 0; //保留字段1
+			
 		}else if(TMC_1 == eTMC){
 			/* 三轴 M1, (Y轴)*/		
 			//编码器相关
@@ -454,7 +524,7 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000; //复位速度 
 			ptAxisParamDefault->lResetAcc[eTMC]       = 500;  //复位加速度
 			ptAxisParamDefault->lResetOff[eTMC]  	  = 400;  //复位偏移距离
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;	//编码器检测失步，阈值
+			ptAxisParamDefault->lZeroOff[eTMC]  	  = 0;	 //复位后，零点偏移距离
 			
 			//电流
 			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //运行电流
@@ -484,6 +554,9 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
 			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
 			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向
+						
+			ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
+			ptAxisParamDefault->lRes1[eTMC] = 0; //保留字段1
 				
 		}else if(TMC_2 == eTMC){	
 			/* 三轴 M1, (P轴) */
@@ -496,9 +569,9 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			//参考点-复位参数
 			ptAxisParamDefault->lResetSpeedHigh[eTMC] 	 = 3500; //复位速度
 			ptAxisParamDefault->lResetSpeedLow[eTMC]  	 = 1500; //复位速度  
-			ptAxisParamDefault->lResetAcc[eTMC]      	 = 800;	 //复位加速度
-			ptAxisParamDefault->lResetOff[eTMC]  		 = 3200; //复位偏移距离			
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 0;	 //编码器检测失步，阈值	
+			ptAxisParamDefault->lResetAcc[eTMC]      	 = 500;	 //复位加速度
+			ptAxisParamDefault->lResetOff[eTMC]  		 = 200;  //复位偏移距离		
+			ptAxisParamDefault->lZeroOff[eTMC]  	     = 0;	 //复位后，零点偏移距离			
 			
 			//电流
 			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //运行电流
@@ -528,6 +601,9 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
 			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
 			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向
+						
+			ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
+			ptAxisParamDefault->lRes1[eTMC] = 0; //保留字段1
 		}
 	}
 #elif (CURRENT_MODULE_TYPE==MODULE_TYPE_TMC_STEP_MOTOR_3311_Common) 	
@@ -549,6 +625,7 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000;  //复位速度  
 			ptAxisParamDefault->lResetAcc[eTMC]       = 500;   //复位加速度
 			ptAxisParamDefault->lResetOff[eTMC]  	  = 200;   //复位偏移距离
+			ptAxisParamDefault->lZeroOff[eTMC]  	  = 0;	 //复位后，零点偏移距离
 
 			//电流
 			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //运行电流
@@ -579,6 +656,9 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
 			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
 			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向
+						
+			ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
+			ptAxisParamDefault->lRes1[eTMC] = 0; //保留字段1
 			
 		}else if(TMC_1 == eTMC){
 			/* 三轴 M1, (Y轴)*/		
@@ -592,8 +672,9 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lResetSpeedHigh[eTMC] = 35000; //复位速度
 			ptAxisParamDefault->lResetSpeedLow[eTMC]  = 1000; //复位速度 
 			ptAxisParamDefault->lResetAcc[eTMC]       = 500;  //复位加速度
-			ptAxisParamDefault->lResetOff[eTMC]  	  = 400;  //复位偏移距离
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 100;	//编码器检测失步，阈值
+			ptAxisParamDefault->lResetOff[eTMC]  	  = 200;  //复位偏移距离
+			ptAxisParamDefault->lZeroOff[eTMC]  	  = 0;	 //复位后，零点偏移距离
+			
 			
 			//电流
 			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //运行电流
@@ -623,6 +704,9 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
 			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
 			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向
+						
+			ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
+			ptAxisParamDefault->lRes1[eTMC] = 0; //保留字段1
 				
 		}else if(TMC_2 == eTMC){	
 			/* 三轴 M1, (P轴) */
@@ -636,8 +720,8 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->lResetSpeedHigh[eTMC] 	 = 3500; //复位速度
 			ptAxisParamDefault->lResetSpeedLow[eTMC]  	 = 1500; //复位速度  
 			ptAxisParamDefault->lResetAcc[eTMC]      	 = 800;	 //复位加速度
-			ptAxisParamDefault->lResetOff[eTMC]  		 = 3200; //复位偏移距离			
-			ptAxisParamDefault->lEncDiff_Threshold[eTMC] = 0;	 //编码器检测失步，阈值	
+			ptAxisParamDefault->lResetOff[eTMC]  		 = 200;  //复位偏移距离	
+			ptAxisParamDefault->lZeroOff[eTMC]  	  	 = 0;	 //复位后，零点偏移距离						
 			
 			//电流
 			ptAxisParamDefault->ucIRun[eTMC]	   = 128; //运行电流
@@ -667,6 +751,9 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 			ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
 			ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
 			ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向
+						
+			ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
+			ptAxisParamDefault->lRes1[eTMC] = 0; //保留字段1
 		}
 	}
 
@@ -769,7 +856,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 	//参数检测
 	if(eTMC >= TMC_END)
 	{
-		LOG_Error("TMC DeviceID=%d Is Error", eTMC);
+		//LOG_Error("TMC DeviceID=%d Is Error", eTMC);
 		return ERROR_TYPE_DEVICE_ID;
 	}
 	
@@ -800,7 +887,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
 			//LOG_Info("RAMP_STAT=%X", TMC_ReadInt(eTMC, TMC5160_RAMPSTAT));
 		} else if(eReadWrite == TMC_WRITE){
-			LOG_Error("Read Max Postion Do not Be Write");
+			//LOG_Error("Read Max Postion Do not Be Write");
 			return ERROR_TYPE_RW_RIGHT;
 		}
 		break;
@@ -820,13 +907,13 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tAxisParamDefault.usEncResultion[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
-			if(g_tAxisParamDefault.usEncResultion[eTMC] != puData->lData)
-			{
+//			if(g_tAxisParamDefault.usEncResultion[eTMC] != puData->lData)
+//			{
 				//值不同，需更新
 				g_tAxisParamDefault.usEncResultion[eTMC] = puData->lData;
 				//保存更新的参数
 				Update_Enc_ConstValue(eTMC, &g_tAxisParamDefault, 1);
-			}
+//			}
 		}
 		break;	
 		
@@ -869,9 +956,9 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			
 			//
 			puData->lData = lDiff;
-			LOG_Info("Actual=%d, XEnc=%d, Diff=%d", lXActual, lXEnc, lDiff);
+			//LOG_Info("Actual=%d, XEnc=%d, Diff=%d", lXActual, lXEnc, lDiff);
 		} else if(eReadWrite == TMC_WRITE) {
-			LOG_Error("Enc Diff Do not Be Write");
+			//LOG_Error("Enc Diff Do not Be Write");
 			return ERROR_TYPE_RW_RIGHT;
 		}
 		break;	
@@ -885,7 +972,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			
 			//清除丢步标志位
 			//TMC5160_FIELD_UPDATE(eTMC, TMC5160_ENC_STATUS, TMC5160_DEVIATION_WARN_MASK, TMC5160_DEVIATION_WARN_SHIFT, puData->lData);
-			LOG_Error("Enc Diff Do not Be Write");
+			//LOG_Error("Enc Diff Do not Be Write");
 			return ERROR_TYPE_RW_RIGHT;
 		}
 		break;
@@ -930,11 +1017,18 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		if(eReadWrite == TMC_READ) {
 			puData->lData = g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus;
 		}else if(eReadWrite == TMC_WRITE) {
-			LOG_Error("Read Only, Don't Be Writed");
+			//LOG_Error("Read Only, Don't Be Writed");
 			return ERROR_TYPE_RW_RIGHT;
 		}
 		break;			
-
+	case 0x15:
+		//复位零位偏移距离
+		if(eReadWrite == TMC_READ) {
+			puData->lData = g_tAxisParamDefault.lZeroOff[eTMC];
+		}else if(eReadWrite == TMC_WRITE) {
+			g_tAxisParamDefault.lZeroOff[eTMC] = puData->lData;
+		}
+		break;		
 		
 		
 	/*** 电流相关 ****/	
@@ -944,6 +1038,12 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			//puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IRUN_MASK, TMC5160_IRUN_SHIFT);
 			puData->lData = g_tAxisParamDefault.ucIRun[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
+						//参数检擦
+			if(puData->lData > CURRENT_MAX_VALUE)
+			{
+				//LOG_Error("Current Set Value=%d More than %d", puData->lData, CURRENT_CHANGE_CONST);
+				return ERROR_TYPE_DATA;
+			}
 			g_tAxisParamDefault.ucIRun[eTMC] = puData->lData;
 			uint8_t ucIRun = g_tAxisParamDefault.ucIRun[eTMC]/8;
 			eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IRUN_MASK, TMC5160_IRUN_SHIFT, ucIRun);
@@ -955,6 +1055,12 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 			//puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IHOLD_MASK, TMC5160_IHOLD_SHIFT);
 			puData->lData = g_tAxisParamDefault.ucIHold[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
+						//参数检擦
+			if(puData->lData > CURRENT_MAX_VALUE)
+			{
+				//LOG_Error("Current Set Value=%d More than %d", puData->lData, CURRENT_CHANGE_CONST);
+				return ERROR_TYPE_DATA;
+			}
 			g_tAxisParamDefault.ucIHold[eTMC] = puData->lData;
 			uint8_t ucIHold = g_tAxisParamDefault.ucIHold[eTMC]/8;
 			eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IHOLD_MASK, TMC5160_IHOLD_SHIFT, ucIHold);
@@ -994,7 +1100,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 				eError = MicroStep_SetValue2Register(usMicroStep, &ucMicroStep_Rg);
 				if(eError != ERROR_TYPE_SUCCESS)
 				{
-					LOG_Error("Data Micro Step=%d Error", usMicroStep);
+					//LOG_Error("Data Micro Step=%d Error", usMicroStep);
 					return ERROR_TYPE_DATA;
 				}
 			
@@ -1018,7 +1124,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 				g_tAxisParamDefault.usFullStepPerRound[eTMC] = puData->lData;
 				//保存更新的参数
 				Update_Enc_ConstValue(eTMC, &g_tAxisParamDefault,1);
-//				LOG_Info("Full Step Per Round=%d", puData->lData);
+				//LOG_Info("Full Step Per Round=%d", puData->lData);
 //			}
 		}
 	}
@@ -1124,7 +1230,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_ReadInt(eTMC, TMC5160_VACTUAL)/V_CHANGE_CONST;
 		} else if(eReadWrite == TMC_WRITE) {
-			LOG_Error("VACTUAL Do Not Be Write");
+			//LOG_Error("VACTUAL Do Not Be Write");
 			return ERROR_TYPE_RW_RIGHT;
 		}
 		break;
@@ -1133,7 +1239,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_VELOCITY_REACH_MASK, TMC5160_RAMPSTAT_VELOCITY_REACH_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
-			LOG_Error("Max Speed Flag Do Not Be Write");
+			//LOG_Error("Max Speed Flag Do Not Be Write");
 			return ERROR_TYPE_RW_RIGHT;
 		}
 		break;
@@ -1142,7 +1248,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_VELOCITY_IS_ZERO_MASK, TMC5160_RAMPSTAT_VELOCITY_IS_ZERO_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
-			LOG_Error("Speed is zero Flag Do Not Be Write");
+			//LOG_Error("Speed is zero Flag Do Not Be Write");
 			return ERROR_TYPE_RW_RIGHT;
 		}
 		break;
@@ -1231,7 +1337,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 				eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_R_MASK, TMC5160_POL_STOP_R_SHIFT, puData->lData);
 				g_tAxisParamDefault.ucRighLimitPolarity[eTMC] = puData->lData;
 			}else{
-				LOG_Error("Data=%d Is Error", puData->lData);
+				//LOG_Error("Data=%d Is Error", puData->lData);
 				return ERROR_TYPE_DATA;
 			}
 		}
@@ -1246,7 +1352,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 				eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_L_MASK, TMC5160_POL_STOP_L_SHIFT, puData->lData);
 				g_tAxisParamDefault.ucLeftLimitPolarity[eTMC] = puData->lData;
 			}else{
-				LOG_Error("Data=%d Is Error", puData->lData);
+				//LOG_Error("Data=%d Is Error", puData->lData);
 				return ERROR_TYPE_DATA;
 			}
 		}
@@ -1257,7 +1363,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_STATUS_STOP_R_MASK, TMC5160_STATUS_STOP_R_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
-			LOG_Error("Left Limit Flag Do Not Be Write");
+			//LOG_Error("Left Limit Flag Do Not Be Write");
 			eError = ERROR_TYPE_RW_RIGHT;
 		}
 		break;
@@ -1267,7 +1373,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 		if(eReadWrite == TMC_READ) {
 			puData->lData = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT);
 		} else if(eReadWrite == TMC_WRITE) {
-			LOG_Error("Left Limit Flag Do Not Be Write");
+			//LOG_Error("Left Limit Flag Do Not Be Write");
 			eError = ERROR_TYPE_RW_RIGHT;
 		}
 		break;
@@ -1284,7 +1390,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 				TMC_Enable(eTMC);
 				g_tTMCStatus.ucEnableFlag[eTMC] = 1;
 			}else{
-				LOG_Error("Param=%d Is Error", puData->lData);
+				//LOG_Error("Param=%d Is Error", puData->lData);
 				return ERROR_TYPE_DATA;
 			}
 		}
@@ -1300,7 +1406,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 				eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_GCONF, TMC5160_SHAFT_MASK, TMC5160_SHAFT_SHIFT, puData->lData);
 			}else{
 				
-				LOG_Error("Param=%d Is Error", puData->lData);
+				//LOG_Error("Param=%d Is Error", puData->lData);
 				return ERROR_TYPE_DATA;
 			}
 		}
@@ -1676,7 +1782,7 @@ ErrorType_e TMC_AxisParam(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Da
 
 		default:
 		{
-			LOG_Error("unKnown Type");
+			//LOG_Error("unKnown Type");
 			eError = ERROR_TYPE_TYPE;
 		}
 		break;
@@ -1733,20 +1839,22 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 //ErrorType_e TMC5160_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t ucType, Data4Byte_u *puData)
 {
 //	extern Process_t g_tProcess;
+	extern __IO AxisParamDefault_t g_tAxisParamDefault;
 	extern TMC5160_t g_taTMC5160[TMC_MODULE_END];
 	//extern AxisParamDefault_t g_tAxisParamDefault;
 	AxisParamDefault_t tAxisParamDefault = {0};
 	ErrorType_e eErrorType = ERROR_TYPE_SUCCESS;
 	uint8_t ucSaveFlag = 0;
+	ErrorType_e eError = ERROR_TYPE_SUCCESS;
 	
 	//参数检测
 	if(eTMC >= TMC_END)
 	{
-		LOG_Error("TMC DeviceID=%d Is Error", eTMC);
+		//LOG_Error("TMC DeviceID=%d Is Error", eTMC);
 		return ERROR_TYPE_DEVICE_ID;
 	}
 	
-	//读取默认轴参数
+	//从EEPROM中读取默认轴参数
 	if(ERROR_TYPE_SUCCESS != Read_Axis_Param_Default(&tAxisParamDefault))
 	{
 		return ERROR_TYPE_CRC;
@@ -1767,10 +1875,11 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			{
 				//值不同，需更新
 				tAxisParamDefault.usEncResultion[eTMC] = puData->lData;
-				//更新的参数
-				Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
 				ucSaveFlag = 1;
 			}
+			//更新的参数
+			Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 1);//Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
+			g_tAxisParamDefault.usEncResultion[eTMC] = tAxisParamDefault.usEncResultion[eTMC];
 		}
 		break;	
 		
@@ -1784,12 +1893,13 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				if(tAxisParamDefault.ucEncCountDirect[eTMC] != puData->lData)
 				{
 					tAxisParamDefault.ucEncCountDirect[eTMC] = puData->lData;
-					//更新的参数
-					Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
 					ucSaveFlag = 1;
 				}
+				//更新的参数
+				Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 1);//Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
+				g_tAxisParamDefault.ucEncCountDirect[eTMC] = tAxisParamDefault.ucEncCountDirect[eTMC];
 			}else{
-				LOG_Error("Param=%d Is Error", puData->lData);
+				//LOG_Error("Param=%d Is Error", puData->lData);
 				return ERROR_TYPE_DATA;
 			}
 		}
@@ -1804,6 +1914,8 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lEncDiff_Threshold[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			TMC5160_WriteInt(eTMC, TMC5160_ENC_DEVIATION, puData->lData);
+			g_tAxisParamDefault.lEncDiff_Threshold[eTMC] = tAxisParamDefault.lEncDiff_Threshold[eTMC];
 		}
 		break;			
 
@@ -1821,6 +1933,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lResetSpeedLow[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			g_tAxisParamDefault.lResetSpeedLow[eTMC] = tAxisParamDefault.lResetSpeedLow[eTMC];
 		}
 		break;	
 	case 0x11:
@@ -1833,6 +1946,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lResetSpeedHigh[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			g_tAxisParamDefault.lResetSpeedHigh[eTMC] = tAxisParamDefault.lResetSpeedHigh[eTMC];
 		}
 		break;		
 	case 0x12:
@@ -1845,6 +1959,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lResetOff[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			g_tAxisParamDefault.lResetOff[eTMC] = tAxisParamDefault.lResetOff[eTMC];
 		}
 		break;		
 	case 0x13:
@@ -1857,41 +1972,64 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lResetAcc[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			g_tAxisParamDefault.lResetAcc[eTMC] = tAxisParamDefault.lResetAcc[eTMC];
 		}
-		break;				
+		break;			
+		
+	case 0x15:
+		//复位零位偏移距离
+		if(eReadWrite == TMC_READ) {
+			puData->lData = tAxisParamDefault.lZeroOff[eTMC];
+		}else if(eReadWrite == TMC_WRITE) {
+			if(tAxisParamDefault.lZeroOff[eTMC] != puData->lData)
+			{
+				tAxisParamDefault.lZeroOff[eTMC] = puData->lData;
+				ucSaveFlag = 1;
+			}
+			g_tAxisParamDefault.lZeroOff[eTMC] = tAxisParamDefault.lZeroOff[eTMC];
+		}
+		break;
 		
 		
 	/*** 电流相关 ****/	
-	case 0x19:
-		if(eReadWrite == TMC_READ) {
-			puData->lData = g_tAxisParamDefault.ucIHoldDelay[eTMC];
-		} else if(eReadWrite == TMC_WRITE) {
-			if(g_tAxisParamDefault.ucIHoldDelay[eTMC] != puData->lData)
-			{
-				g_tAxisParamDefault.ucIHoldDelay[eTMC] = puData->lData;
-				ucSaveFlag = 1;
-			}
-		}
-		break;
+//	case 0x19:
+//		if(eReadWrite == TMC_READ) {
+//			puData->lData = g_tAxisParamDefault.ucIHoldDelay[eTMC];
+//		} else if(eReadWrite == TMC_WRITE) {
+//			if(g_tAxisParamDefault.ucIHoldDelay[eTMC] != puData->lData)
+//			{
+//				//实时生效
+//				uint8_t ucIRun = g_tAxisParamDefault.ucIRun[eTMC]/8;
+//				eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IRUN_MASK, TMC5160_IRUN_SHIFT, ucIRun);
+//				
+//				//
+//				g_tAxisParamDefault.ucIHoldDelay[eTMC] = puData->lData;
+//				ucSaveFlag = 1;
+//			}
+//		}
+//		break;
 	case 0x20:
 		//运行电流
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.ucIRun[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
-			
 			//参数检擦
 			if(puData->lData > CURRENT_MAX_VALUE)
 			{
-				LOG_Error("Current Set Value=%d More than %d", puData->lData, CURRENT_CHANGE_CONST);
+				//LOG_Error("Current Set Value=%d More than %d", puData->lData, CURRENT_CHANGE_CONST);
 				return ERROR_TYPE_DATA;
 			}
 			
 			//设置参数
 			if(tAxisParamDefault.ucIRun[eTMC] != puData->lData)
-			{				
+			{		
 				tAxisParamDefault.ucIRun[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			//实时生效
+			uint8_t ucIRun = g_tAxisParamDefault.ucIRun[eTMC]/8;
+			eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IRUN_MASK, TMC5160_IRUN_SHIFT, ucIRun);
+			g_tAxisParamDefault.ucIRun[eTMC] = tAxisParamDefault.ucIRun[eTMC];
 		}
 		break;
 	case 0x21:
@@ -1902,7 +2040,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			//参数检擦
 			if(puData->lData > CURRENT_MAX_VALUE)
 			{
-				LOG_Error("Current Set Value=%d More than %d", puData->lData, CURRENT_CHANGE_CONST);
+				//LOG_Error("Current Set Value=%d More than %d", puData->lData, CURRENT_CHANGE_CONST);
 				return ERROR_TYPE_DATA;
 			}
 			
@@ -1911,7 +2049,11 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			{
 				tAxisParamDefault.ucIHold[eTMC] = puData->lData;
 				ucSaveFlag = 1;
-			}			
+			}	
+			//实时生效
+			uint8_t ucIHold = g_tAxisParamDefault.ucIHold[eTMC]/8;
+			eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_IHOLD_IRUN, TMC5160_IHOLD_MASK, TMC5160_IHOLD_SHIFT, ucIHold);			
+			g_tAxisParamDefault.ucIHold[eTMC] = tAxisParamDefault.ucIHold[eTMC];
 		}
 		break;		
 		
@@ -1925,22 +2067,25 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			
 			//设置更新
 			if(usMicroStep != tAxisParamDefault.usMicroStepResultion[eTMC])
-			{
-				//将分辨率设置值  转换成 寄存器分辨率值
-				eErrorType = MicroStep_SetValue2Register(usMicroStep, &ucMicroStep_Rg);
-				if(eErrorType != ERROR_TYPE_SUCCESS)
-				{
-					LOG_Error("Data Micro Step=%d Error", usMicroStep);
-					return ERROR_TYPE_DATA;
-				}
-			
-				//写入寄存器
+			{			
+				//更新
 				tAxisParamDefault.usMicroStepResultion[eTMC] = usMicroStep;
-				//保存更新的参数
-				Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
 				ucSaveFlag = 1;
-//				LOG_Info("Micro Step Resolution=%d", usMicroStep);
-			}		
+				//LOG_Info("Micro Step Resolution=%d", usMicroStep);
+			}	
+			
+			//将分辨率设置值  转换成 寄存器分辨率值
+			eErrorType = MicroStep_SetValue2Register(usMicroStep, &ucMicroStep_Rg);
+			if(eErrorType != ERROR_TYPE_SUCCESS)
+			{
+				//LOG_Error("Data Micro Step=%d Error", usMicroStep);
+				return ERROR_TYPE_DATA;
+			}
+				
+			//更新的参数
+			eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_CHOPCONF, TMC5160_MRES_MASK, TMC5160_MRES_SHIFT, ucMicroStep_Rg);
+			Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 1);
+			g_tAxisParamDefault.usMicroStepResultion[eTMC] = tAxisParamDefault.usMicroStepResultion[eTMC];
 		}
 		break;		
 	case 0x24:
@@ -1953,14 +2098,16 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			{
 				tAxisParamDefault.usFullStepPerRound[eTMC] = puData->lData;
 				//保存更新的参数
-				Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
+				Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 1);//Update_Enc_ConstValue(eTMC, &tAxisParamDefault, 0);
 				ucSaveFlag = 1;
-//				LOG_Info("Full Step Per Round=%d", puData->lData);
+				//LOG_Info("Full Step Per Round=%d", puData->lData);
 			}
+			g_tAxisParamDefault.usFullStepPerRound[eTMC] = tAxisParamDefault.usFullStepPerRound[eTMC];
 		}
 	}
 	break;
 		
+	
 		
 	/*** 六点加速相关 ***/		
 	case 0x30:
@@ -1973,6 +2120,8 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lVStart[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			eError = TMC5160_WriteInt(eTMC, TMC5160_VSTART, (puData->lData)*V_CHANGE_CONST);
+			g_tAxisParamDefault.lVStart[eTMC] = tAxisParamDefault.lVStart[eTMC];
 		}
 		break;
 	case 0x31:
@@ -1985,6 +2134,8 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lA1[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			eError = TMC5160_WriteInt(eTMC, TMC5160_A1, (puData->lData)*A_CHANGE_CONST);
+			g_tAxisParamDefault.lA1[eTMC] = tAxisParamDefault.lA1[eTMC];
 		}
 		break;
 	case 0x32:
@@ -1997,6 +2148,8 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lV1[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			eError = TMC5160_WriteInt(eTMC, TMC5160_V1, (puData->lData)*V_CHANGE_CONST);
+			g_tAxisParamDefault.lV1[eTMC] = tAxisParamDefault.lV1[eTMC];
 		}
 		break;		
 	case 0x33:
@@ -2008,6 +2161,14 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			{
 				tAxisParamDefault.lAMax[eTMC] = puData->lData;
 				ucSaveFlag = 1;
+			}
+			
+			//更新
+			if(g_tAxisParamDefault.ucMode[eTMC] == TMC_MODE_POSITION)
+			{
+				//如果当前处于位置模式，则立即生效
+				eError = TMC5160_WriteInt(eTMC, TMC5160_AMAX, (puData->lData)*A_CHANGE_CONST);
+				g_tAxisParamDefault.lAMax[eTMC] = tAxisParamDefault.lAMax[eTMC];
 			}
 		}
 		break;
@@ -2021,6 +2182,14 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lVMax[eTMC] = abs(puData->lData);
 				ucSaveFlag = 1;
 			}
+			
+			//生效
+			if(g_tAxisParamDefault.ucMode[eTMC] == TMC_MODE_POSITION)
+			{
+				//如果当前处于位置模式，则立即生效
+				eError = TMC5160_WriteInt(eTMC, TMC5160_VMAX, abs(puData->lData)*V_CHANGE_CONST);
+				g_tAxisParamDefault.lVMax[eTMC] = tAxisParamDefault.lVMax[eTMC];
+			}
 		}
 		break;
 	case 0x35:
@@ -2033,6 +2202,8 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 				tAxisParamDefault.lDMax[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			eError = TMC5160_WriteInt(eTMC, TMC5160_DMAX, (puData->lData)*A_CHANGE_CONST);
+			g_tAxisParamDefault.lDMax[eTMC] = tAxisParamDefault.lDMax[eTMC];
 		}
 		break;		
 	case 0x36:
@@ -2040,13 +2211,17 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		if(eReadWrite == TMC_READ) {			
 			puData->lData = tAxisParamDefault.lD1[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
+			//由于TMC5160的关系，停止速度不能设置为0，否则不运动
+			if(puData->lData == 0) return ERROR_TYPE_DATA;
+			
+			//
 			if(tAxisParamDefault.lD1[eTMC] != puData->lData)
 			{
-				//由于TMC5160的关系，停止速度不能设置为0，否则不运动
-				if(puData->lData == 0) return ERROR_TYPE_DATA;
 				tAxisParamDefault.lD1[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			eError = TMC5160_WriteInt(eTMC, TMC5160_D1, (puData->lData)*A_CHANGE_CONST);
+			g_tAxisParamDefault.lD1[eTMC] = tAxisParamDefault.lD1[eTMC];
 		}
 		break;			
 	case 0x37:
@@ -2054,11 +2229,17 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 		if(eReadWrite == TMC_READ) {
 			puData->lData = tAxisParamDefault.lVStop[eTMC];
 		} else if(eReadWrite == TMC_WRITE) {
+			//停止速度不能设置0，具体原因和tmc5160有关
+			if(puData->lData == 0) return ERROR_TYPE_DATA;
+						
+			//默认值
 			if(tAxisParamDefault.lVStop[eTMC] != puData->lData)
 			{
 				tAxisParamDefault.lVStop[eTMC] = puData->lData;
 				ucSaveFlag = 1;
 			}
+			eError = TMC5160_WriteInt(eTMC, TMC5160_VSTOP, (puData->lData)*V_CHANGE_CONST);
+			g_tAxisParamDefault.lVStop[eTMC] = tAxisParamDefault.lVStop[eTMC];
 		}
 		break;
 	case 0x38:
@@ -2067,8 +2248,9 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			//puData->lData = g_taTMC5160[eTMC].laShadowRegister[TMC5160_TZEROWAIT];
 		} else if(eReadWrite == TMC_WRITE) {
 			
-			//g_taTMC5160[eTMC].laShadowRegister[TMC5160_TZEROWAIT] = puData->lData;
-			//ucSaveFlag = 1;
+			eError = TMC5160_WriteInt(eTMC, TMC5160_TZEROWAIT, puData->lData);
+			g_taTMC5160[eTMC].laShadowRegister[TMC5160_TZEROWAIT] = puData->lData;
+			ucSaveFlag = 1;
 		}
 		break;		
 	case 0x40:
@@ -2080,6 +2262,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			{
 				tAxisParamDefault.lAMax_VMode[eTMC] = puData->lData;
 				ucSaveFlag = 1;
+				g_tAxisParamDefault.lAMax_VMode[eTMC] = tAxisParamDefault.lAMax_VMode[eTMC];
 			}
 		}
 		break;
@@ -2092,6 +2275,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 			{
 				tAxisParamDefault.lVMax_VMode[eTMC] = abs(puData->lData);
 				ucSaveFlag = 1;
+				g_tAxisParamDefault.lVMax_VMode[eTMC] = tAxisParamDefault.lVMax_VMode[eTMC];
 			}
 		}
 		break;
@@ -2110,8 +2294,10 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 					tAxisParamDefault.ucRighLimitPolarity[eTMC] = puData->lData;
 					ucSaveFlag = 1;
 				}
+				eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_R_MASK, TMC5160_POL_STOP_R_SHIFT, puData->lData);
+				g_tAxisParamDefault.ucRighLimitPolarity[eTMC] = tAxisParamDefault.ucRighLimitPolarity[eTMC];
 			}else{
-				LOG_Error("Data=%d Is Error", puData->lData);
+				//LOG_Error("Data=%d Is Error", puData->lData);
 				return ERROR_TYPE_DATA;
 			}
 		}
@@ -2128,8 +2314,10 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 					tAxisParamDefault.ucLeftLimitPolarity[eTMC] = puData->lData;
 					ucSaveFlag = 1;
 				}
+				eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_POL_STOP_L_MASK, TMC5160_POL_STOP_L_SHIFT, puData->lData);
+				g_tAxisParamDefault.ucLeftLimitPolarity[eTMC] = tAxisParamDefault.ucLeftLimitPolarity[eTMC];
 			}else{
-				LOG_Error("Data=%d Is Error", puData->lData);
+				//LOG_Error("Data=%d Is Error", puData->lData);
 				return ERROR_TYPE_DATA;
 			}
 		}
@@ -2148,17 +2336,19 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 					tAxisParamDefault.ucRotateDirect[eTMC] = puData->lData;
 					ucSaveFlag = 1;
 				}
+				eError = TMC5160_FIELD_UPDATE(eTMC, TMC5160_GCONF, TMC5160_SHAFT_MASK, TMC5160_SHAFT_SHIFT, puData->lData);
+				g_tAxisParamDefault.ucRotateDirect[eTMC] = tAxisParamDefault.ucRotateDirect[eTMC];
 				
 			}else{
 				
-				LOG_Error("unKnow Motor Rotate Direct %d", puData->lData);
+				//LOG_Error("unKnow Motor Rotate Direct %d", puData->lData);
 				return ERROR_TYPE_DATA;
 			}
 		}
 		break;
 		default:
 		{
-			LOG_Error("unKnow Type");
+			//LOG_Error("unKnow Type");
 			eErrorType = ERROR_TYPE_TYPE;
 		}
 		break;
@@ -2173,7 +2363,7 @@ ErrorType_e TMC_AxisParam_Default(TMC_e eTMC, ReadWrite_e eReadWrite, uint8_t uc
 	
 		//保存轴参数
 		//Param_Write(EN_SAVE_PARAM_TYPE_AXIS, (uint8_t*)&g_tAxisParamDefault, sizeof(AxisParamDefault_t));
-		Save_Axis_Param_Default(&tAxisParamDefault);
+		eErrorType = Save_Axis_Param_Default(&tAxisParamDefault);
 	}
 	return eErrorType;
 }
@@ -2244,7 +2434,7 @@ ErrorType_e Read_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 	if(ucNum >= 3)
 	{
 		//数据校验失败
-//		LOG_Warn("EEPROM Axis Default Param CRC Error");
+		//LOG_Warn("EEPROM Axis Default Param CRC Error");
 		return ERROR_TYPE_EEPROM;
 	}
 	
@@ -2294,7 +2484,7 @@ ErrorType_e Save_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 	//保存失败
 	if(ucNum >= 3)
 	{
-		LOG_Error("Save Process Fail");
+		//LOG_Error("Save Process Fail");
 		return ERROR_TYPE_EEPROM;
 	}
 
@@ -2357,7 +2547,7 @@ ErrorType_e Set_Process(RecvFrame_t *ptRecvFrame)
 	if(ucIndex > SUB_PROCESS_MAX_CMD_NUM)
 	{
 		//最大支持127指令
-		LOG_Error("SubProcess Index=%d Error", ucIndex);
+		//LOG_Error("SubProcess Index=%d Error", ucIndex);
 		return ERROR_TYPE_DATA;
 	}
 			
@@ -2368,7 +2558,7 @@ ErrorType_e Set_Process(RecvFrame_t *ptRecvFrame)
 		if( g_tProcess.taSubProcess[ucIndex].ucParamNum >= SUB_PROCESS_MAX_PARAM_NUM)
 		{
 			//参数个数，最多4个
-			LOG_Error("SubProcess Parma Index=%d Error", g_tProcess.taSubProcess[ucIndex].ucParamNum);
+			//LOG_Error("SubProcess Parma Index=%d Error", g_tProcess.taSubProcess[ucIndex].ucParamNum);
 			return ERROR_TYPE_EXEC;
 		}
 		
@@ -2402,7 +2592,7 @@ ErrorType_e Get_Process(uint8_t ucIndex, SubProcess_t *ptSubProcess)
 	if(ucIndex > SUB_PROCESS_MAX_CMD_NUM)
 	{
 		//最大支持128指令
-		LOG_Error("SubProcess Index=%d Error", ucIndex);
+//		LOG_Error("SubProcess Index=%d Error", ucIndex);
 		return ERROR_TYPE_DATA;
 	}
 		
@@ -2441,7 +2631,7 @@ ErrorType_e Exec_Process_Ctrl(uint8_t ucType)
 		break;		
 		default:
 		{
-			LOG_Error("unKnow Type=%d", ucType);
+			//LOG_Error("unKnow Type=%d", ucType);
 			return ERROR_TYPE_TYPE;
 		}
 		//break;
@@ -2495,7 +2685,7 @@ ErrorType_e Read_Process(__IO Process_t *ptProcess)
 	//数据校验检测
 	if(ucNum >= 3)
 	{
-//		LOG_Warn("EEPROM Process Data CRC Error");
+		//LOG_Warn("EEPROM Process Data CRC Error");
 		return ERROR_TYPE_EEPROM;
 	}
 	
@@ -2543,7 +2733,7 @@ ErrorType_e Save_Process(__IO Process_t *ptProccess)
 	//保存失败
 	if(ucNum >= 3)
 	{
-		LOG_Error("Save Process Fail");
+		//LOG_Error("Save Process Fail");
 		return ERROR_TYPE_EEPROM;
 	}
 		
@@ -3116,7 +3306,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 				default:
 				{
 					g_tTMCStatus.ucExecProcessStatus = 1;
-					LOG_Error("CMD_CALC unkonwn Type=%d", ucType);
+					//LOG_Error("CMD_CALC unkonwn Type=%d", ucType);
 				}
 			}
 		}
@@ -3209,27 +3399,28 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 				default:
 				{
 					g_tTMCStatus.ucExecProcessStatus = 2;
-					LOG_Error("unKonwn Type=%d", ucType);
+					//LOG_Error("unKonwn Type=%d", ucType);
 				}
 				break;
 			}
 		}
 		break;
-		case CMD_SET_AXIS_PARAM_AAP:  //0x97
+		case CMD_SET_AXIS_PARAM_AAP:  //0x97， 把上次执行结果s_uResult,作为本次的数据
 		{
 			//设置轴参数
 			eTMC   = (TMC_e)tSubProcess.uParam[0].ucData[0];
+			ucType = tSubProcess.uParam[1].ucData[0];
+			
 			TMC_AxisParam(eTMC, TMC_WRITE, ucType, &s_uResult);  
 			//LOG_Debug("Axis Param Add(%X)  %d", ucType, tSubProcess.uParam[2].lData);
 
 		}
 		break;
-		case CMD_SET_GLOBAL_PARAM_AGP:  //0x98
+		case CMD_SET_GLOBAL_PARAM_AGP:  //0x98， 把上次执行结果s_uResult,作为本次的数据
 		{
 			//设置全局参数
 			Bank_e eBank   = (Bank_e)tSubProcess.uParam[0].ucData[0];
 			ucType = tSubProcess.uParam[1].ucData[0];
-			
 			
 			TMC_Global_Param(eBank, TMC_WRITE, ucType, &s_uResult);
 		}
