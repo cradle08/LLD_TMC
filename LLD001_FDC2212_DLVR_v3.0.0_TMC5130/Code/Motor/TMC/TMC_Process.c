@@ -373,10 +373,11 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 	ptAxisParamDefault->lResetSpeedLow[eTMC]  	= 1500;	 //复位速度  
 	ptAxisParamDefault->lResetAcc[eTMC]      	= 500;   //复位加速度
 	ptAxisParamDefault->lResetOff[eTMC]  		= 200;	 //复位偏移距离
+	ptAxisParamDefault->lZeroOff[eTMC]  		= 0;	 //零位偏移
 
 	//电流
-	ptAxisParamDefault->ucIRun[eTMC]	   = 65; //运行电流
-	ptAxisParamDefault->ucIHold[eTMC]	   = 8;  //保持电流
+	ptAxisParamDefault->ucIRun[eTMC]	   = 45; //运行电流
+	ptAxisParamDefault->ucIHold[eTMC]	   = 15;  //保持电流
 	ptAxisParamDefault->ucIHoldDelay[eTMC] = 6;   //电流降到IHold所需时间	
 
 	//步进细分、没转全步数
@@ -401,7 +402,7 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 
 	//参考点复位
 	ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
-	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 0; //左限位极性，高有效
+	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 1; //左限位极性，低有效
 	ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向	
 
 	ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
