@@ -352,7 +352,7 @@ ErrorType_e Module_Error_Handle(TMC_e eTMC, ModuleErrorType_e eType)
 		default:
 		{
 			eError = ERROR_TYPE_TYPE;
-			LOG_Error("unkonwn Type=%d", eType);
+//			LOG_Error("unkonwn Type=%d", eType);
 		}
 	
 	}
@@ -878,8 +878,17 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 		break;
 		case CMD_GET_SN_CAN_ID: //0x80
 		{
-			/* 数据部分不等于0时，不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
-			if(ptRecvFrame->uData.ulData != 0)
+//			/* 数据部分不等于0时，不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
+//			if(ptRecvFrame->uData.ulData != 0)
+//			{
+//				ucSendFlag = 1;
+//				return ucSendFlag;
+//			}
+			
+			
+			/* 数据等于当前设备类型 或 等与 0x0000FFFF时，应答消息，否则不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
+			uint32_t ulModule = (ptRecvFrame->uData.ucData[0] << 24) | (ptRecvFrame->uData.ucData[1] << 16) | (ptRecvFrame->uData.ucData[2] << 8) |(ptRecvFrame->uData.ucData[3]);
+			if(ulModule != CURRENT_MODULE_TYPE && ulModule != MODULE_TYPE_TMC_STEP_MOTOR_ALL)
 			{
 				ucSendFlag = 1;
 				return ucSendFlag;
@@ -919,7 +928,45 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 			}
 		}
 		break;
-		case CMD_SHAKE_WITH_SN: //抖动 0x82
+		case CMD_TYPE_WITH_SN:  //0x82
+		{
+			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
+			
+			//判断SN是否一致
+			if(usSN != g_tBoardStatus.usSN) 
+			{
+				//不一致，不执行，不应答
+				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
+				//Can_Send_Msg(ptSendFrame);
+				ucSendFlag = 1;
+				break;
+			}
+			
+			//查询板卡类型
+			ptSendFrame->uData.ulData = Get_Module_Type();
+			//ptSendFrame->ucType = Recv_CanID();
+		}
+		break;
+
+		case CMD_SHINE_WITH_SN: //闪灯 0x83
+		{
+			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
+						
+			//判断SN是否一致
+			if(usSN != g_tBoardStatus.usSN) 
+			{
+				//不一致，不执行，不应答
+				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
+				//Can_Send_Msg(ptSendFrame);
+				ucSendFlag = 1;
+				break;
+			}
+			//3次，间隔50ms
+			LED_Shine(6, 50);
+		}
+		break;
+
+		case CMD_SHAKE_WITH_SN: //抖动 0x84
 		{
 			uint8_t i = 0, ucFlag = 0;
 			uint16_t usCount = 0;
@@ -977,42 +1024,8 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 			}
 		}
 		break;
-		case CMD_SHINE_WITH_SN: //闪灯 0x83
-		{
-			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
-						
-			//判断SN是否一致
-			if(usSN != g_tBoardStatus.usSN) 
-			{
-				//不一致，不执行，不应答
-				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
-				//Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-				break;
-			}
-			//3次，间隔50ms
-			LED_Shine(6, 50);
-		}
-		break;
-		case CMD_TYPE_WITH_SN:  //0x84
-		{
-			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
-			
-			//判断SN是否一致
-			if(usSN != g_tBoardStatus.usSN) 
-			{
-				//不一致，不执行，不应答
-				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
-				//Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-				break;
-			}
-			
-			//查询板卡类型
-			ptSendFrame->uData.ulData = Get_Module_Type();
-			//ptSendFrame->ucType = Recv_CanID();
-		}
-		break;
+		
+		
 		case CMD_TEST: // 0xFE
 		{
 			if(0 == ptRecvFrame->ucType)

@@ -67,9 +67,10 @@ extern "C" {
 //
 #define CMD_GET_SN_CAN_ID				0x80	//获取SN号及CAN ID
 #define CMD_SET_CAN_ID_WITH_SN			0x81	//根据系列号设置SN号及CAN ID
-#define CMD_SHAKE_WITH_SN				0x82	//根据系列号--控制电机抖动
+#define CMD_TYPE_WITH_SN				0x82	//根据系列号--获取板卡类型
 #define CMD_SHINE_WITH_SN				0x83	//根据系列号--闪灯
-#define CMD_TYPE_WITH_SN				0x84	//根据系列号--获取板卡类型
+#define CMD_SHAKE_WITH_SN				0x84	//根据系列号--控制电机抖动
+
 
 
 // others

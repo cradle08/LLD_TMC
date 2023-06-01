@@ -425,7 +425,7 @@ ErrorType_e TMC_Global_Param(Bank_e eBank, ReadWrite_e eReadWrite, uint8_t ucTyp
 		break;
 		default:
 		{
-			LOG_Error("Bank ID=%d Is Err", eBank);
+//			LOG_Error("Bank ID=%d Is Err", eBank);
 			eError = ERROR_TYPE_DEVICE_ID;
 		}
 		break;
