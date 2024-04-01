@@ -18,11 +18,11 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 //宏定义-----------------------------------------------------------------------//
 //I2C标准传输速度，100kbit/s
-#define  IIC1_SPEED                    100000
-#define  IIC2_SPEED                    100000
-//I2C快速传输速度，400kbit/s
-//#define  IIC1_SPEED                    400000
-//#define  IIC2_SPEED                    400000 
+//#define  IIC1_SPEED                    100000
+//#define  IIC2_SPEED                    100000
+//I2C快速传输速度，400kbit/s。上拉4.7K电阻；怀疑iic通信出现过中断。
+#define  IIC1_SPEED                    400000
+#define  IIC2_SPEED                    400000 
 
 
 //这个地址只要与STM32外挂的I2C器件地址不一样即可

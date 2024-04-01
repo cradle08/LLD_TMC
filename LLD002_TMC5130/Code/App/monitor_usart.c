@@ -340,7 +340,7 @@ void MonReadHoldingReg(struct tagModbusMon* mon)
 	
 	
 	//40019，电容AD值
-	mon->HoldingReg[18] = CapSenPara.ChColl[CLLD_CH0_DATA].FilterValue;
+	mon->HoldingReg[18] = CapSenPara.Buff[24];
 	
 	//40020，电容值
 	mon->HoldingReg[19] = CapSenPara.CapVal;		

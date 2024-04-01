@@ -163,11 +163,8 @@ typedef __packed union{
 /*
 *   usÑÓÊ±º¯Êý
 */
-void Delay_US(uint32_t ulUS);
-uint8_t Delay_MS_NOBlock(uint32_t ulMS);
-uint8_t Delay_MS_NOBlock_10ms(void);
-
-
+uint8_t Delay_US(uint16_t us);
+uint8_t Delay_MS_NOBlock(uint8_t ms);
 
 
   

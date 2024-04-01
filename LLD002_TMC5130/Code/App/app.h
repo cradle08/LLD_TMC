@@ -29,9 +29,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //声明函数----------------------------------------------------------------------//
-void IWDG_Feed(void* parameter);
-void SWSysTimer(void* parameter);
-void SWTimer10ms(void* parameter);
+void LLD_App(void* parameter);
 void CommMonitor(void* parameter);
 void MotorDrive(void* parameter);
 

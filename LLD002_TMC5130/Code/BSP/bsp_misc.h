@@ -53,7 +53,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 //采集数据相关
 struct tagCollectData
 {
-	uint32_t   OrigData[AVERAGE_NUM];            //原始AD值
+//	uint32_t   OrigData[AVERAGE_NUM];            //原始AD值
 	uint32_t   FilterData[AVERAGE_NUM];          //经过滤波后的值
 	uint32_t   OrigValue;	                     //原始AD值
 	uint32_t   FilterValue;                      //经过滤波后的值
@@ -68,7 +68,7 @@ struct tagCollectData
 typedef unsigned int    BOOL;
 
 extern const char SoftWareName[];
-extern const uint16_t SoftWareVer[];
+extern const uint8_t SoftWareVer[];
 
 
 

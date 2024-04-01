@@ -7,6 +7,8 @@
 #include "stdarg.h"
 #include "string.h"
 
+
+
 //模块参数表
 __IO LLDParam_t g_tLLDParam = {0};
 
@@ -89,6 +91,7 @@ ErrorType_e Read_LLDParam(__IO LLDParam_t *ptLLDParam)
 	uint8_t  ucNum = 0;
 	uint16_t usCrc = 0;
 	
+	
 	//读取参数	
 	do{
 		//计数
@@ -96,6 +99,7 @@ ErrorType_e Read_LLDParam(__IO LLDParam_t *ptLLDParam)
 		
 		//读取
 		memset((void*)ptLLDParam, 0, sizeof(LLDParam_t));
+		
 		Param_Read(EN_SAVE_PARAM_TYPE_LLD_PARAM, (uint8_t*)ptLLDParam, LLD_PARAM_LEN);
 		usCrc = CRC16((uint8_t*)ptLLDParam, LLD_PARAM_LEN-2);
 		
@@ -105,7 +109,7 @@ ErrorType_e Read_LLDParam(__IO LLDParam_t *ptLLDParam)
 			return ERROR_TYPE_SUCCESS;
 		}else{
 			//HAL_Delay(2);
-			rt_thread_mdelay(2);
+			rt_thread_mdelay(2);   //实测无问题
 		}
 		
 	}while(ucNum < 3);
@@ -153,10 +157,12 @@ ErrorType_e Save_LLDParam(__IO LLDParam_t *ptLLDParam)
 		
 		//写入
 		memmove((void*)&tLLDParam, (void*)ptLLDParam, sizeof(LLDParam_t));
+		
 		Param_Write(EN_SAVE_PARAM_TYPE_LLD_PARAM, (uint8_t*)&tLLDParam, LLD_PARAM_LEN);
 			
 		//读取
 		memset((void*)&tLLDParam, 0, sizeof(LLDParam_t));
+		
 		Param_Read(EN_SAVE_PARAM_TYPE_LLD_PARAM, (uint8_t*)&tLLDParam, LLD_PARAM_LEN);
 		usReadCrc = CRC16((uint8_t*)&tLLDParam, LLD_PARAM_LEN-2);
 		

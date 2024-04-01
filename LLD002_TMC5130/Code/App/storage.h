@@ -42,7 +42,7 @@ enum tagUserParaIndex
 	CAP_DRIVE_CURRENT_CH0,
 	
 	
-	LLD_SEN_FUN,
+	LLD_SEN_FUN = 9,
 	
 	//电容探测液面参数
 	CAP_CON_THRESHOLD_H,
@@ -62,7 +62,7 @@ enum tagUserParaIndex
 	AIR_ATMOS_NOISE,
 	
 	//气压斜率1
-	AIR_RAKERATIO1_MIN,
+	AIR_RAKERATIO1_MIN = 19,
 	AIR_RAKERATIO1_MAX,
 	
 	//气压斜率2
@@ -78,11 +78,7 @@ enum tagUserParaIndex
 	AIR_ABS_START_DLY,
 	AIR_ABS_END_DLY,
 	
-	//气压斜率4
-	AIR_RAKERATIO4_MIN,
-	AIR_RAKERATIO4_MAX,
-	
-	AIR_ABS_START_END,
+	AIR_ABS_START_END = 29,
 	AIR_DIS_START_END,
 	
 	

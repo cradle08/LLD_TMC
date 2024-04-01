@@ -234,7 +234,6 @@ void EEPROM_Read(uint16_t usAddr, __IO uint8_t *pucData, uint16_t usLen)
 */
 void Param_Write(SaveParamType_e eType, __IO uint8_t *pucData, uint16_t usLen)
 {
-	rt_enter_critical();
 	switch(eType)
 	{
 		case EN_SAVE_PARAM_TYPE_AXIS:
@@ -259,7 +258,6 @@ void Param_Write(SaveParamType_e eType, __IO uint8_t *pucData, uint16_t usLen)
 		break;
 		default:break;
 	}
-	rt_exit_critical();
 }
 
 
@@ -269,7 +267,6 @@ void Param_Write(SaveParamType_e eType, __IO uint8_t *pucData, uint16_t usLen)
 */
 void Param_Read(SaveParamType_e eType, __IO uint8_t *pucData, uint16_t usLen)
 {
-	rt_enter_critical();
 	switch(eType)
 	{
 		case EN_SAVE_PARAM_TYPE_AXIS:
@@ -294,8 +291,7 @@ void Param_Read(SaveParamType_e eType, __IO uint8_t *pucData, uint16_t usLen)
 		break;
 		default:break;
 	}
-	rt_exit_critical();
-
+	
 }
 
 

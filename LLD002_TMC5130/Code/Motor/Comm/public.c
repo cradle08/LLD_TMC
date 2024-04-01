@@ -6,64 +6,59 @@
 
 
 /*
-*   us延时函数
-*/
-void Delay_US(uint32_t ulUS)
+ * @function: Delay_US
+ * @details : us级别延时。
+ * @input   : 1、us：最长延时999us。
+ * @output  : NULL
+ * @return  : 0:正常；1：延时超范围。
+ */
+uint8_t Delay_US(uint16_t us)
 {
-    uint32_t start, now, delta, reload, us_tick;
+	uint8_t     ret = 0;
+    uint32_t    start, now, dely_cnt, reload, us_tick;
+	
     start = SysTick->VAL;
     reload =  SysTick->LOAD;
-    us_tick = (SystemCoreClock / 1000000UL)*ulUS;
+    us_tick = (SystemCoreClock / 1000000UL) * us;
+	
+	if(us_tick > reload)
+	{
+		ret = 1;
+		return (ret);
+	}
+	
     do {
         now = SysTick->VAL;
-        delta = start > now ? start - now : reload + start - now;
-    } while(delta < us_tick);
+        dely_cnt = (start > now) ? (start - now) : (reload + start - now);
+    } while(dely_cnt < us_tick);
+	
+	
+	return (ret);
 }
 
 
-
-
-
-
 /*
- *  No Block delay
+ * @function: Delay_MS_NOBlock
+ * @details : ms级别延时。
+ * @input   : 1、ms：最长延时255us。
+ * @output  : NULL
+ * @return  : 0:正常；1：延时超范围。
  */
-uint8_t Delay_MS_NOBlock(uint32_t ulMS)
+uint8_t Delay_MS_NOBlock(uint8_t ms)
 {
-	static uint32_t s_ulTick = 0;
-	uint32_t ulTempTick = 0;
-
-	ulTempTick = rt_tick_get();// HAL_GetTick();
-	if(ulTempTick - s_ulTick >= ulMS)
-	{
-		s_ulTick = ulTempTick;
-		return 1;
-	}
-
-	return 0;
+	uint8_t     ret = 0;
+    uint32_t    start, now, reload, dely_cnt;
+	
+	reload = 0xFFFFFFFF;
+    start = rt_tick_get();
+    do {
+        now = rt_tick_get();
+        dely_cnt = (start > now) ? (reload - start + now) : (now - start);
+    } while(dely_cnt < ms);
+	
+	
+	return (ret);
 }
-
-
-
-/*
-*  非堵塞延时，时间间隔10ms
-*/
-uint8_t Delay_MS_NOBlock_10ms(void)
-{
-	static uint32_t s_ulTick = 0;
-	uint32_t ulTempTick = 0;
-
-	ulTempTick = rt_tick_get();//HAL_GetTick();
-	if(ulTempTick - s_ulTick >= 10)
-	{
-		s_ulTick = ulTempTick;
-		return 1;
-	}
-
-	return 0;
-}
-
-
 
 
 

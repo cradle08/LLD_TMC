@@ -27,6 +27,7 @@ void Log_Output(Log_Level_e eLogLevel, char *fmt, ...)
 
 	//init
 	memset((void*)g_ucaLogBuffer, 0, sizeof(g_ucaLogBuffer));
+	
 	va_start(args, fmt);
 
 	//format

@@ -11,6 +11,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #include "bsp_i2c_gpio.h"
 #include "stm32f10x.h"
 #include "bsp_misc.h" 
+#include "bsp_lib.h" 
 
 
 
@@ -261,13 +262,13 @@ void i2c_Start(struct tagIICDriver *iic)
 	//当SCL高电平时，SDA出现一个下跳沿表示I2C总线启动信号
 	iic->SDA_Write(1);
 	iic->SCL_Out(1);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	iic->SDA_Write(0);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	iic->SCL_Out(0);
-	i2c_Delay();
+	GenDelay_nop(4);
 }
 
 /*
@@ -282,7 +283,7 @@ void i2c_Stop(struct tagIICDriver *iic)
 	//当SCL高电平时，SDA出现一个上跳沿表示I2C总线停止信号
 	iic->SDA_Write(0);
 	iic->SCL_Out(1);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	iic->SDA_Write(1);
 }
@@ -302,17 +303,17 @@ uint8_t i2c_WaitAck(struct tagIICDriver *iic)
 	
 	//CPU释放SDA总线
 	iic->SDA_Write(1);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	//CPU驱动SCL = 1, 此时器件会返回ACK应答
 	iic->SCL_Out(1);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	//CPU读取SDA口线状态
 	ret = iic->SDA_Read();
 	
 	iic->SCL_Out(0);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	
 	return ret;
@@ -330,13 +331,13 @@ void i2c_Ack(struct tagIICDriver *iic)
 {
 	//CPU驱动SDA = 0
 	iic->SDA_Write(0);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	//CPU产生1个时钟
 	iic->SCL_Out(1);	
-	i2c_Delay();
+	GenDelay_nop(4);
 	iic->SCL_Out(0);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	//CPU释放SDA总线
 	iic->SDA_Write(1);
@@ -353,13 +354,13 @@ void i2c_NAck(struct tagIICDriver *iic)
 {
 	//CPU驱动SDA = 1
 	iic->SDA_Write(1);
-	i2c_Delay();
+	GenDelay_nop(4);
 	
 	//CPU产生1个时钟
 	iic->SCL_Out(1);
-	i2c_Delay();
+	GenDelay_nop(4);
 	iic->SCL_Out(0);
-	i2c_Delay();	
+	GenDelay_nop(4);
 }
 
 
@@ -390,7 +391,7 @@ void i2c_SendByte(struct tagIICDriver *iic, uint8_t dat)
 		
 		i2c_Delay();
 		iic->SCL_Out(1);
-		i2c_Delay();	
+		GenDelay_nop(4);
 		iic->SCL_Out(0);
 		if(i == 7)
 		{
@@ -400,7 +401,7 @@ void i2c_SendByte(struct tagIICDriver *iic, uint8_t dat)
 		
 		//左移一个bit
 		dat = dat<<1;
-		i2c_Delay();
+		GenDelay_nop(4);
 	}
 }
 
@@ -423,13 +424,13 @@ uint8_t i2c_ReadByte(struct tagIICDriver *iic)
 	{
 		value = value<<1;
 		iic->SCL_Out(1);
-		i2c_Delay();
+		GenDelay_nop(4);
 		if(iic->SDA_Read())
 		{
 			value++;
 		}
 		iic->SCL_Out(0);
-		i2c_Delay();
+		GenDelay_nop(4);
 	}
 	
 	return value;

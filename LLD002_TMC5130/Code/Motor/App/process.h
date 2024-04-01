@@ -152,7 +152,7 @@ ErrorType_e MissStep_Handle(TMC_e eTMC);
 
 
 //接受消息处理
-uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *ptSendFrame);
+uint8_t Handle_RxMsg(MsgType_e eMsgType, MsgCan_t *canRxMsg, RecvFrame_t *ptRecvFrame, SendFrame_t *ptSendFrame);
 
 //急停
 ErrorType_e Urgent_Stop(TMC_e eTMC);

@@ -10,8 +10,8 @@ extern "C" {
 
 
 //
-#define CAN_DATA_MAX_LEN 	8
-#define USART_DATA_MAX_LEN 	8
+#define CAN_DATA_MAX_LEN                CAN_BUFFER_LEN
+#define USART_DATA_MAX_LEN              CAN_BUFFER_LEN
 
 /*
  * cmd define
@@ -65,11 +65,17 @@ extern "C" {
 #define CMD_QUERY_RUNING_SOFT_TYPE		0x75	//查询当前正在运行的程序类型
 
 //
-#define CMD_GET_SN_CAN_ID				0x80	//获取SN号及CAN ID
+
 #define CMD_SET_CAN_ID_WITH_SN			0x81	//根据系列号设置SN号及CAN ID
 #define CMD_TYPE_WITH_SN				0x82	//根据系列号--获取板卡类型
 #define CMD_SHINE_WITH_SN				0x83	//根据系列号--闪灯
 #define CMD_SHAKE_WITH_SN				0x84	//根据系列号--控制电机抖动
+
+
+//广播包
+#define INS_BC_CAPSYNSIG                0x00
+#define CMD_GET_SN_CAN_ID				0x80	//获取SN号及CAN ID
+
 
 // others
 #define CMD_LABEL						0x90	//label for jump
@@ -177,6 +183,7 @@ typedef __packed struct {
 	//板卡识别码
 	uint16_t usSN;		//对MCU的UUID做crc16的校验，得到的值。
 	
+	uint16_t usSN_LLD;  //对MCU的UUID做crc16的校验，得到的值。
 } BoardStatus_t;
 
 
@@ -186,7 +193,7 @@ typedef __packed struct {
 uint8_t Can_Send_Msg(SendFrame_t *ptSendFrame);
 
 //Can消息处理
-uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg);
+uint8_t Handle_Can_RxMsg(MsgCan_t *canRxMsg);
 
 //串口消息处理
 uint8_t Handle_Usart_RxMsg(MsgUsart_t *ptMsgUsart);

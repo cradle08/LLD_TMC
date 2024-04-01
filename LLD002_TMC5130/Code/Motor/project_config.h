@@ -25,7 +25,7 @@ extern "C" {
 /* 
 *  当前程序编译时，指定具体的模块类型
 */
-#define CURRENT_MODULE_TYPE		 	MODULE_TYPE_TMC_STEP_MOTOR_1161	 
+#define CURRENT_MODULE_TYPE		 	MODULE_TYPE_TMC_STEP_MOTOR_1301_Common	 
 #define CURRENT_USE_EEPROM_TYPE		EEPROM_TYPE_M95xxx
 
 

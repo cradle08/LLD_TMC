@@ -221,7 +221,7 @@ void SWSysTimerInit(void)
 	SWSysTimerModeConfig();	
 
 	SWSysTimeTick.T1ms = 0;
-	SWSysTimeTick.T5ms = 2;
+	SWSysTimeTick.T2ms = 2;
 	SWSysTimeTick.T10ms = 0;
 	SWSysTimeTick.T20ms = 0;
 	SWSysTimeTick.T100ms = 0;
@@ -255,7 +255,7 @@ void MotorTimerInit(void)
 void SWSysTimerAdd(void)
 {
 	SWSysTimeTick.T1ms++;
-	SWSysTimeTick.T5ms++;
+	SWSysTimeTick.T2ms++;
 	SWSysTimeTick.T10ms++;
 	SWSysTimeTick.T20ms++;
 	SWSysTimeTick.T1s++;

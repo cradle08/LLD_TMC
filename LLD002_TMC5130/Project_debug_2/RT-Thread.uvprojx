@@ -15,8 +15,8 @@
         <TargetCommonOption>
           <Device>STM32F103C8</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F1xx_DFP.2.4.1</PackID>
-          <PackURL>https://www.keil.com/pack/</PackURL>
+          <PackID>Keil.STM32F1xx_DFP.2.3.0</PackID>
+          <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IRAM(0x20000000,0x00005000) IROM(0x08000000,0x00010000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
           <StartupFile></StartupFile>
@@ -81,7 +81,7 @@
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
             <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>D:\software\Keil5\ARM\ARMCC\bin\fromelf  --bin --bincombined --bincombined_padding=1,0xff --output=./Objects/LLD002.bin  ./Objects/LLD002.axf</UserProg1Name>
+            <UserProg1Name>fromelf  --bin --bincombined --bincombined_padding=1,0xff --output=./Objects/LLD002.bin  ./Objects/LLD002.axf</UserProg1Name>
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
@@ -310,7 +310,7 @@
           </ArmAdsMisc>
           <Cads>
             <interw>1</interw>
-            <Optim>1</Optim>
+            <Optim>2</Optim>
             <oTime>0</oTime>
             <SplitLS>0</SplitLS>
             <OneElfS>1</OneElfS>
@@ -609,21 +609,6 @@
               <FileType>1</FileType>
               <FilePath>..\Code\BSP\bsp_flash.c</FilePath>
             </File>
-            <File>
-              <FileName>m_usart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Code\BSP\m_usart.c</FilePath>
-            </File>
-            <File>
-              <FileName>m_modbus.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Code\BSP\m_modbus.c</FilePath>
-            </File>
-            <File>
-              <FileName>m_storage.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Code\BSP\m_storage.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -678,11 +663,6 @@
               <FileName>monitor_can.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Code\App\monitor_can.c</FilePath>
-            </File>
-            <File>
-              <FileName>monitor_usart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Code\App\monitor_usart.c</FilePath>
             </File>
             <File>
               <FileName>storage.c</FileName>

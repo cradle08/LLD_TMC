@@ -7,7 +7,7 @@
 #include "log.h"
 #include "event.h"
 #include "crc.h"
-#include "monitor_can.h"
+
 
 
 #if (CURRENT_SOFT_TYPE==SOFT_TYPE_APP)
@@ -45,26 +45,33 @@ __IO BoardStatus_t g_tBoardStatus = {0};
 uint16_t Get_SN(uint8_t ucFlag)
 {
 	//UUID
-  uint16_t usSN = 0;
-  uint32_t ulaUUID[3] = {0};
-  uint32_t ulUUID_Addr = MCU_UUID_FLASH_ADDR;
+	uint16_t usSN = 0;
+	uint32_t ulaUUID[3] = {0};
+	uint32_t ulUUID_Addr = MCU_UUID_FLASH_ADDR;
+
+	//获取UUID值
+	ulaUUID[0] = *(uint32_t*)(ulUUID_Addr);
+	ulaUUID[1] = *(uint32_t*)(ulUUID_Addr+4);
+	ulaUUID[2] = *(uint32_t*)(ulUUID_Addr+8);
+
+	//模块1：MCU_UID 执行1次CRC16得到SN1
+	usSN = CRC16((uint8_t*)ulaUUID, sizeof(ulaUUID));
+	g_tBoardStatus.usSN = usSN;
+
+
+	//模块2：SN1 执行1次CRC16得到SN2
+	usSN = CRC16((uint8_t*)(&usSN), sizeof(usSN));
+	g_tBoardStatus.usSN_LLD = usSN; 
+	
   
-  //获取UUID值
-  ulaUUID[0] = *(uint32_t*)(ulUUID_Addr);
-  ulaUUID[1] = *(uint32_t*)(ulUUID_Addr+4);
-  ulaUUID[2] = *(uint32_t*)(ulUUID_Addr+8);
-  
-  //CRC16
-  usSN = CRC16((uint8_t*)ulaUUID, sizeof(ulaUUID));
-  
-  //打印信息
-  if(0 != ucFlag)
-  {
-//	LOG_Info("UUID=%X %X %X, SN=%X", ulaUUID[0], ulaUUID[1], ulaUUID[2], usSN);
-  }
-  
-  //返回SN
-  return usSN;
+	//打印信息
+	if(0 != ucFlag)
+	{
+	//	LOG_Info("UUID=%X %X %X, SN=%X", ulaUUID[0], ulaUUID[1], ulaUUID[2], usSN);
+	}
+
+	//返回SN
+	return usSN;
 }
 
 
@@ -129,6 +136,7 @@ uint8_t Can_Send_Msg(SendFrame_t *ptSendFrame)
 	TxMsg.RTR = CAN_RTR_DATA;               //发送的是数据
 	TxMsg.DLC = 8;                          //数据长度为8字节	
 	TxMsg.Data[0] = ptSendFrame->ucMsgID;
+	
 	memmove((void*)TxMsg.Data, (void*)ptSendFrame, 8);
 	
 //	TxMsg.Data[0] = ptSendFrame->ucMsgID;
@@ -179,7 +187,7 @@ uint8_t Can_Send_Msg(SendFrame_t *ptSendFrame)
 *   Byte7:  数据,Data0
 *
 */
-uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg)
+uint8_t Handle_Can_RxMsg(MsgCan_t *canRxMsg)
 {
 	uint8_t      reply = CAN_TxStatus_Ok;
 	Can_TxMsg_t  tTxMsg = {0};
@@ -188,7 +196,7 @@ uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg)
 	
 	MsgType_e eMsgType = MSG_TYPE_CAN;
 	//获取接收的数据
-	RecvFrame_t *ptRecvFrame = (RecvFrame_t*)ptRxMsg->ucaRxData;
+	RecvFrame_t *ptRecvFrame = (RecvFrame_t*)canRxMsg->ucaBuffer;
 	
 	//打印接受消息
 //	LOG_Info("Recv Msg: MsgID=%02X, DeviceID=%02X, Cmd=%02X, Type=%02X, Data=%02X %02X %02X %02X", ptRecvFrame->ucMsgID, \
@@ -203,16 +211,18 @@ uint8_t Handle_Can_RxMsg(Can_RxMsg_t *ptRxMsg)
 	ptSendFrame->ucType  	 = ptRecvFrame->ucType;
 
 	
-	//判断是否为广播消息，如何是广播消息，只支持“获取板卡识别码及CAN ID信息”协议
-	if(ptRxMsg->ulRecvCanID == CAN_BROADCAST_ID_MOTOR  && ptRxMsg->ucaRxData[2] != CMD_GET_SN_CAN_ID)
-	{
-		ptSendFrame->ucStatus    = ERROR_TYPE_EXEC_RIGH;
-		Can_Send_Msg(ptSendFrame);
-		return 0;
-	}
+	
+	
+//	//判断是否为广播消息，如何是广播消息，只支持“获取板卡识别码及CAN ID信息”协议
+//	if(ptRxMsg->ulRecvCanID == CAN_BROADCAST_ID_MOTOR  && ptRxMsg->ucaRxData[2] != CMD_GET_SN_CAN_ID)
+//	{
+//		ptSendFrame->ucStatus    = ERROR_TYPE_EXEC_RIGH;
+//		Can_Send_Msg(ptSendFrame);
+//		return 0;
+//	}
 	
 	//接受消息处理
-	if(0 == Handle_RxMsg(eMsgType, ptRecvFrame, ptSendFrame))
+	if(0 == Handle_RxMsg(eMsgType, canRxMsg, ptRecvFrame, ptSendFrame))
 	{	
 		//应答消息
 		reply = Can_Send_Msg(ptSendFrame);
@@ -241,7 +251,9 @@ uint8_t Handle_Usart_RxMsg(MsgUsart_t *ptMsgUsart)
 	
 	//获取接收的数据
 	if(ptMsgUsart->usLen > USART_DATA_MAX_LEN) ptMsgUsart->usLen = USART_DATA_MAX_LEN;
+	
 	memmove(ucaRxData, ptMsgUsart->ucaBuffer, ptMsgUsart->usLen);
+	
 	RecvFrame_t *ptRecvFrame = (RecvFrame_t*)ucaRxData;
 	
 	//打印接受消息
@@ -257,7 +269,7 @@ uint8_t Handle_Usart_RxMsg(MsgUsart_t *ptMsgUsart)
 	ptSendFrame->ucType  	 = ptRecvFrame->ucType;
 
 	//接受消息处理
-	Handle_RxMsg(eMsgType, ptRecvFrame, ptSendFrame);
+//	Handle_RxMsg(eMsgType, ptRxMsg, ptRecvFrame, ptSendFrame);
 	
 	//应答消息
 //	LOG_Info("%s", ucaStData);

@@ -429,14 +429,15 @@ uint8_t CheckUint16ParaValid(uint16_t *check_val, uint16_t min, uint16_t max, ui
 
 
 /*
- * @function: ArrayClear
- * @details : 清除数组
+ * @function: MyMemSet16
+ * @details : 重置数据
  * @input   : 1.buf: 数据。
-              2.len: 数据个数。
+              2.data: 数据。
+              3.len: 数据个数。
  * @output  : NULL
  * @return  : 计算结果。
  */
-uint8_t Array32Clear(uint32_t *buf, uint8_t len)
+uint8_t MyMemSet16(uint16_t *buf, uint16_t data, uint8_t len)
 {
 	uint8_t    ret = 0;
 	uint8_t    i = 0;
@@ -445,7 +446,7 @@ uint8_t Array32Clear(uint32_t *buf, uint8_t len)
 	//清除数组
 	for(i = 0; i < len; i++)
 	{
-		buf[i] = 0;
+		buf[i] = data;
 	}
 	
 	
@@ -453,7 +454,30 @@ uint8_t Array32Clear(uint32_t *buf, uint8_t len)
 }
 
 
-
+/*
+ * @function: MyMemSet32
+ * @details : 重置数据
+ * @input   : 1.buf: 数据。
+              2.data: 数据。
+              3.len: 数据个数。
+ * @output  : NULL
+ * @return  : 计算结果。
+ */
+uint8_t MyMemSet32(uint32_t *buf, uint32_t data, uint8_t len)
+{
+	uint8_t    ret = 0;
+	uint8_t    i = 0;
+	
+	
+	//清除数组
+	for(i = 0; i < len; i++)
+	{
+		buf[i] = data;
+	}
+	
+	
+	return (ret);
+}
 
 
 

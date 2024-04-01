@@ -107,6 +107,7 @@ uint16_t QueueLoopCanInsert(struct tagQueueLoop *queue, uint8_t *src_data)
 void CAN_ParaInit(void)
 {
 	QueueLoopInit(&MonCan.RxQueue, MonCan.RxBuf, CAN_QUEUE_LOOP_LEN);
+//	QueueLoopInit(&MonCan.RxBroadCastQueue, MonCan.RxBroadCastBuf, CAN_QUEUE_LOOP_LEN);
 }
 
 
@@ -236,12 +237,9 @@ uint8_t CAN_MonInit(void)
  */
 uint8_t CanIRQRecv(void)
 {
-	extern __IO LLDParam_t g_tLLDParam;
-	extern __IO GlobalParam_t 	 g_tGlobalParam;
+	extern __IO LLDParam_t       g_tLLDParam;
+	extern __IO GlobalParam_t    g_tGlobalParam;
 	uint8_t     ret = FALSE;
-	uint8_t     index = 0;
-	uint8_t     rly1 = FALSE;
-	uint8_t     rly2 = FALSE;
 	uint16_t    result = FALSE;
 	CanRxMsg    rx_msg;
 	
@@ -253,46 +251,33 @@ uint8_t CanIRQRecv(void)
 	if((rx_msg.StdId == g_tLLDParam.CanConfig.ModuleID) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 	{
 		//接收成功
-		rly1 = TRUE;
 		MonCan.ReceFinish = TRUE;
+		
+		//使用Can接收队列。
+		result = QueueLoopCanInsert(&MonCan.RxQueue, rx_msg.Data);
 	}
-	else if((rx_msg.StdId == LLD_CAN_BROADCAST_ID_MOTOR) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
-	{
-		//接收成功
-		rly2 = TRUE;
-		MonCan.ReceBroadcastFinish = TRUE;	
-	}
+//	else if((rx_msg.StdId == CAN_BROADCAST_ID_LLD) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
+//	{
+//		//接收成功
+//		MonCan.ReceBroadcastFinish = TRUE;	
+//		
+//		//使用Can接收队列。
+//		result = QueueLoopCanInsert(&MonCan.RxBroadCastQueue, rx_msg.Data);
+//	}
 	else if(((rx_msg.StdId == g_tGlobalParam.ulRecvCanID) || (rx_msg.StdId == CAN_BROADCAST_ID_MOTOR)) && (CAN_ID_STD == rx_msg.IDE) && (8 == rx_msg.DLC))
 	{
-		//接收成功	
+		//接收成功
 		SysEvent_t *ptSysEvent = NULL;
 		ptSysEvent = SysEventAlloc();
 		if(NULL != ptSysEvent)
 		{
 			ptSysEvent->eMsgType = MSG_TYPE_CAN;
+			
 			memmove((void*)ptSysEvent->tMsg.tMsgCan.ucaBuffer, (void*)rx_msg.Data, CAN_MSG_DATA_LENGTH);
+			
 			ptSysEvent->tMsg.tMsgCan.ulRecvCanID = rx_msg.StdId;
 			SysEventPut(ptSysEvent, 0);
 		}
-	}
-	
-	//装进缓存
-	if(TRUE == rly1)
-	{
-//		//暂停使用Can接收队列。
-//		for(index = 0; index < CAN_QUEUE_LOOP_WIDTH; index++)
-//		{
-//			MonCan.RxMsg.Data[index] = rx_msg.Data[index];
-//		}
-		
-		
-		//使用Can接收队列。
-		result = QueueLoopCanInsert(&MonCan.RxQueue, rx_msg.Data);
-		//入队成功
-//		if(0 == result)
-//		{
-//			;
-//		}
 	}
 	
 	
@@ -309,36 +294,6 @@ uint8_t CanIRQRecv(void)
 
 
 
-
-
-
-/*
- * @function: MonOperateIO
- * @details : 上位机操作IO。
- * @input   : 1.mon：监控管理指针。
-              2.err：故障信息。
- * @output  : NULL
- * @return  : 0：成功；其他：故障指令。
- */
-uint8_t MonOperateIO(struct tagMonCan *mon, uint8_t err)
-{
-	uint8_t    ret = ERR_CAN_NULL;
-	
-	
-	//故障指令或操作码，不进行任何操作
-	if(ERR_CAN_NULL != err)
-	{
-		return (err);
-	}
-	
-	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
-	{
-	}
-	
-	
-	return (ret);
-}
 
 /*
  * @function: MonOperateIOReply
@@ -361,35 +316,6 @@ uint8_t MonOperateIOReply(struct tagMonCan *mon, uint8_t *buff)
 
 
 /*
- * @function: MonTemp
- * @details : 上位机读取温度。
- * @input   : 1.mon：监控管理指针。
-              2.err：故障信息。
- * @output  : NULL
- * @return  : 0：成功；其他：故障指令。
- */
-uint8_t MonTemp(struct tagMonCan *mon, uint8_t err)
-{
-	uint8_t    ret = ERR_CAN_NULL;
-//	uint16_t   w_buf[4] = {0};
-	
-	
-	//故障指令或操作码，不进行任何操作
-	if(ERR_CAN_NULL != err)
-	{
-		return (err);
-	}
-	
-	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
-	{
-	}
-	
-	
-	return (ret);
-}
-
-/*
  * @function: MonTempReply
  * @details : 应答上位机读温度。
  * @input   : 1.mon：管理指针。
@@ -407,6 +333,90 @@ uint8_t MonTempReply(struct tagMonCan *mon, uint8_t *buff)
 	
 	return(ret);
 }
+
+
+
+
+/*
+ * @function: MonReadSoftHardVerReply
+ * @details : 应答读软件硬件版本。
+ * @input   : 1.mon：管理指针。
+              2.buff：缓存。
+ * @output  : NULL
+ * @return  : 应答状态。
+ */
+uint8_t MonReadSoftHardVerReply(struct tagMonCan *mon, uint8_t *buff)
+{
+	uint8_t    ret = CAN_OPE_REPLY;
+	
+	
+	ReadSoftHardWareVer(buff, mon->CanMess.DevNo);
+	
+	
+	return(ret);
+}
+
+
+/*
+ * @function: MonResetMCU
+ * @details : 重置MCU。
+ * @input   : 1.mon：管理指针。
+              2.buff：缓存。
+ * @output  : NULL
+ * @return  : 应答状态。
+ */
+uint8_t MonResetMCU(struct tagMonCan *mon, uint8_t err)
+{
+	uint8_t    ret = 0;
+	
+	
+	//故障指令或操作码，不进行任何操作
+	if(ERR_CAN_NULL != err)
+	{
+		return (err);
+	}
+	
+	
+	if((0 == mon->RxMsg.Data[1])
+		|| (0 == mon->RxMsg.Data[4])
+		|| (0 == mon->RxMsg.Data[5])
+		|| (0 == mon->RxMsg.Data[6])
+		|| (0 == mon->RxMsg.Data[7]))
+	{
+		SoftSys.MCUResetStatus = 1;
+	}
+	
+	
+	
+	return (ret);
+}
+
+/*
+ * @function: MonResetMCUReply
+ * @details : 应答重置MCU。
+ * @input   : 1.mon：管理指针。
+              2.buff：缓存。
+ * @output  : NULL
+ * @return  : 应答状态。
+ */
+uint8_t MonResetMCUReply(struct tagMonCan *mon, uint8_t *buff)
+{
+	uint8_t    ret = CAN_OPE_REPLY;
+	
+	
+	buff[4] = 0;
+	buff[5] = 0;
+	buff[6] = 0;
+	buff[7] = 0;
+	
+	if(1 == SoftSys.MCUResetStatus)
+	{
+		SoftSys.MCUResetStatus = 2;
+	}
+	
+	return(ret);
+}
+
 
 
 /*
@@ -429,7 +439,7 @@ uint8_t MonConfigAirSen(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 	}
 	
@@ -478,7 +488,7 @@ uint8_t MonSelectSen(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 		//赋值操作	
 		WriteSeleSen(mon->RxMsg.Data, 0);
@@ -528,7 +538,7 @@ uint8_t MonReadLLD(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{	
 	}	
 	
@@ -550,13 +560,10 @@ uint8_t MonReadLLDReply(struct tagMonCan *mon, uint8_t *buff)
 	
 	
 	//阻塞应答
-	if(MonCan.AckBlockTime < CAN_ACK_BLOCK_WAIT)
-	{
-		if(TRUE == AirSenPara.CommAckBlock)
-		{
-			return (CAN_OPE_WAIT);
-		}
-	}
+//	if(TRUE == AirSenPara.CommAckIsBlock)
+//	{
+//		return (CAN_OPE_WAIT);
+//	}
 
 	
 	ReadLLDResult(buff, 0);
@@ -586,7 +593,7 @@ uint8_t MonRead204(struct tagMonCan *mon, uint8_t err)
 	}
 
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{	
 	}	
 	
@@ -631,7 +638,7 @@ uint8_t MonRead205(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{	
 	}
 	
@@ -677,7 +684,7 @@ uint8_t MonRead206(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 	}
 	
@@ -722,7 +729,7 @@ uint8_t MonCapLLDPara1(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 		//赋值操作
 		WriteCLLDPara1(mon->RxMsg.Data, 0xFF);
@@ -772,7 +779,7 @@ uint8_t MonRead208(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 	}
 	
@@ -817,7 +824,7 @@ uint8_t MonCapLLDPara3(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{	
 		WriteCLLDPara3(mon->RxMsg.Data, 0);
 	}
@@ -872,7 +879,7 @@ uint8_t MonReadCapVal(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 		WriteCapMapVal(mon->RxMsg.Data, 0);
 	}
@@ -921,7 +928,7 @@ uint8_t MonAirLLDPara1(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{	
 		WriteAirLLDPara1(mon->RxMsg.Data, mon->CanMess.DevNo);
 	}
@@ -970,7 +977,7 @@ uint8_t MonAirLLDPara2(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 		WriteAirLLDPara2(mon->RxMsg.Data, 0);
 	}
@@ -1019,7 +1026,7 @@ uint8_t MonAirLLDPara3(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 		WriteAirLLDPara3(mon->RxMsg.Data, 0);
 	}
@@ -1068,7 +1075,7 @@ uint8_t MonReadAirVal(struct tagMonCan *mon, uint8_t err)
 	}
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 		WriteAirMapVal(mon->RxMsg.Data, 0);
 	}
@@ -1097,105 +1104,6 @@ uint8_t MonReadAirValReply(struct tagMonCan *mon, uint8_t *buff)
 }
 
 
-/*
- * @function: MonAirLLDPara4
- * @details : 上位机设置气压探测参数
- * @input   : 1.mon：监控管理指针。
-              2.err：故障信息。
- * @output  : NULL
- * @return  : 0：成功；其他：故障指令。
- */
-uint8_t MonAirLLDPara4(struct tagMonCan *mon, uint8_t err)
-{
-	uint8_t    ret = 0;
-	
-	
-	//故障指令或操作码，不进行任何操作
-	if(ERR_CAN_NULL != err)
-	{
-		return (err);
-	}
-	
-	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
-	{
-		WriteAirLLDPara4(mon->RxMsg.Data, 0);
-	}
-	
-	
-	return (ret);
-}
-
-/*
- * @function: MonAirLLDPara4Reply
- * @details : 应答上位机读取气压探测参数。
- * @input   : 1.mon：管理指针。
-              2.buff：缓存。
- * @output  : NULL
- * @return  : 应答状态。
- */
-uint8_t MonAirLLDPara4Reply(struct tagMonCan *mon, uint8_t *buff)
-{
-	uint8_t    ret = CAN_OPE_REPLY;
-	
-	
-	ReadAirLLDPara4(buff, 0);
-	
-	
-	return(ret);
-}
-
-
-/*
- * @function: MonAirLLDPara5
- * @details : 上位机设置气压探测参数
- * @input   : 1.mon：监控管理指针。
-              2.err：故障信息。
- * @output  : NULL
- * @return  : 0：成功；其他：故障指令。
- */
-uint8_t MonAirLLDPara5(struct tagMonCan *mon, uint8_t err)
-{
-	uint8_t    ret = 0;
-	
-	
-	//故障指令或操作码，不进行任何操作
-	if(ERR_CAN_NULL != err)
-	{
-		return (err);
-	}
-	
-	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
-	{
-		WriteAirLLDPara5(mon->RxMsg.Data, 0);
-	}
-	
-	
-	return (ret);
-}
-
-/*
- * @function: MonAirLLDPara5Reply
- * @details : 应答上位机读取气压探测参数。
- * @input   : 1.mon：管理指针。
-              2.buff：缓存。
- * @output  : NULL
- * @return  : 应答状态。
- */
-uint8_t MonAirLLDPara5Reply(struct tagMonCan *mon, uint8_t *buff)
-{
-	uint8_t    ret = CAN_OPE_REPLY;
-	
-	
-	ReadAirLLDPara5(buff, 0);
-	
-	
-	return(ret);
-}
-
-
-
 
 
 /*
@@ -1219,15 +1127,15 @@ uint8_t MonReadSoftWareName(struct tagMonCan *mon, uint8_t err)
 	
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 	}
 	
 	
 	//上位机读操作
-	if(OPE_READ == mon->CanMess.OpeCode)
+	if(OPE_READ == mon->CanMess.CMDPara)
 	{
-		ReadSoftWareNameIns(mon->RxMsg.Data, 0);
+//		ReadSoftWareNameIns(mon->RxMsg.Data, 0);
 	}
 	
 	
@@ -1247,7 +1155,7 @@ uint8_t MonReadSoftWareNameReply(struct tagMonCan *mon, uint8_t *buff)
 	uint8_t    ret = CAN_OPE_REPLY;
 	
 	
-	ReadSoftWareName(buff, 0);
+//	ReadSoftWareName(buff, 0);
 	
 	
 	return(ret);
@@ -1275,7 +1183,7 @@ uint8_t MonReadSoftWareVer(struct tagMonCan *mon, uint8_t err)
 	
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 	}
 	
@@ -1325,7 +1233,7 @@ uint8_t MonRWpara(struct tagMonCan *mon, uint8_t err)
 	Storage.ParaNo = mon->RxMsg.Data[3];
 	
 	//上位机写操作
-	if(OPE_WRITE == mon->CanMess.OpeCode)
+	if(OPE_WRITE == mon->CanMess.CMDPara)
 	{
 		lValue = ((mon->RxMsg.Data[4]<<24) | (mon->RxMsg.Data[5]<<16) | (mon->RxMsg.Data[6]<<8) |(mon->RxMsg.Data[7]));		
 		//赋值操作		
@@ -1369,9 +1277,6 @@ uint8_t MonRWparaReply(struct tagMonCan *mon, uint8_t *buff)
 
 
 
-
-
-
 /*
  * @function: CheckFrame
  * @details : 检查报文格式。
@@ -1385,37 +1290,39 @@ uint8_t CheckFrame(struct tagMonCan *mon)
 	
 	
 	//检查操作码
-	if((OPE_READ != mon->CanMess.OpeCode) && (OPE_WRITE != mon->CanMess.OpeCode))
+	if((OPE_READ != mon->CanMess.CMDPara) && (OPE_WRITE != mon->CanMess.CMDPara))
 	{
 		ret = ERR_CAN_OPE;
 	}	
 	
 	//检查指令
-	if((INS_IO != mon->CanMess.Ins)
-		&& (INS_TEMP != mon->CanMess.Ins)
-		&& (INS_RESERVE_201 != mon->CanMess.Ins)
-		&& (INS_SELECT_SEN != mon->CanMess.Ins)
-		&& (INS_READ_LLD != mon->CanMess.Ins)
-		&& (INS_RESERVE_204 != mon->CanMess.Ins)
-		&& (INS_RESERVE_205 != mon->CanMess.Ins)
-		&& (INS_RESERVE_206 != mon->CanMess.Ins)
-		
-		&& (INS_CAPLLD_PARA1 != mon->CanMess.Ins)
-		&& (INS_RESERVE_208 != mon->CanMess.Ins)
-		&& (INS_CAPLLD_PARA3 != mon->CanMess.Ins)
-		&& (INS_CAP_READ_VAL != mon->CanMess.Ins)
-		
-		&& (INS_AIRLLD_PARA1 != mon->CanMess.Ins)
-		&& (INS_AIRLLD_PARA2 != mon->CanMess.Ins)
-		&& (INS_AIRLLD_PARA3 != mon->CanMess.Ins)
-		&& (INS_AIR_READ_VAL != mon->CanMess.Ins)
-		&& (INS_AIRLLD_PARA4 != mon->CanMess.Ins)
-		&& (INS_AIRLLD_PARA5 != mon->CanMess.Ins)
-		
-		&& (INS_R_SOFTWARE_NAME != mon->CanMess.Ins)
-		&& (INS_R_SOFTWARE_VER != mon->CanMess.Ins)
+	if((INS_R_RH_VERSION != mon->CanMess.CMD)
+		&& (INS_RESET_MCU != mon->CanMess.CMD)
 	
-		&& (INS_RW_PARA != mon->CanMess.Ins))
+		&& (INS_IO != mon->CanMess.CMD)
+		&& (INS_TEMP != mon->CanMess.CMD)
+	
+		&& (INS_RESERVE_201 != mon->CanMess.CMD)
+		&& (INS_SELECT_SEN != mon->CanMess.CMD)
+		&& (INS_READ_LLD != mon->CanMess.CMD)
+		&& (INS_RESERVE_204 != mon->CanMess.CMD)
+		&& (INS_RESERVE_205 != mon->CanMess.CMD)
+		&& (INS_RESERVE_206 != mon->CanMess.CMD)
+		
+		&& (INS_CAPLLD_PARA1 != mon->CanMess.CMD)
+		&& (INS_RESERVE_208 != mon->CanMess.CMD)
+		&& (INS_CAPLLD_PARA3 != mon->CanMess.CMD)
+		&& (INS_CAP_READ_VAL != mon->CanMess.CMD)
+		
+		&& (INS_AIRLLD_PARA1 != mon->CanMess.CMD)
+		&& (INS_AIRLLD_PARA2 != mon->CanMess.CMD)
+		&& (INS_AIRLLD_PARA3 != mon->CanMess.CMD)
+		&& (INS_AIR_READ_VAL != mon->CanMess.CMD)
+		
+		&& (INS_R_SOFTWARE_NAME != mon->CanMess.CMD)
+		&& (INS_R_SOFTWARE_VER != mon->CanMess.CMD)
+	
+		&& (INS_RW_PARA != mon->CanMess.CMD))
 	{
 		ret = ERR_CAN_INS;
 	}
@@ -1425,6 +1332,7 @@ uint8_t CheckFrame(struct tagMonCan *mon)
 	
 	return (ret);
 }
+
 
 
 
@@ -1450,24 +1358,38 @@ uint8_t MonAnalyseCanMess(void)
 	
 	
 	MonCan.CanMess.MessID = MonCan.RxMsg.Data[0];
-	MonCan.CanMess.Ins = MonCan.RxMsg.Data[1];
-	MonCan.CanMess.OpeCode = MonCan.RxMsg.Data[2];
+	MonCan.CanMess.CMD = MonCan.RxMsg.Data[1];
+	MonCan.CanMess.CMDPara = MonCan.RxMsg.Data[2];
 	MonCan.CanMess.DevNo = MonCan.RxMsg.Data[3];
 	
 	err = CheckFrame(&MonCan);
-	switch(MonCan.CanMess.Ins)
+	switch(MonCan.CanMess.CMD)
 	{
+		case INS_R_RH_VERSION:
+		{
+			reply = ERR_CAN_NULL;
+		}
+		break;
+		
+		case INS_RESET_MCU:
+		{
+			reply = MonResetMCU(&MonCan, err);;
+		}
+		break;
+		
+		
 		case INS_IO:
 		{
-			reply = MonOperateIO(&MonCan, err);
+			reply = ERR_CAN_NULL;
 		}
 		break;
 		
 		case INS_TEMP:
 		{
-			reply = MonTemp(&MonCan, err);
+			reply = ERR_CAN_NULL;
 		}
 		break;
+		
 		
 		case INS_RESERVE_201:
 		{
@@ -1557,18 +1479,6 @@ uint8_t MonAnalyseCanMess(void)
 		}
 		break;
 		
-		case INS_AIRLLD_PARA4:
-		{
-			reply = MonAirLLDPara4(&MonCan, err);
-		}
-		break;
-		
-		case INS_AIRLLD_PARA5:
-		{
-			reply = MonAirLLDPara5(&MonCan, err);
-		}
-		break;
-		
 		
 		
 		case INS_R_SOFTWARE_NAME:
@@ -1581,7 +1491,7 @@ uint8_t MonAnalyseCanMess(void)
 		{
 			reply = MonReadSoftWareVer(&MonCan, err);
 		}
-		break;		
+		break;
 		
 		
 		
@@ -1621,9 +1531,6 @@ uint8_t MonAnalyseCanMess(void)
 
 
 
-
-
-
 /*
  * @function: MonFillSendBuff
  * @details : 填充发送缓存。
@@ -1643,9 +1550,9 @@ uint8_t MonFillSendBuff(struct tagMonCan *mon, uint8_t *buff)
 	mon->TxMsg.ExtId = 0x00;
 	mon->TxMsg.IDE = CAN_ID_STD;                 //标准模式
 	mon->TxMsg.RTR = CAN_RTR_DATA;               //发送的是数据
-	mon->TxMsg.DLC = 8;                          //数据长度为8字节	
+	mon->TxMsg.DLC = 8;                          //数据长度为8字节
 	mon->TxMsg.Data[0] = mon->CanMess.MessID;
-	mon->TxMsg.Data[1] = mon->CanMess.Ins;
+	mon->TxMsg.Data[1] = mon->CanMess.CMD;
 	mon->TxMsg.Data[2] = buff[2];
 	mon->TxMsg.Data[3] = buff[3];
 	mon->TxMsg.Data[4] = buff[4];
@@ -1676,8 +1583,21 @@ uint8_t MonSendCanMess(void)
 
 	
 	
-	switch(MonCan.CanMess.Ins)
+	switch(MonCan.CanMess.CMD)
 	{
+		case INS_R_RH_VERSION:
+		{
+			reply = MonReadSoftHardVerReply(&MonCan, buff);
+		}
+		break;
+		
+		case INS_RESET_MCU:
+		{
+			reply = MonResetMCUReply(&MonCan, buff);
+		}
+		break;
+		
+		
 		case INS_IO:
 		{
 			reply = MonOperateIOReply(&MonCan, buff);
@@ -1689,6 +1609,7 @@ uint8_t MonSendCanMess(void)
 			reply = MonTempReply(&MonCan, buff);
 		}
 		break;
+		
 		
 		case INS_RESERVE_201:
 		{
@@ -1712,7 +1633,7 @@ uint8_t MonSendCanMess(void)
 		{
 			reply = MonRead204Reply(&MonCan, buff);
 		}
-		break;	
+		break;
 		
 		case INS_RESERVE_205:
 		{
@@ -1778,18 +1699,6 @@ uint8_t MonSendCanMess(void)
 		}
 		break;
 		
-		case INS_AIRLLD_PARA4:
-		{
-			reply = MonAirLLDPara4Reply(&MonCan, buff);
-		}
-		break;
-		
-		case INS_AIRLLD_PARA5:
-		{
-			reply = MonAirLLDPara5Reply(&MonCan, buff);
-		}
-		break;
-		
 		
 		
 		case INS_R_SOFTWARE_NAME:
@@ -1803,6 +1712,7 @@ uint8_t MonSendCanMess(void)
 			reply = MonReadSoftWareVerReply(&MonCan, buff);
 		}
 		break;
+		
 		
 		
 		case INS_RW_PARA:
@@ -1848,6 +1758,9 @@ uint8_t MonSendCanMess(void)
 }
 
 
+
+
+
 /*
  * @function: CanMonComStage
  * @details : 监听Can通信
@@ -1861,6 +1774,16 @@ void CanMonComStage(void)
 	uint8_t    reply = CAN_OPE_NO_REPLY;
 	
 	
+
+	
+	
+//	//自测：1号通道发送广播包
+//	if(CAN_ID_MIM == g_tLLDParam.CanConfig.ModuleID)
+//	{
+//		CapBroadSyn();
+//	}
+	
+	
 	//各个状态下的动作
 	switch(MonCan.ComStage)
 	{
@@ -1872,22 +1795,6 @@ void CanMonComStage(void)
 		
 		case MON_CAN_RECE:
 		{
-//			//解析数据，未使用Can接收队列。
-//			if(TRUE == MonCan.ReceFinish)
-//			{
-//				reply = MonAnalyseCanMess();
-//				MonCan.ReceFinish = FALSE;
-//			}
-//			
-//			//广播
-//			if(TRUE == MonCan.ReceBroadcastFinish)
-//			{
-////				MonAnalyseBroadcast();
-//				reply = CAN_OPE_REPLY;
-//				MonCan.ReceBroadcastFinish = FALSE;
-//			}
-			
-			
 			//从Can接收队列中取出数据
 			ret = QueueLoopCanPop(&MonCan.RxQueue, MonCan.RxMsg.Data);
 			
@@ -1921,9 +1828,10 @@ void CanMonComStage(void)
 			}
 			else if(CAN_TxStatus_NoMailBox == reply)
 			{
-				//发送邮箱满
-				//CAN_Config(CAN1, &MonCan.Confg);
+				//发送邮箱满，重启Can控制器
 				CAN_Config(CAN1);
+				
+				rt_thread_delay(10);
 			}
 			
 			

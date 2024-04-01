@@ -68,7 +68,8 @@ void Accumulation32(uint32_t* var);
 
 void GenDelay_nop(uint32_t ntimer);
 uint8_t CheckUint16ParaValid(uint16_t *check_val, uint16_t min, uint16_t max, uint16_t def_val);
-uint8_t Array32Clear(uint32_t *buf, uint8_t len);
+uint8_t MyMemSet16(uint16_t *buf, uint16_t data, uint8_t len);
+uint8_t MyMemSet32(uint32_t *buf, uint32_t data, uint8_t len);
 
 uint8_t QueueLoopInit(struct tagQueueLoop *queue, void *buf, uint16_t len);
 uint8_t QueueLoopClear(struct tagQueueLoop *queue);

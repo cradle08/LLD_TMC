@@ -46,6 +46,12 @@ extern "C" {
 #define MCU_MODEL_STM32G431VB						0x03
 
 
+/*
+*
+*	Ö§³ÖLLD°å
+*/
+#define LLD_BOARD_TYPE								0x02000000
+
 
 
 //¹ã²¥CAN ID

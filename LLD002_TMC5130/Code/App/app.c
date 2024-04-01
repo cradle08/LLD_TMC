@@ -34,59 +34,13 @@ uint16_t g_usHardWareVesion = 0x0010;    //硬件版本号
 
 //定义变量---------------------------------------------------------------------//
 /*
- * @function: IWDG_Feed
- * @details : 喂狗
- * @input   : parameter:参数。未使用。
- * @output  : NULL
- * @return  : NULL
- */
-void IWDG_Feed(void* parameter)
-{
-	// 把重装载寄存器的值放到计数器中，喂狗，防止IWDG复位
-	// 当计数器的值减到0的时候会产生系统复位
-	while(1)
-	{
-		IWDG_ReloadCounter();
-		
-		rt_thread_delay(200); 
-	}
-}
-
-/*
- * @function: SWSysTimer
- * @details : 软件1s计时
- * @input   : parameter:参数。未使用。
- * @output  : NULL
- * @return  : NULL
- */
-void SWSysTimer(void* parameter)
-{
-	while(1)
-	{
-		Accumulation16(&SWSysTimeTick.PowerOnS);
-		Accumulation8(&CapSenPara.RdyTime);
-		
-//		CAN_MonInit();
-		
-//		StorageManStage();
-//		MemManStage(&StorageMan);
-		
-		SYS_LED_TRIGGER;
-		
-		
-		rt_thread_delay(1000);
-	}
-}
-
-
-/*
- * @function: SWTimer10ms
- * @details : 软件10ms定时器
+ * @function: LLD_App
+ * @details : 探测线程
  * @input   : parameter:参数，未使用。
  * @output  : NULL
  * @return  : NULL
  */
-void SWTimer10ms(void* parameter)
+void LLD_App(void* parameter)
 {
 	while(1)
 	{
@@ -95,11 +49,7 @@ void SWTimer10ms(void* parameter)
 		AirSensor();
 		LLDReslut();
 		
-		CheckPhotosensor();
-//		DipSWCheck();
-		TempNTC();
-		
-		rt_thread_delay(10);
+		rt_thread_delay(SoftSys.LLDPeriod);
 	}
 }
 
@@ -117,7 +67,7 @@ void EPPROM_Data_Reset(void)
 	
 	//第一次上电, 初始化，保存
 	Global_Param_SetDefault_Value(&g_tGlobalParam);
-	//保存		
+	//保存
 	Save_Global_Param(&g_tGlobalParam);
 
 
@@ -135,32 +85,33 @@ void EPPROM_Data_Reset(void)
 
 
 
-uint32_t ulTemp = 0;
 //电机运用初始化
+//uint32_t ulTemp = 0;
 void Motor_App_Init(void)
 {
-//	uint32_t ulTemp = 0;
+	uint32_t ulTemp = 0;
 	extern __IO GlobalParam_t g_tGlobalParam;
 	extern __IO Process_t g_tProcess;
 	extern __IO BoardStatus_t g_tBoardStatus;
 	
 	LED_Shine(4, 60);
 	
-	ulTemp = sizeof(LLDParam_t);	//0x0B=11
-	ulTemp = sizeof(GlobalParam_t); //0x291=657
-	ulTemp = sizeof(AxisParamDefault_t); //0x54=84
-	ulTemp = sizeof(Process_t); //0x8FA=2298
+	ulTemp = sizeof(LLDParam_t);            //0x0B=11
+	ulTemp = sizeof(GlobalParam_t);         //0x291=657
+	ulTemp = sizeof(AxisParamDefault_t);    //0x54=84
+	ulTemp = sizeof(Process_t);             //0x8FA=2298
 	
 
 	//全局值初始化
 	Global_Status_Init();
 
 	//获取、打印识别码信息
-	g_tBoardStatus.usSN = Get_SN(1);
+	Get_SN(1);
+//	g_tBoardStatus.usSN = Get_SN(1);
 
 	//参数初始化
 	EEPROM_Init();
-		
+	
 	//液面探测参数
 	if(ERROR_TYPE_EEPROM == LLDParam_Init())
 	{  
@@ -178,12 +129,16 @@ void Motor_App_Init(void)
 //	LOG_Info("Can: Baud=%d, RecvID=%d, SendID=%d", g_tGlobalParam.eCanBaud, g_tGlobalParam.ulRecvCanID, g_tGlobalParam.ulSendCanID);
 
 	//默认轴参数
+	//1.不加中断，读取电机参数被中断打断，数据混乱，TMC5130A的MOS管烧毁。
+	//2.加中断，程序卡死，与调用rt_thread_mdelay函数有关。
+//	__disable_irq();   
 	if(ERROR_TYPE_EEPROM == Axis_Param_Default_Init())
 	{
 		//读取数据异常
-		g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;	
+		g_tBoardStatus.ucEEPRAM_Init_CRC_ErrFlag = 1;
 	}
-
+//	__enable_irq(); 
+	
 	//EPPROM_Data_Reset(); 
 	//Can初始化,ID
 	//Bsp_Can_Init(g_tGlobalParam.eCanBaud);
@@ -236,6 +191,39 @@ void CommMonitor(void* parameter)
 //		uint32_t ulTick = rt_tick_get();
 		
 //		BSP_UartCommStage(&ModbusMon.Usart);
+		
+		SWSysTimeTick.T10ms++;
+		if(SWSysTimeTick.T10ms >= 5)
+		{
+			//示波器抓取运行时间17.40us
+			SWSysTimeTick.T10ms = 0;
+			
+			
+			IWDG_ReloadCounter();
+			CheckPhotosensor();
+//			DipSWCheck();
+			TempNTC();   //执行时间较长，需要优化
+		}
+		
+		
+		SWSysTimeTick.T1s++;
+		if(SWSysTimeTick.T1s >= 498)
+		{
+			SWSysTimeTick.T1s = 0;
+			
+			
+			Accumulation16(&SWSysTimeTick.PowerOnS);
+			Accumulation8(&CapSenPara.RdyTime);
+			
+			if(2 == SoftSys.MCUResetStatus)
+			{
+				MCU_Reset();
+			}
+			
+			SYS_LED_TRIGGER;
+		}
+		
+		
 		
 		CanMonComStage();
 		

@@ -88,14 +88,14 @@ SysEvent_t *SysEventAlloc(void)
     SysEvent_t * e;
 
 	//cli();
-	DISABLE_EVENT_IRQ;
+	
     // 取一个事件缓存。如果自由链不空，SysEventFreeList下移
     e = SysEventFreeList;
     if (  e != (SysEvent_t *) NULL ){
         SysEventFreeList = SysEventFreeList->ptNext;
 	}
     //sei();
-	ENABLE_EVENT_IRQ;
+	
 
     // 返回该事件缓存，或为空
     return e;
@@ -116,17 +116,10 @@ void SysEventFree(SysEvent_t *e)
     // 插到自由链首
     if ( e != (SysEvent_t *)NULL )
     {
-		//
-//		DISABLE_EVENT_IRQ;
-		rt_enter_critical();
-		
 		memset((void*)e, 0, sizeof(SysEvent_t));
+		
         e->ptNext = SysEventFreeList;
         SysEventFreeList = e;
-		
-		//
-//		ENABLE_EVENT_IRQ;
-		rt_exit_critical();
 	}	
 }
 

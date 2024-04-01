@@ -63,120 +63,6 @@ void CAN_GPIO_Config(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);		
 }
 
-/*
- * 函数名：CAN_GPIO_Config
- * 描述  ：CAN的GPIO 配置
- * 输入  ：无
- * 输出  : 无
- * 调用  ：内部调用
- */
-//static void CAN_GPIO_Config(void)
-//{
-//	GPIO_InitTypeDef GPIO_InitStructure;   	
-
-//	/* Enable GPIO clock */
-//	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO | RCC_APB2Periph_GPIOB, ENABLE);
-//	
-//	//重映射引脚
-//	GPIO_PinRemapConfig(GPIO_Remap1_CAN1, ENABLE);
-
-//	/* Configure CAN TX pins */
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9;
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;		         // 复用推挽输出
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-
-//	GPIO_Init(GPIOB, &GPIO_InitStructure);
-
-//	/* Configure CAN RX  pins */
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 ;
-//	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;	             // 上拉输入
-//	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-
-//	GPIO_Init(GPIOB, &GPIO_InitStructure);
-//}
-
-
-///*
-// * @function: CAN_Mode_Config
-// * @details : 配置CAN模式
-// * @input   : NULL
-// * @output  : NULL
-// * @return  : NULL
-// */
-//void CAN_Mode_Config(CAN_TypeDef* can, struct tagCanConfig  *confg)
-//{
-//	CAN_InitTypeDef        CAN_InitStructure;
-//	
-//	//CAN寄存器初始化
-//	CAN_DeInit(can);
-//	CAN_StructInit(&CAN_InitStructure);
-
-//	//CAN单元初始化
-//	CAN_InitStructure.CAN_TTCM = DISABLE;                  //MCR-TTCM  关闭时间触发通信模式使能
-//	
-//	//为了方便调试，开启自动离线管理
-//	CAN_InitStructure.CAN_ABOM = ENABLE;                   //MCR-ABOM  自动离线管理。ENABLE-使用该功能，可以在节点出错离线后适时的自动恢复，不需要软件干预。
-//	
-//	CAN_InitStructure.CAN_AWUM = ENABLE;                   //MCR-AWUM  自动唤醒模式。ENABLE-使用该功能，可以在监测到总线活动后自动唤醒。
-//	CAN_InitStructure.CAN_NART = DISABLE;                  //MCR-NART  禁止报文自动重传	  DISABLE-使用自动重传。当仲裁失败后，Can会自动重发。
-//	CAN_InitStructure.CAN_RFLM = DISABLE;                  //MCR-RFLM  接收FIFO 锁定模式  DISABLE-溢出时新报文会覆盖原有报文  
-//	CAN_InitStructure.CAN_TXFP = DISABLE;                  //MCR-TXFP  发送FIFO优先级 DISABLE-优先级取决于报文标示符 
-//	CAN_InitStructure.CAN_Mode = CAN_Mode_Normal;          //正常工作模式
-////	CAN_InitStructure.CAN_Mode = CAN_Mode_LoopBack;        //回环模式，用于自测
-
-
-//	//------------计算Can通信波特率-----------------------------------------//
-////	CAN 波特率 = RCC_APB1Periph_CAN / Prescaler / (SJW + BS1 + BS2);
-////	SJW = synchronisation_jump_width 
-////	BS = bit_segment
-
-////	周立功推荐：
-////	1.保证TSEG1+TSEG2的时间份额在10-20之间。
-////	2.（TSEG1+1）/（TSEG1+TSEG2+1）的采样点位置在75%~81.5%为宜，极限情况下不得在70%~87.5%之外。
-////	3.同步跳转SJW取（TSEG2-1）为宜。
-
-////	时间份额（tq）    TSEG1    TSEG2    SJW
-////	10               6        3        2
-////	12               8        3        2
-////	14               9        4        3
-////	16               11       4        3
-////	18               12       5        3
-////	20               14       5        3
-//	//----------------------------------------------------------------------//
-//	
-//	if(CAN_BPS_MODE_1M == confg->BpsMode)
-//	{
-//		//波特率1Mbps
-//		//使用HSE时钟，APB1 = 36 MHz，配置ss=1（同步段，恒为1） ，时间宽度为(BS1+BS2+ss) ，波特率即为时钟周期tq*(BS1+BS2+ss)。
-//		CAN_InitStructure.CAN_SJW = CAN_SJW_2tq;               //BTR-SJW 重新同步跳跃宽度（不参与波特率计算）
-//		CAN_InitStructure.CAN_BS1 = CAN_BS1_8tq;               //BTR-TS1 时间段1
-//		CAN_InitStructure.CAN_BS2 = CAN_BS2_3tq;               //BTR-TS1 时间段2
-//		CAN_InitStructure.CAN_Prescaler = 3;                   //BTR-BRP 波特率分频器
-//	}
-//	else if(CAN_BPS_MODE_500K == confg->BpsMode)
-//	{
-//		//波特率500kbps
-//		//使用HSE时钟，APB1 = 36 MHz，配置ss=1（同步段，恒为1） ，时间宽度为(BS1+BS2+ss) ，波特率即为时钟周期tq*(BS1+BS2+ss)。
-//		CAN_InitStructure.CAN_SJW = CAN_SJW_3tq;               //BTR-SJW 重新同步跳跃宽度（不参与波特率计算）
-//		CAN_InitStructure.CAN_BS1 = CAN_BS1_12tq;              //BTR-TS1 时间段1
-//		CAN_InitStructure.CAN_BS2 = CAN_BS2_5tq;               //BTR-TS1 时间段2
-//		CAN_InitStructure.CAN_Prescaler = 4;                   //BTR-BRP 波特率分频器
-//	}
-//	else
-//	{
-//		//默认波特率1Mbps
-//		//使用HSE时钟，APB1 = 36 MHz，配置ss=1（同步段，恒为1） ，时间宽度为(BS1+BS2+ss) ，波特率即为时钟周期tq*(BS1+BS2+ss)。
-//		CAN_InitStructure.CAN_SJW = CAN_SJW_2tq;               //BTR-SJW 重新同步跳跃宽度（不参与波特率计算）
-//		CAN_InitStructure.CAN_BS1 = CAN_BS1_8tq;               //BTR-TS1 时间段1
-//		CAN_InitStructure.CAN_BS2 = CAN_BS2_3tq;               //BTR-TS1 时间段2
-//		CAN_InitStructure.CAN_Prescaler = 3;                   //BTR-BRP 波特率分频器
-//	}
-//	
-//	
-//	CAN_Init(can, &CAN_InitStructure);
-//}
-
-
 
 /*
  * @function: CAN_Mode_Config
@@ -265,9 +151,9 @@ void CAN_Filter_Config(CAN_TypeDef* can)
 	uint32_t lld_RecvCanID = LLD_Recv_CanID();
 	uint32_t mtr_RecvCanID = Recv_CanID();
 	CAN_FilterInitStructure.CAN_FilterIdHigh = ((lld_RecvCanID<<21) & 0xFFFF0000)>>16;    //CanID1
-	CAN_FilterInitStructure.CAN_FilterIdLow = ((mtr_RecvCanID<<21) & 0xFFFF0000)>>16;  //CanID2，广播ID
-	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = (((uint32_t)LLD_CAN_BROADCAST_ID_MOTOR<<21) & 0xFFFF0000)>>16;   //CanID3，预留ID
-	CAN_FilterInitStructure.CAN_FilterMaskIdLow = (((uint32_t)CAN_BROADCAST_ID_MOTOR <<21) & 0xFFFF0000)>>16;  //CanID4，预留ID
+	CAN_FilterInitStructure.CAN_FilterIdLow = ((mtr_RecvCanID<<21) & 0xFFFF0000)>>16;  //CanID2，
+	CAN_FilterInitStructure.CAN_FilterMaskIdHigh = (((uint32_t)CAN_BROADCAST_ID_MOTOR <<21) & 0xFFFF0000)>>16;   //CanID3，预留ID
+	CAN_FilterInitStructure.CAN_FilterMaskIdLow = (((uint32_t)CAN_BROADCAST_ID_MOTOR <<21) & 0xFFFF0000)>>16;  //CanID4，广播ID
 	//CAN_FilterInitStructure.CAN_FilterMaskIdHigh = 0x00;                                    //CanID3，预留ID
 	//CAN_FilterInitStructure.CAN_FilterMaskIdLow = 0x00;                                     //CanID4，预留ID                                    //CanID4，预留ID
 	

@@ -20,27 +20,6 @@ struct tagPara    UserPara[USER_PARA_NUM];
 struct tagStorage    Storage;
 
 
-//参数管理表格
-const struct tagStorageTab StorageParaTab[] = {
-//  默认值     变量名称                          变量类型
-	//------------ Page0 --------------------//
-	{0xFFFF,    &Storage.MachineNo,                        TYPE_UINT16},
-	{0xFFFF,    &Storage.HardWareNo,                       TYPE_UINT16},
-	{0xFFFF,    &Storage.SoftWareNo,                       TYPE_UINT16},
-	{0xFFFF,    &Storage.PageCRC8,                         TYPE_UINT16},	
-	
-	
-	//------------ Page1 --------------------//
-	{0xFFFF,    &Storage.Reserved,                         TYPE_UINT16},
-	{0xFFFF,    &Storage.Reserved,                         TYPE_UINT16},
-	{0xFFFF,    &Storage.Reserved,                         TYPE_UINT16},
-	{0xFFFF,    &Storage.PageCRC8,                         TYPE_UINT16},
-	
-	
-	//必须保留。
-	{NULL,      NULL,                                      TYPE_UINT16},
-};
-
 
 
 
@@ -117,81 +96,6 @@ void ParaConfig(struct tagPara *para, uint8_t num, uint16_t min, uint16_t max)
 	para->Max = max;
 }
 
-/*
- * @function: ParaCallBackFun
- * @details : 回调函数
- * @input   : NULL
- * @output  : NULL
- * @return  : NULL
- */
-void ParaCallBackFun( void )
-{
-}
-
-/*
- * @function: FLASH_PageRead
- * @details : 读取以页作为单位大小的数据。
- * @input   : 1.buffer：存储读出数据的指针。
-              2.start_addr：读取地址。
-			  3.byte_num：读取数据长度。
- * @output  : NULL
- * @return  : 读取结果，0：成功；1：失败。
- */
-uint8_t FLASH_PageRead(uint8_t *buffer, uint16_t start_addr, uint16_t byte_num)
-{
-	uint8_t    ret = 0;
-	uint8_t    len = 0;
-	uint16_t   *page_buff = NULL;
-	
-	
-	len = byte_num / 2;
-	page_buff = (uint16_t *)buffer;
-	if((start_addr % 8) != 0)
-	{
-		return 1;
-	}
-	ret = STMFLASH_SeqRead(63, start_addr, page_buff, len);
-	
-	return (ret);
-}
-
-
-/*
- * @function: FLASH_PageWrite
- * @details : 写以页作为单位大小的数据。
- * @input   : 1.buffer：要写入数据的指针。
-              2.start_addr：写入地址。
-			  3.byte_num：写入数据长度，必须小于等于SPI_FLASH_PerWritePageSize。
- * @output  : NULL
- * @return  : 写结果，0：成功；1：失败。
- */
-uint8_t FLASH_PageWrite(uint8_t *buffer, uint16_t start_addr, uint16_t byte_num)
-{
-	uint8_t    ret = 0;
-	uint8_t    len = 0;
-	uint16_t   *page_buff = NULL;
-	
-	
-	len = byte_num / 2;
-	page_buff = (uint16_t *)buffer;
-	if((start_addr % 8) != 0)
-	{
-		return 1;
-	}
-	ret = STMFLASH_SeqWrite(63, start_addr, page_buff, len);
-	
-	
-	return (ret);	
-}
-
-
-
-
-
-
-
-
-
 
 
 
@@ -226,7 +130,7 @@ void ParaInit(void)
 	ParaConfig(&UserPara[CAP_LEV_THRESHOLD_H], 12, 0x00, 0xFFFF);
 	ParaConfig(&UserPara[CAP_LEV_THRESHOLD_L], 13, 0x00, 0xFFFF);
 	ParaConfig(&UserPara[CAP_SET_GEAR], 14, 0x00, 0xFF);
-	ParaConfig(&UserPara[CAP_SET_CONTIME], 15, 0x06, 0xFF);
+	ParaConfig(&UserPara[CAP_SET_CONTIME], 15, 0x01, 0xFF);
 	
 	
 	ParaConfig(&UserPara[CAP_DETE_OBJ], 16, 0x00, 6);
@@ -245,34 +149,15 @@ void ParaInit(void)
 	ParaConfig(&UserPara[AIR_ABS_START_DLY], 27, 0x00, 0xFFFF);
 	ParaConfig(&UserPara[AIR_ABS_END_DLY], 28, 0x00, 0xFFFF);
 	
-	ParaConfig(&UserPara[AIR_RAKERATIO4_MIN], 29, 0x00, 0xFFFF);
-	ParaConfig(&UserPara[AIR_RAKERATIO4_MAX], 30, 0x00, 0xFFFF);	
-	
-	ParaConfig(&UserPara[AIR_ABS_START_END], 31, 0x00, 0xFFFF);
-	ParaConfig(&UserPara[AIR_DIS_START_END], 32, 0x00, 0xFFFF);
+	ParaConfig(&UserPara[AIR_ABS_START_END], 29, 0x00, 0xFFFF);
+	ParaConfig(&UserPara[AIR_DIS_START_END], 30, 0x00, 0xFFFF);
 	
 	
 	Storage.Reserved = 0xFFFF;
 }
 
 
-/*
- * @function: LimitPara
- * @details : 限制参数范围
- * @input   : NULL
- * @output  : NULL
- * @return  : NULL
- */
-void LimitPara( void )
-{
-	//Page0
-	CheckUint16ParaValid(&Storage.MachineNo, 0, 0xFF, 0);
-	CheckUint16ParaValid(&Storage.HardWareNo, 0, 0xFF, 0);
-	CheckUint16ParaValid(&Storage.SoftWareNo, 0, 0xFF, 0);
-	
-	//Page1
-	CheckUint16ParaValid(&UserPara[CAN_ID].Value, UserPara[CAN_ID].Min, UserPara[CAN_ID].Max, UserPara[CAN_ID].Min);
-}
+
 
 
 /*
@@ -290,109 +175,12 @@ void FLASH_Init(void)
 	//设置参数上下限
 	ParaInit();
 	
-	//从Flash读取数据
-	ret = MemManInit(&StorageMan, StorageParaTab, 20, 10, ParaCallBackFun, FLASH_PageRead, FLASH_PageWrite, BSP_Crc8);	
-	if(0 == ret)
-	{
-		LimitPara();		
-	}
+//	//从Flash读取数据
+//	ret = MemManInit(&StorageMan, StorageParaTab, 20, 10, ParaCallBackFun, FLASH_PageRead, FLASH_PageWrite, BSP_Crc8);	
+//	if(0 == ret)
+//	{
+//		LimitPara();		
+//	}
 }
 
-
-/*
- * @function: GetStorageErr
- * @details : 获取存储设备是否有页故障
- * @input   : NULL
- * @output  : NULL
- * @return  : NULL
- */
-uint8_t GetStorageErr(void)
-{
-	uint8_t    ret = FALSE;
-	uint8_t    page_index = 0;
-	
-	
-	for(page_index = 0; page_index < StorageMan.UsePageNum; page_index++)
-	{
-		if(TRUE == GetMemPageIsErr(&StorageMan, page_index))
-		{
-			ret = TRUE;
-			break;
-		}
-	}
-	
-	Storage.IsErr = ret;
-	
-	
-	return (ret);
-}
-
-
-
-/*
- * @function: StorageManStage
- * @details : 参数管理
- * @input   : NULL
- * @output  : NULL
- * @return  : NULL
- */
-void StorageManStage(void)
-{
-	GetStorageErr();
-	
-	
-	switch(Storage.Stage)
-	{
-		case STORAGE_NULL:
-		{
-			Storage.Stage = STORAGE_CONFIG;
-			Storage.StageRunTime = 0;
-		}
-		break;			
-		
-		case STORAGE_CONFIG:
-		{
-			Storage.Stage = STORAGE_RUN;
-			Storage.StageRunTime = 0;		
-		}
-		break;
-
-		case STORAGE_RUN:
-		{
-			//发现存储芯片有页故障
-			if(TRUE == Storage.IsErr)
-			{
-				Storage.Stage = STORAGE_ERR;
-				Storage.StageRunTime = 0;
-			}
-		}
-		break;
-
-		case STORAGE_ERR:
-		{
-			//页故障消失，回到正常阶段
-			if(FALSE == Storage.IsErr)
-			{
-				Storage.Stage = STORAGE_RUN;
-				Storage.StageRunTime = 0;
-			}		
-			
-			//页故障持续10s，回到配置阶段
-			if(Storage.StageRunTime > 10)
-			{
-				Storage.Stage = STORAGE_CONFIG;
-				Storage.StageRunTime = 0;
-			}			
-		}
-		break;
-		
-		default:
-		{
-		}
-		break;
-	}
-	
-	
-	Accumulation16(&Storage.StageRunTime);
-}
 

@@ -144,7 +144,10 @@ void SysTick_Handler(void)
 {
     //进入中断
     rt_interrupt_enter();
-
+	
+	
+	AirSenPara.DrippingTime++;
+	
     //更新时基
     rt_tick_increase();
 	
@@ -201,8 +204,8 @@ void TIM2_IRQHandler(void)
 	{
 		TIM_ClearITPendingBit(TIM2, TIM_FLAG_Update); 
 
-		SWSysTimerAdd();
-		BSP_UartCommTimeHandler(&ModbusMon.Usart);
+//		SWSysTimerAdd();
+//		BSP_UartCommTimeHandler(&ModbusMon.Usart);
 	}
 	
 	rt_interrupt_leave();//通知操作系统此时离开中断状态
@@ -243,9 +246,9 @@ void USART2_IRQHandler(void)
 	
 	if(USART_GetITStatus(USART2, USART_IT_RXNE) != RESET)
 	{		
-		ucTemp = USART_ReceiveData(USART2);
-		
-		UsartIRQReceiveHandler(&ModbusMon.Usart, ucTemp);
+//		ucTemp = USART_ReceiveData(USART2);
+//		
+//		UsartIRQReceiveHandler(&ModbusMon.Usart, ucTemp);
 	}
 	
 	rt_interrupt_leave();//通知操作系统此时离开中断状态

@@ -27,10 +27,16 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  MON_CAN_RECE                  1u    //接收
 #define  MON_CAN_REPLY                 2u    //应答
 
-//指令
+
+//普通指令
+#define  INS_R_RH_VERSION              0x00  //读取软硬件版本
+#define  INS_RESET_MCU                 0x01  //重启MCU
+
+//普通指令
 #define  INS_IO                        4u    //IO读写
 //#define  INS_LED                       5u    //LED读写
 #define  INS_TEMP                      6u  //温度
+
 
 #define  INS_RESERVE_201               201u  //预留
 #define  INS_SELECT_SEN                202u  //选用传感器
@@ -48,13 +54,14 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  INS_AIRLLD_PARA2              212u  //设置气压探测参数2
 #define  INS_AIRLLD_PARA3              213u  //设置气压探测参数3
 #define  INS_AIR_READ_VAL              214u  //读气压映射值
-#define  INS_AIRLLD_PARA4              215u  //设置气压探测参数4
-#define  INS_AIRLLD_PARA5              216u  //设置气压探测参数5
 
 
 #define  INS_R_SOFTWARE_NAME           252u  //读软件名称
 #define  INS_R_SOFTWARE_VER            253u  //读软件版本
 #define  INS_RW_PARA                   254u  //写参数参数
+
+
+
 
 
 //操作码
@@ -98,7 +105,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 
 //Can二维缓存
-#define  CAN_QUEUE_LOOP_LEN            8u
+#define  CAN_QUEUE_LOOP_LEN            4u
 #define  CAN_QUEUE_LOOP_WIDTH          8u
 
 
@@ -109,10 +116,6 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 #define  CAN_MSG_DATA_LENGTH		   8
 
 
-//Can应用通信地址（液面探测部分）
-#define  LLD_CAN_BROADCAST_ID_MOTOR    0x7FC
-
-
 
 
 
@@ -121,8 +124,8 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 struct tagCanMess
 {
 	uint8_t     MessID;
-	uint8_t     Ins;                                                           //指令，命令号
-	uint8_t     OpeCode;                                                       //操作码。
+	uint8_t     CMD;                                                           //指令
+	uint8_t     CMDPara;                                                       //指令参数。
 	uint8_t     DevNo;                                                         //操作设备的编号。
 	
 	uint32_t    ErrCode;
@@ -144,6 +147,7 @@ struct tagMotorCan
 	//电机相关
 	SysEvent_t   tSysEvent;
 	uint8_t      IsReSend;
+	uint16_t     AckBlockTime;
 };
 
 
@@ -158,16 +162,17 @@ struct tagMonCan
 	//协议相关
 	uint8_t     ComStage;                                                      //通信状态机
 	uint8_t     ReceFinish;                                                    //接收报文结果
-	uint8_t     ReceBroadcastFinish;                                           //接收广播
 	uint8_t     AckBlock;                                                      //应答阻塞
 	uint16_t    AckBlockTime;                                                  //应答阻塞计时
+	
 	
 	struct tagCanMess        CanMess;
 	struct tagBroadcast      Broadcast;	
 	
 	struct tagQueueLoop      RxQueue;
+//	struct tagQueueLoop      RxBroadCastQueue;                                 //广播消息队列
 	uint8_t     RxBuf[CAN_QUEUE_LOOP_LEN][CAN_QUEUE_LOOP_WIDTH];
-	
+//	uint8_t     RxBroadCastBuf[CAN_QUEUE_LOOP_LEN][CAN_QUEUE_LOOP_WIDTH];
 	
 	
 	//电机相关

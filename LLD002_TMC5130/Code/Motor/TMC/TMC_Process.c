@@ -403,7 +403,7 @@ void Axis_Param_Fixed_SetDefault_Value(__IO AxisParamDefault_t *ptAxisParamDefau
 	//参考点复位
 	ptAxisParamDefault->ucRighLimitPolarity[eTMC] = 0; //右限位极性，高有效
 	ptAxisParamDefault->ucLeftLimitPolarity[eTMC] = 1; //左限位极性，低有效
-	ptAxisParamDefault->ucRotateDirect[eTMC]	  = 0; //旋转方向	
+	ptAxisParamDefault->ucRotateDirect[eTMC]	  = 1; //旋转方向	
 
 	ptAxisParamDefault->lRes0[eTMC] = 0; //保留字段0
 	ptAxisParamDefault->lRes1[eTMC] = 0; //保留字段1
@@ -2406,7 +2406,9 @@ ErrorType_e Read_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 		//计数
 		ucNum++;
 		
+		
 		memset((void*)ptAxisParamDefault, 0, sizeof(AxisParamDefault_t));
+		
 		Param_Read(EN_SAVE_PARAM_TYPE_AXIS, (uint8_t*)ptAxisParamDefault, sizeof(AxisParamDefault_t));
 		usCrc = CRC16((uint8_t*)ptAxisParamDefault, sizeof(AxisParamDefault_t)-2);
 		
@@ -2415,7 +2417,8 @@ ErrorType_e Read_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 		{
 			return ERROR_TYPE_SUCCESS;			
 		}else{
-			rt_thread_mdelay(2);//HAL_Delay(2);
+			//HAL_Delay(2);
+			rt_thread_mdelay(2);
 		}
 		
 	}while(ucNum < 3);
@@ -2465,10 +2468,12 @@ ErrorType_e Save_Axis_Param_Default(__IO AxisParamDefault_t *ptAxisParamDefault)
 		
 		//写入
 		memmove((void*)&tAxisParamDefault, (void*)ptAxisParamDefault, sizeof(AxisParamDefault_t));
+		
 		Param_Write(EN_SAVE_PARAM_TYPE_AXIS, (uint8_t*)&tAxisParamDefault, sizeof(AxisParamDefault_t));
 			
 		//读取
 		memset((void*)&tAxisParamDefault, 0, sizeof(AxisParamDefault_t));
+		
 		Param_Read(EN_SAVE_PARAM_TYPE_AXIS, (uint8_t*)&tAxisParamDefault, sizeof(AxisParamDefault_t));
 		usReadCrc = CRC16((uint8_t*)&tAxisParamDefault, sizeof(AxisParamDefault_t)-2);
 		
@@ -2599,6 +2604,7 @@ ErrorType_e Get_Process(uint8_t ucIndex, SubProcess_t *ptSubProcess)
 		
 	//获取指令
 	memmove((void*)ptSubProcess, (void*)&g_tProcess.taSubProcess[ucIndex], sizeof(SubProcess_t));
+	
 	return ERROR_TYPE_SUCCESS;
 	
 }
@@ -2660,6 +2666,7 @@ ErrorType_e Read_Process(__IO Process_t *ptProcess)
 		ucNum++;
 		
 		memset((void*)ptProcess, 0, sizeof(Process_t));
+		
 		Param_Read(EN_SAVE_PARAM_TYPE_PROCESS, (uint8_t*)ptProcess, sizeof(Process_t));
 		usCrc = CRC16((uint8_t*)ptProcess, sizeof(Process_t)-2);
 		
@@ -2669,7 +2676,8 @@ ErrorType_e Read_Process(__IO Process_t *ptProcess)
 		{
 			return ERROR_TYPE_SUCCESS;			
 		}else{
-			rt_thread_mdelay(2);//HAL_Delay(2);
+			//HAL_Delay(2);
+			rt_thread_mdelay(2);
 		}
 	}while(ucNum < 3);
 	
@@ -2713,10 +2721,12 @@ ErrorType_e Save_Process(__IO Process_t *ptProccess)
 		
 		//写入
 		memmove((void*)&tProcess, (void*)ptProccess, sizeof(Process_t));
+		
 		Param_Write(EN_SAVE_PARAM_TYPE_PROCESS, (uint8_t*)&tProcess, sizeof(Process_t));
 		
 		//读取
 		memset((void*)&tProcess, 0, sizeof(Process_t));
+		
 		Param_Read(EN_SAVE_PARAM_TYPE_PROCESS, (uint8_t*)&tProcess, sizeof(Process_t));
 		usReadCrc = CRC16((uint8_t*)&tProcess, sizeof(Process_t)-2);
 		
@@ -2751,6 +2761,7 @@ void Del_Process(void)
 {
 	//删除
 	memset((void*)&g_tProcess, 0, sizeof(Process_t));
+	
 	g_tProcess.ulInitFlag	  = PARAM_INIT_FLAG;
 	g_tProcess.eProcessStatus = EN_PROCESS_STATUS_CLEAR;
 	g_tProcess.usCrc          = CRC16((uint8_t*)&g_tProcess, sizeof(Process_t)-2);
@@ -2768,6 +2779,7 @@ void Clear_Process(void)
 {
 	//
 	memset((void*)&g_tProcess, 0, sizeof(Process_t));
+	
 	g_tProcess.eProcessStatus = EN_PROCESS_STATUS_CLEAR;
 	
 }	
@@ -2902,6 +2914,7 @@ ErrorType_e Process_Handle(uint32_t ulTicks)
 			return eError;
 		}
 		memmove((void*)&tSubProcess, (void*)&g_tProcess.taSubProcess[s_ucIndex], sizeof(SubProcess_t));
+		
 		//if(tSubProcess.ucDeviceID > ) LOG_Warn("DeviceID=%d is Error", tSubProcess.ucDeviceID);
 		
 //		/* 参数检测 */

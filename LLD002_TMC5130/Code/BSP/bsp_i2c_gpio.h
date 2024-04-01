@@ -90,12 +90,12 @@ enum tagIICIndex
 //模拟iic驱动
 struct tagIICDriver
 {
-	void       (*GPIO_Cfg)(void);  
-	uint8_t    (*SCL_Out)(uint8_t dat);  
-	uint8_t    (*SDA_Write)(uint8_t dat);  
+	void       (*GPIO_Cfg)(void);
+	uint8_t    (*SCL_Out)(uint8_t dat);
+	uint8_t    (*SDA_Write)(uint8_t dat);
 	uint8_t    (*SDA_Read)(void);
 
-	uint8_t    State;	
+	uint8_t    State;
 	uint8_t    Dev1Err;
 	uint8_t    Dev2Err;
 	uint8_t    Dev1CommReset;

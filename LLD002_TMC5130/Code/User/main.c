@@ -18,9 +18,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 
 //定义变量---------------------------------------------------------------------//
 //定义线程控制块
-struct rt_thread wdog_tcb;
-struct rt_thread SWSysTimer_tcb;
-struct rt_thread SWTimer10ms_tcb;
+struct rt_thread LLD_tcb;
 struct rt_thread comm_monitor_tcb;
 struct rt_thread motor_tcb;
 
@@ -33,9 +31,7 @@ struct rt_thread motor_tcb;
 
 //定义线程栈时要求按RT_ALIGN_SIZE个字节对齐
 ALIGN(RT_ALIGN_SIZE)
-rt_uint8_t rt_wdog_stk[160];
-rt_uint8_t rt_SWSysTimer_stk[160];
-rt_uint8_t rt_SWTimer10ms_stk[512];
+rt_uint8_t rt_LLD_stk[512];
 rt_uint8_t rt_comm_monitor_stk[1536];   //配置参数，至少需要1068字节
 rt_uint8_t rt_motor_stk[1024];
 
@@ -64,41 +60,18 @@ int main(void)
 	RCC_ClocksTypeDef tSysClk = {0};
 	RCC_GetClocksFreq(&tSysClk);
 	
-	
-	//看门狗
-	rt_thread_init(&wdog_tcb,                                        // 线程控制块
-	               "wdog",                                           // 线程名字
-	               IWDG_Feed,                                        // 线程入口函数
+
+
+	//LLD
+	rt_thread_init(&LLD_tcb,                                         // 线程控制块
+	               "LLD_Thread",                                     // 线程名字
+	               LLD_App,                                          // 线程入口函数
 	               RT_NULL,                                          // 线程入口函数参数
-	               &rt_wdog_stk[0],                                  // 线程栈起始地址
-	               sizeof(rt_wdog_stk),                              // 线程栈大小
-	               2,                                                // 线程的优先级
+	               &rt_LLD_stk[0],                                   // 线程栈起始地址
+	               sizeof(rt_LLD_stk),                               // 线程栈大小
+	               0,                                                // 线程的优先级
 	               5);                                               // 线程时间片(心跳时间tick)
-	rt_thread_startup(&wdog_tcb);                                    // 启动线程，开启调度
-	
-	
-	//软件计时
-	rt_thread_init(&SWSysTimer_tcb,                                  // 线程控制块
-	               "SWSysT",                                         // 线程名字
-	               SWSysTimer,                                       // 线程入口函数
-	               RT_NULL,                                          // 线程入口函数参数
-	               &rt_SWSysTimer_stk[0],                            // 线程栈起始地址
-	               sizeof(rt_SWSysTimer_stk),                        // 线程栈大小
-	               4,                                                // 线程的优先级
-	               5);                                               // 线程时间片(心跳时间tick)
-	rt_thread_startup(&SWSysTimer_tcb);                              // 启动线程，开启调度
-	
-	
-	//10ms软件定时
-	rt_thread_init(&SWTimer10ms_tcb,                                 // 线程控制块
-	               "SW10ms",                                         // 线程名字
-	               SWTimer10ms,                                      // 线程入口函数
-	               RT_NULL,                                          // 线程入口函数参数
-	               &rt_SWTimer10ms_stk[0],                           // 线程栈起始地址
-	               sizeof(rt_SWTimer10ms_stk),                       // 线程栈大小
-	               1,                                                // 线程的优先级
-	               5);                                               // 线程时间片(心跳时间tick)
-	rt_thread_startup(&SWTimer10ms_tcb);                             // 启动线程，开启调度
+	rt_thread_startup(&LLD_tcb);                                     // 启动线程，开启调度
 	
 	
 	//通信
@@ -108,7 +81,7 @@ int main(void)
 	               RT_NULL,                                          // 线程入口函数参数
 	               &rt_comm_monitor_stk[0],                          // 线程栈起始地址
 	               sizeof(rt_comm_monitor_stk),                      // 线程栈大小
-	               5,                                                // 线程的优先级
+	               2,                                                // 线程的优先级
 	               5);                                               // 线程时间片(心跳时间tick)
 	rt_thread_startup(&comm_monitor_tcb);                            // 启动线程，开启调度
 	
@@ -120,7 +93,7 @@ int main(void)
 	               RT_NULL,                                          // 线程入口函数参数
 	               &rt_motor_stk[0],                                 // 线程栈起始地址
 	               sizeof(rt_motor_stk),                             // 线程栈大小
-	               0,                                                // 线程的优先级
+	               1,                                                // 线程的优先级
 	               5);                                               // 线程时间片(心跳时间tick)
 	rt_thread_startup(&motor_tcb);                                   // 启动线程，开启调度
 }

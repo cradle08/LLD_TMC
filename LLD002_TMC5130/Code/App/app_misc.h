@@ -49,6 +49,8 @@ struct tagSoftWare
 struct tagSoftSys
 {
 	uint8_t   DipSW[1];
+	uint8_t   MCUResetStatus;
+	uint8_t   LLDPeriod;
 	
 	struct tagSoftWare   SoftWare;
 };
@@ -81,11 +83,11 @@ extern struct tagMotorCtr   MotorCtr;
 
 
 
-
 //声明函数----------------------------------------------------------------------//
-uint8_t ReadSoftWareNameIns(uint8_t *buf, uint8_t num);
-uint8_t ReadSoftWareName(uint8_t *buf, uint8_t num);
+//uint8_t ReadSoftWareNameIns(uint8_t *buf, uint8_t num);
+//uint8_t ReadSoftWareName(uint8_t *buf, uint8_t num);
 uint8_t ReadSoftWareVer(uint8_t *buf, uint8_t num);
+uint8_t ReadSoftHardWareVer(uint8_t *buf, uint8_t num);
 
 
 #endif

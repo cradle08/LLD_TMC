@@ -60,6 +60,12 @@ RT_WEAK void *rt_heap_end_get(void)
  */
 void rt_hw_board_init()
 {
+#ifdef	BOOT
+	//重定位中断向量表地址
+	SCB->VTOR = APP_START_ADDR;
+#endif
+	
+	
 	GenDelay_nop(720000);
 	
 	//初始化SysTick

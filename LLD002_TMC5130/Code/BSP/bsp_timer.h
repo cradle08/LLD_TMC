@@ -42,7 +42,7 @@ History    : 修 改 历 史 记 录 列 表 ， 每 条 修 改 记 录 应 包
 struct tagSWSysTimeTick
 {
 	uint8_t   T1ms;
-	uint8_t   T5ms;
+	uint8_t   T2ms;
 	uint8_t   T10ms;
 	uint8_t   T20ms;
 //	uint8_t   T50ms;

@@ -499,7 +499,7 @@ int16_t MidScan(uint16_t source, const uint16_t *tabt, uint8_t tabl, int16_t tab
 			{
 				result = source - k;
 				temp = l - k;
-				result *= 10;        //相邻数据相差1度
+				result *= 10;        //相邻数据相差1度，放大10倍
 				result /= temp;
 				temp = i*10;
 				result += temp;
@@ -529,6 +529,33 @@ int16_t MidScan(uint16_t source, const uint16_t *tabt, uint8_t tabl, int16_t tab
 	
 	return result;
 }
+
+
+
+////int16_t MidScan(uint16_t source, const uint16_t *tabt, uint8_t tabl, int16_t tabdata, uint8_t ad_sort, uint8_t data_sort)
+//int16_t binary_search(const uint16_t arr[], uint16_t tablen, int16_t RT_base, uint16_t target, uint8_t ad_sort, uint8_t data_sort)
+//{
+//    int left = 0;
+//	int right = tablen - 1;
+//	
+//	
+//    while(left <= right)
+//	{
+//        int mid = left + (right - left) / 2;
+//        if (arr[mid] == target)
+//		{
+//            return mid;
+//        }
+//		else if(arr[mid] < target)
+//		{
+//            left = mid + 1;
+//        }
+//		else
+//		{
+//            right = mid - 1;
+//        }
+//    }
+//}
 
 
 /*
@@ -578,30 +605,35 @@ uint8_t TempNTC(void)
 	float      lpf_ratio = 0.2;
 	
 	
-	if(TRUE == TempSensor[TEMP_PIPE_IN].UpdateFlag)
+	
+	
+	//开启电容、气压探测，暂时停止采集温度数据。
+	if(LLD_CLOSE == UserPara[LLD_SEN_FUN].Value)
 	{
-		TempSensor[TEMP_PIPE_IN].UpdateFlag = FALSE;
-		ADC_SoftwareStartConvCmd(ADC1, ENABLE);
-		
-		
-		temp_dis = GetTemperature(&TempSensor[TEMP_PIPE_IN].AirPump);
-		
-		
-		//一阶滤波
-		temp_dis = LPF2(temp_dis, TempSensor[TEMP_PIPE_IN].AirPump.Value, lpf_ratio);
-		TempSensor[TEMP_PIPE_IN].AirPump.Value = temp_dis;
-		
-		
+		if(TRUE == TempSensor[TEMP_PIPE_IN].UpdateFlag)
+		{
+			TempSensor[TEMP_PIPE_IN].UpdateFlag = FALSE;
+			temp_dis = GetTemperature(&TempSensor[TEMP_PIPE_IN].AirPump);
+			
+			
+			//一阶滤波
+			temp_dis = LPF2(temp_dis, TempSensor[TEMP_PIPE_IN].AirPump.Value, lpf_ratio);
+			TempSensor[TEMP_PIPE_IN].AirPump.Value = temp_dis;
+			
+			
 #ifdef TEMP_DEBUG
-		temp_dis = temp_dis - temp_offset;
-		SmoothPipeline16(TempDataDis, temp_dis, TEMP_DIS_NUM);
+			temp_dis = temp_dis - temp_offset;
+			SmoothPipeline16(TempDataDis, temp_dis, TEMP_DIS_NUM);
 #endif
-		
-		
-		//滑动平均滤波
-//		temp = Smoothfilter(TempSensor.AppFilterBuff, temp_dis, 6);
-//		SmoothPipeline16(TempDataDis, temp_dis, TEMP_DIS_NUM);
+			
+			//滑动平均滤波
+//			temp = Smoothfilter(TempSensor.AppFilterBuff, temp_dis, 6);
+//			SmoothPipeline16(TempDataDis, temp_dis, TEMP_DIS_NUM);
+			
+			ADC_SoftwareStartConvCmd(ADC1, ENABLE);
+		}
 	}
+	
 	
 	return ret;
 }

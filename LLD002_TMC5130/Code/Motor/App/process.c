@@ -16,13 +16,14 @@
 #include "TMC_Api.h"
 #include "TMC5130.h"
 #include "TMC_Process.h"
+#include "storage.h"
 
 //
 #include "lld_param.h"
 #include "monitor_can.h" 
 
 #include "liquid_level.h"
-
+#include "app_misc.h" 
 
 
 
@@ -40,6 +41,7 @@ void Global_Status_Init(void)
 	extern __IO BoardStatus_t g_tBoardStatus;
 	
 	TMC_e eTMC = TMC_0;
+	
 	memset((void*)&g_tBoardStatus, 0, sizeof(BoardStatus_t));
 	
 	for(eTMC = TMC_0; eTMC < TMC_MODULE_END; eTMC++)
@@ -458,13 +460,15 @@ ErrorType_e Urgent_Stop(TMC_e eTMC)
 * 处理接受消息, 返回值，0：没有发送应答消息。1：已发送应答消息
 * 
 */
-uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *ptSendFrame)
+uint8_t Handle_RxMsg(MsgType_e eMsgType, MsgCan_t *canRxMsg, RecvFrame_t *ptRecvFrame, SendFrame_t *ptSendFrame)
 {
 //	extern CAN_HandleTypeDef hcan;
 	extern Process_t g_tProcess;
 	extern TMC5160_t g_taTMC5160[TMC_MODULE_END];
 	extern __IO BoardStatus_t g_tBoardStatus;
 	extern AxisParamDefault_t g_tAxisParamDefault;
+	extern __IO GlobalParam_t    g_tGlobalParam;
+	
 	
 	uint8_t ucSendFlag = 0; //应答消息，应答标志，0：无应答，1：已应答
 	ErrorType_e eError = ERROR_TYPE_SUCCESS;
@@ -507,597 +511,706 @@ uint8_t Handle_RxMsg(MsgType_e eMsgType, RecvFrame_t *ptRecvFrame, SendFrame_t *
 	}
 	
 	
-	//指令处理	
-	switch(ptRecvFrame->ucCmd)
+	//广播包
+	if(CAN_BROADCAST_ID_MOTOR == canRxMsg->ulRecvCanID)
 	{
-		/**********************/
-		case CMD_ROTATE:  //0x10
+		//指令处理
+		switch(ptRecvFrame->ucCmd)
 		{
-			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
+			// 分时探测信号	
+			case INS_BC_CAPSYNSIG:	
 			{
-				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //电机在复位中，不执行旋转指令
-				return ucSendFlag;
-			}
-			
-			TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0); //关闭编码器失步检测功能
-			
-			//旋转
-			ptSendFrame->ucStatus = TMC_Rotate(eTMC, ptRecvFrame->ucType, ptRecvFrame->uData.ulData);
-			TMC_SetVMode_V(eTMC, 0);
-			
-			
-		}
-		break;
-		case CMD_MOVE_POSITION_WITHOUT_ENC:  //0x11
-		{
-			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
-			{
-				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //电机在复位中，不执行移动指令
-				return ucSendFlag;
-			}	
-			
-			
-			//检查电机是否真实启动
-			if(PLLD_ABS_START == AirSenPara.ABS_Start_End)
-			{
-				AirSenPara.ABS_Real_Start_End = PLLD_ABS_START;
-			}
-			
-			
-			//关闭编码器失步检测功能
-			TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0);
-			
-			//移动
-			if(0 == ptRecvFrame->ucType)
-			{
-				//绝对偏移
-				ptSendFrame->ucStatus = TMC_MoveTo(eTMC, ptRecvFrame->uData.lData);
-			}else{
-				//相对偏移
-				ptSendFrame->ucStatus = TMC_MoveBy(eTMC, ptRecvFrame->uData.lData);
-			}
-			TMC_SetPMode_V(eTMC, 0);
-			
-		}
-		break;
-		case CMD_MOVE_POSITION_WITH_ENC: //0x12
-		{
-			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
-			{
-				ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //电机在复位中，不执行移动指令
-				return ucSendFlag;
-			}	
-			
-			//编码器失步阈值, 该值为零，则关闭该功能			
-			ptSendFrame->ucStatus = TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, g_tAxisParamDefault.lEncDiff_Threshold[eTMC]);
-//			LOG_Info("ENC Deviation Start: Motor=%d, EncDiff=%d, Steps=%d, CurStep=%d", \
-					eTMC, g_tAxisParamDefault.lEncDiff_Threshold[eTMC], ptRecvFrame->uData.lData, TMC5160_ReadInt(eTMC, TMC5160_XACTUAL));
-			
-			//移动
-			if(0 == ptRecvFrame->ucType)
-			{
-				//绝对偏移
-				ptSendFrame->ucStatus = TMC_MoveTo(eTMC, ptRecvFrame->uData.lData);
-			}else{
-				//相对偏移
-				ptSendFrame->ucStatus = TMC_MoveBy(eTMC, ptRecvFrame->uData.lData);
-			}
-			TMC_SetPMode_V(eTMC, 0);
-		}
-		break;
-		case CMD_STOP:   //0x13
-		{
-			//停止
-			//LOG_Info("Before STOP XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
-			ptSendFrame->ucStatus = TMC_Stop(eTMC);
-			
-			//复位状态下，停止
-			if(g_tTMCStatus.ucMotorResetStartFlag != 0)
-			{
-				//
-				g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_FAIL;
-				
-				//关闭做参考点复位
-				TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 0);
-				
-				//设置模式--位置模式
-				TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC_MODE_POSITION);
-				
-				//恢复速度设置
-				TMC_SetPMode_V(eTMC, 2);
-			}
-			
-			//LOG_Info("End STOP XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
-		}
-		break;
-		case CMD_MOTOR_RESET: //0x14
-		{
-			/* 复位，到原点（参考位置）*/
-			
-			//复位未完成
-			if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus != MOTOR_RESET_STATUS_ING)
-			{
-				//修改复位控制信息，启动复位处理
-				g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_ING;
-				g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec   = MOTOR_RESET_EXEC_1;
-				g_tTMCStatus.ucMotorResetStartFlag  = 1; //执行复位
-			}
-//			g_tBoardStatus.eMotorResetStatus[eTMC] = 0;
-//			TMC_Reset(eTMC, TMC_REF_LEFT);  //TMC_REF_RIGHT   TMC_REF_LEFT
-//			//复位已完成
-//			g_tBoardStatus.ucMotor_ResetStatus[eTMC] = 1;
-		}
-		break;
-		case CMD_URGENT_STOP:   //0x15
-		{
-			/* 尽量避免在高速下，急停 */
-			Urgent_Stop(eTMC);
-			//LOG_Info("End STOP XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
-		}
-		break;
-		
-		/**********************/
-		case CMD_MCU_REST:  //0x20
-		{
-			/* 重启mcu */
-			
-			//发送应答
-			if(MSG_TYPE_CAN == eMsgType)
-			{
-				Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-			}
-			rt_thread_mdelay(3);//HAL_Delay(3);
-			
-			//重启
-			MCU_Reset();
-		}
-		break;		
-		case CMD_QUERY_BOARD_TYPE:  //0x21
-		{
-			//查询板卡类型
-			uint32_t ulModel = Get_Module_Type();
-			ptSendFrame->uData.ucData[0] = ulModel >> 24;
-			ptSendFrame->uData.ucData[1] = ulModel >> 16;
-			ptSendFrame->uData.ucData[2] = ulModel >> 8;
-			ptSendFrame->uData.ucData[3] = ulModel;	
-			
-		}
-		break;		
-		case CMD_HARD_SOFT_VERSION:  //0x22
-		{
-			//查询软硬件版本
-			Get_Soft_HardWare_Version(ptSendFrame->uData.ucData);
-		}
-		break;
-		
-		
-		/**********************/
-		case CMD_SET_AXIS_PARAM:  //0x30
-		{
-			//设置轴参数
-			ptSendFrame->ucStatus = TMC_AxisParam(eTMC, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);
-//			LOG_Info("Set Axis Parma,T=%d, V=%d", ptRecvFrame->ucType, ptRecvFrame->uData.lData)
-		}
-		break;
-		case CMD_GET_AXIS_PARAM:  //0x31
-		{
-			//查询轴参数
-			ptSendFrame->ucStatus = TMC_AxisParam(eTMC, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);
-//			LOG_Info("Get Axis Parma,T=%d, V=%d", ptRecvFrame->ucType, ptSendFrame->uData.lData)
-		}
-		break;		
-		case CMD_SET_DEFAULT_AXIS_PARAM: //0x3A
-		{
-			//设置默认轴参数
-			ptSendFrame->ucStatus = TMC_AxisParam_Default(eTMC, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);		
-		
-		}
-		break;
-		case CMD_GET_DEFAULT_AXIS_PARAM: //0x3B
-		{
-			//查询默认轴参数
-			ptSendFrame->ucStatus = TMC_AxisParam_Default(eTMC, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);		
-		}
-		break;		
-		
-		case CMD_SET_GLOBAL_PARAM:  //0x33
-		{
-			/* 设置全局参数 */
-			//应答
-			if(MSG_TYPE_CAN == eMsgType)
-			{
-				Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-			}
-			
-			//设置全局参数
-			Bank_e eBank = (Bank_e)ptRecvFrame->ucDeviceID;
-			ptSendFrame->ucStatus = TMC_Global_Param(eBank, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);
-//			LOG_Info("Set Module Parma,T=%d, V=%d", ptRecvFrame->ucType, lValue)
-		}
-		break;
-		case CMD_GET_GLOBAL_PARAM:  //0x34
-		{
-			//查询全局参数
-			Bank_e eBank = (Bank_e)ptRecvFrame->ucDeviceID;
-			ptSendFrame->ucStatus = TMC_Global_Param(eBank, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);
-//			LOG_Info("Get Module Parma,T=%d, V=%d", ptRecvFrame->ucType, ptSendFrame->uData.lData)
-		}
-		break;			
-		case CMD_SET_IO_STATUS:  //0x35
-		{
-			//设置IO状态
-//@todo			eError = Set_Out_IO(ptRecvFrame->ucType, ptRecvFrame->uData.ulData);
-//@todo			ptSendFrame->ucStatus = (uint8_t)eError;
-			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
-		}
-		break;
-		case CMD_GET_INPUT_IO_STATUS:  //0x36
-		{
-			//查询IO状态
-//			uint16_t usOutState = 0, usInState = 0;
-			
-//@todo			ptSendFrame->ucStatus = Get_In_IO_One(ptRecvFrame->ucType, &ptSendFrame->uData.ucData[0]);
-			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
-		}
-		break;	
-		case CMD_GET_OUTPUT_IO_STATUS: //0x37
-		{
-//@todo			ptSendFrame->ucStatus = Get_Out_IO_One(ptRecvFrame->ucType, &ptSendFrame->uData.ucData[0]);
-			ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
-		}
-		break;
-		
-		/**********************/
-		case CMD_SET_EXEC_PROCESS:  //0x40
-		{
-			//设置执行流程
-			ptSendFrame->ucStatus = Set_Process(ptRecvFrame);
-		}
-		break;	
-		case CMD_GET_EXEC_PROCESS:  //0x41
-		{
-			//获取执行流程
-			SubProcess_t tSubProcess = {0};
-			//ucSendFlag = 1;
-			
-			for(uint8_t ucIndex = 0; ucIndex < SUB_PROCESS_MAX_CMD_NUM; ucIndex++)
-			{
-				memset((void*)&tSubProcess, 0, sizeof(SubProcess_t));
-				Get_Process(ucIndex, &tSubProcess);
-				
-//				if(tSubProcess.ucParamNum >= SUB_PROCESS_MAX_PARAM_NUM)
-//				{
-//					//数据异常
-//					LOG_Error("Param Num Error=%d", tSubProcess.ucParamNum);
-//					ptSendFrame->ucStatus = ERROR_TYPE_CRC;
-//					if(MSG_TYPE_CAN == eMsgType)
-//					{
-//						Can_Send_Msg(ptSendFrame);
-//						break;
-//					}
-//				}
-				
-				/* send set "cmd"*/
-				ptSendFrame->ucStatus = ERROR_TYPE_SUCCESS;
-				ptSendFrame->uData.ucData[0] = tSubProcess.ucCmd;
-				if(0 != tSubProcess.ucCmd)
+				uint16_t   temp1 = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
+				uint8_t    temp2 = 2 * SoftSys.LLDPeriod;
+				if(temp1 >= temp2)
 				{
-					ptSendFrame->ucType = ucIndex;
-					Can_Send_Msg(ptSendFrame);
-					rt_thread_mdelay(2);//HAL_Delay(2);
-				}
-		
-				/* send set param */
-				if(tSubProcess.ucParamNum != 0 && tSubProcess.ucParamNum <=  SUB_PROCESS_MAX_PARAM_NUM)
-				{
-					for(uint8_t i = 0; i < tSubProcess.ucParamNum; i++)
-					{
-						memset((void*)&ptSendFrame->uData.ulData, 0, sizeof(Data4Byte_u));
-						ptSendFrame->ucType = ucIndex | 0x80;
-						ptSendFrame->uData.lData = tSubProcess.uParam[i].lData;
-						Can_Send_Msg(ptSendFrame);
-						rt_thread_mdelay(2);//HAL_Delay(2);
-					}
-					rt_thread_mdelay(2);//HAL_Delay(2);
-				}					
-			}
-			ptSendFrame->ucStatus = ERROR_TYPE_SUCCESS;		
-			ptSendFrame->ucType = 0xFF;
-			ptSendFrame->uData.ulData = 0;
-		}
-		break;
-		case CMD_EXEC_PROCESS_CTRL:  //0x42
-		{
-			//执行流程--执行和停止
-			Exec_Process_Ctrl(ptRecvFrame->ucType);
-		}
-		break;
-		case CMD_CLS_SAVE_EXEC_PROCESS:  //0x43
-		{
-			//执行流程--清楚和保存
-			Exec_Process_Clear_Or_Save(ptRecvFrame->ucType);
-			//LOG_Info("Save Prcess");
-		}
-		break;
-
-		
-		
-		/********************/
-		case CMD_QUERY_STATUS:  //0x50
-		{
-			//查询状态
-			ptSendFrame->uData.ulData = g_tTMCStatus.ulBoardStatus;
-		}
-		break;
-//		case CMD_ERROR_HANDLE: //0x51
-//		{
-//			//异常状态处理
-//			ptSendFrame->ucStatus = Module_Error_Handle(eTMC,  ptRecvFrame->ucType);
-//		}
-//		break;
-		
-		/********************/
-		case CMD_CLEAR_EEPROM_PARAM: //0x60
-		{
-			//应答
-			if(MSG_TYPE_CAN == eMsgType)
-			{
-				Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-			}
-			
-			//处理
-			if(0 == ptRecvFrame->ucType)
-			{
-				Reset_Factory();
-			}else if(1 == ptRecvFrame->ucType){
-				ClearAndSave_Default_Global_Params();
-			}else if(2 == ptRecvFrame->ucType){
-				ClearAndSave_Default_Axis_Params();
-			}else if(3 == ptRecvFrame->ucType){
-				ClearAndSave_Default_Process();
-			}
-			
-			rt_thread_mdelay(3);//HAL_Delay(3);
-			MCU_Reset();
-		}
-		break;
-		case CMD_UPGRADE_LANCH: //0x70
-		{
-			/* 启动升级，跳转至Boot */
-			//修改升级标志位，
-			ptSendFrame->ucStatus = Set_UpdateFlag(1); //@todo, 改为跳转到boot的方式
-			if(MSG_TYPE_CAN == eMsgType)
-			{
-				Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-			}
-			
-			//重启
-			rt_thread_mdelay(3);//HAL_Delay(3);
-			MCU_Reset();
-		}
-		break;
-		case CMD_QUERY_RUNING_SOFT_TYPE: //0x75
-		{
-			/* 查询当前正在执行的程序类型 */
-			ptSendFrame->uData.ucData[0] = SOFT_TYPE_APP;
-		}
-		break;
-		case CMD_GET_SN_CAN_ID: //0x80
-		{
-//			/* 数据部分不等于0时，不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
-//			if(ptRecvFrame->uData.ulData != 0)
-//			{
-//				ucSendFlag = 1;
-//				return ucSendFlag;
-//			}
-			
-			
-			/* 数据等于当前设备类型 或 等与 0x0000FFFF时，应答消息，否则不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
-			uint32_t ulModule = (ptRecvFrame->uData.ucData[0] << 24) | (ptRecvFrame->uData.ucData[1] << 16) | (ptRecvFrame->uData.ucData[2] << 8) |(ptRecvFrame->uData.ucData[3]);
-			if(ulModule != CURRENT_MODULE_TYPE && ulModule != MODULE_TYPE_TMC_STEP_MOTOR_ALL)
-			{
-				ucSendFlag = 1;
-				return ucSendFlag;
-			}
-			
-			/* 获取系列号及CAN ID */
-			ptSendFrame->uData.ucData[0] = Recv_CanID();
-			ptSendFrame->uData.ucData[1] = Send_CanID();
-			
-			ptSendFrame->uData.ucData[2] = g_tBoardStatus.usSN & 0xFF;
-			ptSendFrame->uData.ucData[3] = (g_tBoardStatus.usSN>>8) & 0xFF;	
-				
-		}
-		break;
-		case CMD_SET_CAN_ID_WITH_SN: //0x81
-		{
-			/* 获取系列号及CAN ID */
-			uint16_t usSN = (ptRecvFrame->uData.ucData[3]<<8) | ptRecvFrame->uData.ucData[2];
-			
-//			if(MSG_TYPE_CAN == eMsgType)
-//			{
-//				Can_Send_Msg(ptSendFrame);
-//				ucSendFlag = 1;
-//				HAL_Delay(3);
-//			}
-
-			//当识别码相等才去修改CanID
-			if(g_tBoardStatus.usSN == usSN){			
-				Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-				rt_thread_mdelay(3);//HAL_Delay(3);
-				ptSendFrame->ucStatus = GlobalParam_Set_CanID(ptRecvFrame->uData.ucData[0], ptRecvFrame->uData.ucData[1]);
-			}else{
-				//tSendFrame->ucStatus = ERROR_TYPE_DATA;
-				ucSendFlag = 1;
-				break;
-			}
-		}
-		break;
-		case CMD_TYPE_WITH_SN:  //0x82
-		{
-			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
-			
-			//判断SN是否一致
-			if(usSN != g_tBoardStatus.usSN) 
-			{
-				//不一致，不执行，不应答
-				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
-				//Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-				break;
-			}
-			
-			//查询板卡类型
-			uint32_t ulModel = Get_Module_Type();
-			ptSendFrame->uData.ucData[0] = ulModel >> 24;
-			ptSendFrame->uData.ucData[1] = ulModel >> 16;
-			ptSendFrame->uData.ucData[2] = ulModel >> 8;
-			ptSendFrame->uData.ucData[3] = ulModel;			
-			//ptSendFrame->ucType = Recv_CanID();
-		}
-		break;
-
-		case CMD_SHINE_WITH_SN: //闪灯 0x83
-		{
-			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
-						
-			//判断SN是否一致
-			if(usSN != g_tBoardStatus.usSN) 
-			{
-				//不一致，不执行，不应答
-				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
-				//Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-				break;
-			}
-			//3次，间隔50ms
-			LED_Shine(6, 50);
-		}
-		break;
-
-		case CMD_SHAKE_WITH_SN: //抖动 0x84
-		{
-			uint8_t i = 0, ucFlag = 0;
-			uint16_t usCount = 0;
-			uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
-			uint16_t usShake = (ptRecvFrame->uData.ucData[3]<<8) | (ptRecvFrame->uData.ucData[2]);
-						
-			//判断SN是否一致
-			if(usSN != g_tBoardStatus.usSN) 
-			{
-				//不一致，不执行，不应答
-				//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
-				//Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-				break;
-			}else{
-				//提前应答
-				Can_Send_Msg(ptSendFrame);
-				ucSendFlag = 1;
-			}
-			
-			//默认抖动幅度，
-			if(usShake == 0) usShake = g_tAxisParamDefault.usMicroStepResultion[eTMC]*3; //大概5度
-			
-			//抖动，3次
-			for(i = 0; i < 3; i++)
-			{
-				//正向移动
-				ptSendFrame->ucStatus = TMC_MoveBy(eTMC, usShake);
-				while(usCount < 1500)
-				{
-					//最长等待2秒,检测是否到达位置
-					ucFlag = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
-					
-					//到达退出
-					if(ucFlag == 1) break; 
-					rt_thread_mdelay(50);//HAL_Delay(50);
-					usCount += 50;
+					//确保电容传感器采样周期小于广播包周期，留下一些余量。
+					//如果线程周期为2ms，那么采样周期比广播包周期小4ms以上才稳妥。
+					temp1 = temp1 - temp2;
+					SetPara16(&UserPara[CAP_SET_CONTIME], temp1);
 				}
 				
-				//延时
-				rt_thread_mdelay(50);//HAL_Delay(50);				
+				CapSenPara.SynSigal = (ptRecvFrame->uData.ucData[3]<<8) | ptRecvFrame->uData.ucData[2];
 				
-				//回退
-				ptSendFrame->ucStatus = TMC_MoveBy(eTMC, -usShake);
-				while(usCount < 1500)
-				{
-					//最长等待2秒,检测是否到达位置
-					ucFlag = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
-					
-					//到达退出
-					if(ucFlag == 1) break;
-					rt_thread_mdelay(50);//HAL_Delay(50);
-					usCount += 50;
-				}				
+				//无需应答
+				ucSendFlag = 1;
 			}
-		}
-		break;
-		
-		
-		case CMD_TEST: // 0xFE
-		{
-			if(0 == ptRecvFrame->ucType)
-			{
-				uint8_t ucAddr = ptRecvFrame->uData.lData;
+			break;
 			
-				if(CheckRegister_Addr(ucAddr) != ERROR_TYPE_SUCCESS) return ERROR_TYPE_DATA;
-				ptSendFrame->uData.lData = TMC5160_ReadInt(eTMC, ucAddr);
-			}
-		
-//			LOG_Info("Start ...");
-//			if(0 == ptRecvFrame->ucType)
-//			{
-//				//打印六点加速值
-//				TMC5160_PrintSixPoint_V(eTMC);
-//			}else if(1 == ptRecvFrame->ucType){
-//				//打印所有寄存器值
-//				Print_AllRegister_Value(eTMC);
-//			}else if(2 == ptRecvFrame->ucType){
-
-//				//打印CAN通信，收发统计信息
-//				LOG_Debug("Recv: S=%d, E=%d, F=%d, O=%d", g_tBoardStatus.tCanMsgCount_Info.ulRecvSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvErrorNum, \
-//														  g_tBoardStatus.tCanMsgCount_Info.ulRecvFailNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvOverNum);
-//				LOG_Debug("Send: S=%d, F=%d", g_tBoardStatus.tCanMsgCount_Info.ulSendSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulSendFailNum);
-//			}else if(3 == ptRecvFrame->ucType){
-//				// TMC SPI通信测试
-//				ErrorType_e eError = ERROR_TYPE_SUCCESS;
-//				uint32_t i = 0, ulV = 0, ulNum = ptRecvFrame->uData.ulData;
-//				
-//				if(MSG_TYPE_CAN == eMsgType)
+			case CMD_GET_SN_CAN_ID: //0x80
+			{
+//				/* 数据部分不等于0时，不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
+//				if(ptRecvFrame->uData.ulData != 0)
 //				{
-//					Can_Send_Msg(ptSendFrame);
 //					ucSendFlag = 1;
+//					return ucSendFlag;
 //				}
-//				//
-//				eError = ERROR_TYPE_SUCCESS;
-//				for(i = 0; i < ulNum; i++)
+		
+		
+				/* 数据等于当前设备类型 或 等与 0x0000FFFF时，应答消息，否则不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
+				uint32_t ulModule = (ptRecvFrame->uData.ucData[0] << 24) | (ptRecvFrame->uData.ucData[1] << 16) | (ptRecvFrame->uData.ucData[2] << 8) |(ptRecvFrame->uData.ucData[3]);
+				switch(ulModule)
+				{
+					case CURRENT_MODULE_TYPE:
+					case MODULE_TYPE_TMC_STEP_MOTOR_ALL:
+					{
+						/* 获取系列号及CAN ID */
+						ptSendFrame->uData.ucData[0] = Recv_CanID();
+						ptSendFrame->uData.ucData[1] = Send_CanID();
+						
+						ptSendFrame->uData.ucData[2] = g_tBoardStatus.usSN & 0xFF;
+						ptSendFrame->uData.ucData[3] = (g_tBoardStatus.usSN>>8) & 0xFF;	
+					}
+					break;
+					
+					case LLD_BOARD_TYPE:
+					{
+						/* 获取系列号及CAN ID */
+						ptSendFrame->uData.ucData[0] = LLD_Recv_CanID();
+						ptSendFrame->uData.ucData[1] = LLD_Send_CanID();
+						
+						ptSendFrame->uData.ucData[2] = g_tBoardStatus.usSN_LLD & 0xFF;
+						ptSendFrame->uData.ucData[3] = (g_tBoardStatus.usSN_LLD>>8) & 0xFF;	
+					}
+					break;
+					
+					
+					default:
+					{
+						ucSendFlag = 1;
+						return ucSendFlag;
+					}
+					break;
+				}
+			}
+			break;
+			
+			default:
+			{
+			}
+			break;
+		}
+	}
+	//私有指令
+	else if(g_tGlobalParam.ulRecvCanID == canRxMsg->ulRecvCanID)
+	{
+		//指令处理
+		switch(ptRecvFrame->ucCmd)
+		{
+			/**********************/
+			case CMD_ROTATE:  //0x10
+			{
+				if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
+				{
+					ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //电机在复位中，不执行旋转指令
+					return ucSendFlag;
+				}
+				
+				TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0); //关闭编码器失步检测功能
+				
+				//旋转
+				ptSendFrame->ucStatus = TMC_Rotate(eTMC, ptRecvFrame->ucType, ptRecvFrame->uData.ulData);
+				TMC_SetVMode_V(eTMC, 0);
+			}
+			break;
+			case CMD_MOVE_POSITION_WITHOUT_ENC:  //0x11
+			{
+				if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
+				{
+					ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //电机在复位中，不执行移动指令
+					return ucSendFlag;
+				}	
+				
+				
+				//检查电机是否真实启动
+//				if(PLLD_ABS_START == AirSenPara.ABS_Start_End)
 //				{
-//					ulV = rand();
-//					eError = TMC5160_WriteInt(eTMC, TMC5160_VSTOP, ulV);  
-//					if(eError != ERROR_TYPE_SUCCESS)
+					AirSenPara.ABS_Real_Start_End = PLLD_ABS_START;
+//				}
+				
+				//开启吸空检查
+				if((PLLD_ABS_FOLLOW_AIR == UserPara[LLD_SEN_FUN].Value)
+					|| (PLLD_ABS_BLOCK_FOLLOW_AIR == UserPara[LLD_SEN_FUN].Value))
+				{
+					AirSenPara.AspStep = ptRecvFrame->uData.lData;
+				}
+				
+				
+				//关闭编码器失步检测功能
+				TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, 0);
+				
+				//移动
+				if(0 == ptRecvFrame->ucType)
+				{
+					//绝对偏移
+					ptSendFrame->ucStatus = TMC_MoveTo(eTMC, ptRecvFrame->uData.lData);
+				}else{
+					//相对偏移
+					ptSendFrame->ucStatus = TMC_MoveBy(eTMC, ptRecvFrame->uData.lData);
+				}
+				TMC_SetPMode_V(eTMC, 0);
+				
+			}
+			break;
+			case CMD_MOVE_POSITION_WITH_ENC: //0x12
+			{
+				if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus == MOTOR_RESET_STATUS_ING)
+				{
+					ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH; //电机在复位中，不执行移动指令
+					return ucSendFlag;
+				}	
+				
+				//编码器失步阈值, 该值为零，则关闭该功能
+				ptSendFrame->ucStatus = TMC_WriteInt(eTMC, TMC5160_ENC_DEVIATION, g_tAxisParamDefault.lEncDiff_Threshold[eTMC]);
+//				LOG_Info("ENC Deviation Start: Motor=%d, EncDiff=%d, Steps=%d, CurStep=%d", \
+						eTMC, g_tAxisParamDefault.lEncDiff_Threshold[eTMC], ptRecvFrame->uData.lData, TMC5160_ReadInt(eTMC, TMC5160_XACTUAL));
+				
+				//移动
+				if(0 == ptRecvFrame->ucType)
+				{
+					//绝对偏移
+					ptSendFrame->ucStatus = TMC_MoveTo(eTMC, ptRecvFrame->uData.lData);
+				}else{
+					//相对偏移
+					ptSendFrame->ucStatus = TMC_MoveBy(eTMC, ptRecvFrame->uData.lData);
+				}
+				TMC_SetPMode_V(eTMC, 0);
+			}
+			break;
+			case CMD_STOP:   //0x13
+			{
+				//停止
+				//LOG_Info("Before STOP XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
+				ptSendFrame->ucStatus = TMC_Stop(eTMC);
+				
+				//复位状态下，停止
+				if(g_tTMCStatus.ucMotorResetStartFlag != 0)
+				{
+					//
+					g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_FAIL;
+					
+					//关闭做参考点复位
+					TMC5160_FIELD_UPDATE(eTMC, TMC5160_SWMODE, TMC5160_STATUS_STOP_L_MASK, TMC5160_STATUS_STOP_L_SHIFT, 0);
+					
+					//设置模式--位置模式
+					TMC5160_WriteInt(eTMC, TMC5160_RAMPMODE, TMC_MODE_POSITION);
+					
+					//恢复速度设置
+					TMC_SetPMode_V(eTMC, 2);
+				}
+				
+				//LOG_Info("End STOP XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
+			}
+			break;
+			case CMD_MOTOR_RESET: //0x14
+			{
+				/* 复位，到原点（参考位置）*/
+				
+				//复位未完成
+				if(g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus != MOTOR_RESET_STATUS_ING)
+				{
+					//修改复位控制信息，启动复位处理
+					g_tTMCStatus.tMotorResetInfo[eTMC].eResetStatus = MOTOR_RESET_STATUS_ING;
+					g_tTMCStatus.tMotorResetInfo[eTMC].eResetExec   = MOTOR_RESET_EXEC_1;
+					g_tTMCStatus.ucMotorResetStartFlag  = 1; //执行复位
+				}
+//				g_tBoardStatus.eMotorResetStatus[eTMC] = 0;
+//				TMC_Reset(eTMC, TMC_REF_LEFT);  //TMC_REF_RIGHT   TMC_REF_LEFT
+//				//复位已完成
+//				g_tBoardStatus.ucMotor_ResetStatus[eTMC] = 1;
+			}
+			break;
+			case CMD_URGENT_STOP:   //0x15
+			{
+				/* 尽量避免在高速下，急停 */
+				Urgent_Stop(eTMC);
+				//LOG_Info("End STOP XTarget=%d", TMC_ReadInt(eTMC, TMC5160_XACTUAL));
+			}
+			break;
+			
+			/**********************/
+			case CMD_MCU_REST:  //0x20
+			{
+				/* 重启mcu */
+				
+				//发送应答
+				if(MSG_TYPE_CAN == eMsgType)
+				{
+					Can_Send_Msg(ptSendFrame);
+					ucSendFlag = 1;
+				}
+				rt_thread_mdelay(3);//HAL_Delay(3);
+				
+				//重启
+				MCU_Reset();
+			}
+			break;
+			case CMD_QUERY_BOARD_TYPE:  //0x21
+			{
+				//查询板卡类型
+				uint32_t ulModel = Get_Module_Type();
+				ptSendFrame->uData.ucData[0] = ulModel >> 24;
+				ptSendFrame->uData.ucData[1] = ulModel >> 16;
+				ptSendFrame->uData.ucData[2] = ulModel >> 8;
+				ptSendFrame->uData.ucData[3] = ulModel;	
+				
+			}
+			break;		
+			case CMD_HARD_SOFT_VERSION:  //0x22
+			{
+				//查询软硬件版本
+				Get_Soft_HardWare_Version(ptSendFrame->uData.ucData);
+			}
+			break;
+			
+			
+			/**********************/
+			case CMD_SET_AXIS_PARAM:  //0x30
+			{
+				//设置轴参数
+				ptSendFrame->ucStatus = TMC_AxisParam(eTMC, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);
+//				LOG_Info("Set Axis Parma,T=%d, V=%d", ptRecvFrame->ucType, ptRecvFrame->uData.lData)
+			}
+			break;
+			case CMD_GET_AXIS_PARAM:  //0x31
+			{
+				//查询轴参数
+				ptSendFrame->ucStatus = TMC_AxisParam(eTMC, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);
+//				LOG_Info("Get Axis Parma,T=%d, V=%d", ptRecvFrame->ucType, ptSendFrame->uData.lData)
+			}
+			break;
+			case CMD_SET_DEFAULT_AXIS_PARAM: //0x3A
+			{
+				//设置默认轴参数
+				ptSendFrame->ucStatus = TMC_AxisParam_Default(eTMC, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);		
+			}
+			break;
+			case CMD_GET_DEFAULT_AXIS_PARAM: //0x3B
+			{
+				//查询默认轴参数
+				ptSendFrame->ucStatus = TMC_AxisParam_Default(eTMC, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);
+			}
+			break;
+			
+			case CMD_SET_GLOBAL_PARAM:  //0x33
+			{
+				/* 设置全局参数 */
+				//应答
+				if(MSG_TYPE_CAN == eMsgType)
+				{
+					Can_Send_Msg(ptSendFrame);
+					ucSendFlag = 1;
+				}
+				
+				//设置全局参数
+				Bank_e eBank = (Bank_e)ptRecvFrame->ucDeviceID;
+				ptSendFrame->ucStatus = TMC_Global_Param(eBank, TMC_WRITE, ptRecvFrame->ucType, &ptRecvFrame->uData);
+//				LOG_Info("Set Module Parma,T=%d, V=%d", ptRecvFrame->ucType, lValue)
+			}
+			break;
+			case CMD_GET_GLOBAL_PARAM:  //0x34
+			{
+				//查询全局参数
+				Bank_e eBank = (Bank_e)ptRecvFrame->ucDeviceID;
+				ptSendFrame->ucStatus = TMC_Global_Param(eBank, TMC_READ, ptRecvFrame->ucType, &ptSendFrame->uData);
+//				LOG_Info("Get Module Parma,T=%d, V=%d", ptRecvFrame->ucType, ptSendFrame->uData.lData)
+			}
+			break;
+			case CMD_SET_IO_STATUS:  //0x35
+			{
+				//设置IO状态
+//	@todo			eError = Set_Out_IO(ptRecvFrame->ucType, ptRecvFrame->uData.ulData);
+//	@todo			ptSendFrame->ucStatus = (uint8_t)eError;
+				ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
+			}
+			break;
+			case CMD_GET_INPUT_IO_STATUS:  //0x36
+			{
+				//查询IO状态
+//				uint16_t usOutState = 0, usInState = 0;
+				
+//	@todo			ptSendFrame->ucStatus = Get_In_IO_One(ptRecvFrame->ucType, &ptSendFrame->uData.ucData[0]);
+				ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
+			}
+			break;
+			case CMD_GET_OUTPUT_IO_STATUS: //0x37
+			{
+//	@todo			ptSendFrame->ucStatus = Get_Out_IO_One(ptRecvFrame->ucType, &ptSendFrame->uData.ucData[0]);
+				ptSendFrame->ucStatus = ERROR_TYPE_DEVICE_ID;
+			}
+			break;
+			
+			/**********************/
+			case CMD_SET_EXEC_PROCESS:  //0x40
+			{
+				//设置执行流程
+				ptSendFrame->ucStatus = Set_Process(ptRecvFrame);
+			}
+			break;
+			case CMD_GET_EXEC_PROCESS:  //0x41
+			{
+				//获取执行流程
+				SubProcess_t tSubProcess = {0};
+				//ucSendFlag = 1;
+				
+				for(uint8_t ucIndex = 0; ucIndex < SUB_PROCESS_MAX_CMD_NUM; ucIndex++)
+				{
+					memset((void*)&tSubProcess, 0, sizeof(SubProcess_t));
+					
+					Get_Process(ucIndex, &tSubProcess);
+					
+//					if(tSubProcess.ucParamNum >= SUB_PROCESS_MAX_PARAM_NUM)
 //					{
-//						ptSendFrame->ucStatus = eError;
+//						//数据异常
+//						LOG_Error("Param Num Error=%d", tSubProcess.ucParamNum);
+//						ptSendFrame->ucStatus = ERROR_TYPE_CRC;
 //						if(MSG_TYPE_CAN == eMsgType)
 //						{
 //							Can_Send_Msg(ptSendFrame);
+//							break;
 //						}
-//						HAL_Delay(3);
 //					}
+					
+					/* send set "cmd"*/
+					ptSendFrame->ucStatus = ERROR_TYPE_SUCCESS;
+					ptSendFrame->uData.ucData[0] = tSubProcess.ucCmd;
+					if(0 != tSubProcess.ucCmd)
+					{
+						ptSendFrame->ucType = ucIndex;
+						Can_Send_Msg(ptSendFrame);
+						rt_thread_mdelay(2);//HAL_Delay(2);
+					}
+			
+					/* send set param */
+					if(tSubProcess.ucParamNum != 0 && tSubProcess.ucParamNum <=  SUB_PROCESS_MAX_PARAM_NUM)
+					{
+						for(uint8_t i = 0; i < tSubProcess.ucParamNum; i++)
+						{
+							memset((void*)&ptSendFrame->uData.ulData, 0, sizeof(Data4Byte_u));
+							
+							ptSendFrame->ucType = ucIndex | 0x80;
+							ptSendFrame->uData.lData = tSubProcess.uParam[i].lData;
+							Can_Send_Msg(ptSendFrame);
+							rt_thread_mdelay(2);//HAL_Delay(2);
+						}
+						rt_thread_mdelay(2);//HAL_Delay(2);
+					}					
+				}
+				ptSendFrame->ucStatus = ERROR_TYPE_SUCCESS;		
+				ptSendFrame->ucType = 0xFF;
+				ptSendFrame->uData.ulData = 0;
+			}
+			break;
+			case CMD_EXEC_PROCESS_CTRL:  //0x42
+			{
+				//执行流程--执行和停止
+				Exec_Process_Ctrl(ptRecvFrame->ucType);
+			}
+			break;
+			case CMD_CLS_SAVE_EXEC_PROCESS:  //0x43
+			{
+				//执行流程--清楚和保存
+				Exec_Process_Clear_Or_Save(ptRecvFrame->ucType);
+				//LOG_Info("Save Prcess");
+			}
+			break;
+
+			
+			
+			/********************/
+			case CMD_QUERY_STATUS:  //0x50
+			{
+				//查询状态
+				ptSendFrame->uData.ulData = g_tTMCStatus.ulBoardStatus;
+			}
+			break;
+//			case CMD_ERROR_HANDLE: //0x51
+//			{
+//				//异常状态处理
+//				ptSendFrame->ucStatus = Module_Error_Handle(eTMC,  ptRecvFrame->ucType);
+//			}
+//			break;
+			
+			/********************/
+			case CMD_CLEAR_EEPROM_PARAM: //0x60
+			{
+				//应答
+				if(MSG_TYPE_CAN == eMsgType)
+				{
+					Can_Send_Msg(ptSendFrame);
+					ucSendFlag = 1;
+				}
+				
+				//处理
+				if(0 == ptRecvFrame->ucType)
+				{
+					Reset_Factory();
+				}else if(1 == ptRecvFrame->ucType){
+					ClearAndSave_Default_Global_Params();
+				}else if(2 == ptRecvFrame->ucType){
+					ClearAndSave_Default_Axis_Params();
+				}else if(3 == ptRecvFrame->ucType){
+					ClearAndSave_Default_Process();
+				}
+				
+				rt_thread_mdelay(3);//HAL_Delay(3);
+				MCU_Reset();
+			}
+			break;
+			case CMD_UPGRADE_LANCH: //0x70
+			{
+				/* 启动升级，跳转至Boot */
+				//修改升级标志位，
+				ptSendFrame->ucStatus = Set_UpdateFlag(1); //@todo, 改为跳转到boot的方式
+				if(MSG_TYPE_CAN == eMsgType)
+				{
+					Can_Send_Msg(ptSendFrame);
+					ucSendFlag = 1;
+				}
+				
+				//重启
+				rt_thread_mdelay(3);//HAL_Delay(3);
+				MCU_Reset();
+			}
+			break;
+			case CMD_QUERY_RUNING_SOFT_TYPE: //0x75
+			{
+				/* 查询当前正在执行的程序类型 */
+				ptSendFrame->uData.ucData[0] = SOFT_TYPE_APP;
+			}
+			break;
+			case CMD_GET_SN_CAN_ID: //0x80
+			{
+//				/* 数据部分不等于0时，不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
+//				if(ptRecvFrame->uData.ulData != 0)
+//				{
+//					ucSendFlag = 1;
+//					return ucSendFlag;
+//				}
+		
+		
+				/* 数据等于当前设备类型 或 等与 0x0000FFFF时，应答消息，否则不应答消息，防止在使用该命令时，网络中存在冲突CanID，消息在网络中回环发送, 同时在使用该指令时，数据部分必须为0 */ 
+				uint32_t ulModule = (ptRecvFrame->uData.ucData[0] << 24) | (ptRecvFrame->uData.ucData[1] << 16) | (ptRecvFrame->uData.ucData[2] << 8) |(ptRecvFrame->uData.ucData[3]);
+				switch(ulModule)
+				{
+					case CURRENT_MODULE_TYPE:
+					case MODULE_TYPE_TMC_STEP_MOTOR_ALL:
+					{
+						/* 获取系列号及CAN ID */
+						ptSendFrame->uData.ucData[0] = Recv_CanID();
+						ptSendFrame->uData.ucData[1] = Send_CanID();
+						
+						ptSendFrame->uData.ucData[2] = g_tBoardStatus.usSN & 0xFF;
+						ptSendFrame->uData.ucData[3] = (g_tBoardStatus.usSN>>8) & 0xFF;	
+					}
+					break;
+					
+					case LLD_BOARD_TYPE:
+					{
+						/* 获取系列号及CAN ID */
+						ptSendFrame->uData.ucData[0] = LLD_Recv_CanID();
+						ptSendFrame->uData.ucData[1] = LLD_Send_CanID();
+						
+						ptSendFrame->uData.ucData[2] = g_tBoardStatus.usSN_LLD & 0xFF;
+						ptSendFrame->uData.ucData[3] = (g_tBoardStatus.usSN_LLD>>8) & 0xFF;	
+					}
+					break;
+					
+					
+					default:
+					{
+						ucSendFlag = 1;
+						return ucSendFlag;
+					}
+					break;
+				}
+			}
+			break;
+//			case CMD_SET_CAN_ID_WITH_SN: //0x81
+//			{
+//				/* 获取系列号及CAN ID */
+//				uint16_t usSN = (ptRecvFrame->uData.ucData[3]<<8) | ptRecvFrame->uData.ucData[2];
+//				
+////				if(MSG_TYPE_CAN == eMsgType)
+////				{
+////					Can_Send_Msg(ptSendFrame);
+////					ucSendFlag = 1;
+////					HAL_Delay(3);
+////				}
+
+//				//当识别码相等才去修改CanID
+//				if(g_tBoardStatus.usSN == usSN){			
+//					Can_Send_Msg(ptSendFrame);
+//					ucSendFlag = 1;
+//					rt_thread_mdelay(3);//HAL_Delay(3);
+//					ptSendFrame->ucStatus = GlobalParam_Set_CanID(ptRecvFrame->uData.ucData[0], ptRecvFrame->uData.ucData[1]);
+//				}else{
+//					//tSendFrame->ucStatus = ERROR_TYPE_DATA;
+//					ucSendFlag = 1;
+//					break;
 //				}
 //			}
+//			break;
+			case CMD_TYPE_WITH_SN:  //0x82
+			{
+				uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
+				
+				//判断SN是否一致
+				if(usSN != g_tBoardStatus.usSN) 
+				{
+					//不一致，不执行，不应答
+					//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
+					//Can_Send_Msg(ptSendFrame);
+					ucSendFlag = 1;
+					break;
+				}
+				
+				//查询板卡类型
+				uint32_t ulModel = Get_Module_Type();
+				ptSendFrame->uData.ucData[0] = ulModel >> 24;
+				ptSendFrame->uData.ucData[1] = ulModel >> 16;
+				ptSendFrame->uData.ucData[2] = ulModel >> 8;
+				ptSendFrame->uData.ucData[3] = ulModel;			
+				//ptSendFrame->ucType = Recv_CanID();
+			}
+			break;
+
+			case CMD_SHINE_WITH_SN: //闪灯 0x83
+			{
+				uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
+							
+				//判断SN是否一致
+				if(usSN != g_tBoardStatus.usSN) 
+				{
+					//不一致，不执行，不应答
+					//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
+					//Can_Send_Msg(ptSendFrame);
+					ucSendFlag = 1;
+					break;
+				}
+				//3次，间隔50ms
+				LED_Shine(6, 50);
+			}
+			break;
+
+			case CMD_SHAKE_WITH_SN: //抖动 0x84
+			{
+				uint8_t i = 0, ucFlag = 0;
+				uint16_t usCount = 0;
+				uint16_t usSN = (ptRecvFrame->uData.ucData[1]<<8) | ptRecvFrame->uData.ucData[0];
+				uint16_t usShake = (ptRecvFrame->uData.ucData[3]<<8) | (ptRecvFrame->uData.ucData[2]);
+							
+				//判断SN是否一致
+				if(usSN != g_tBoardStatus.usSN) 
+				{
+					//不一致，不执行，不应答
+					//ptSendFrame->ucStatus = ERROR_TYPE_EXEC_RIGH;
+					//Can_Send_Msg(ptSendFrame);
+					ucSendFlag = 1;
+					break;
+				}else{
+					//提前应答
+					Can_Send_Msg(ptSendFrame);
+					ucSendFlag = 1;
+				}
+				
+				//默认抖动幅度，
+				if(usShake == 0) usShake = g_tAxisParamDefault.usMicroStepResultion[eTMC]*3; //大概5度
+				
+				//抖动，3次
+				for(i = 0; i < 3; i++)
+				{
+					//正向移动
+					ptSendFrame->ucStatus = TMC_MoveBy(eTMC, usShake);
+					while(usCount < 1500)
+					{
+						//最长等待2秒,检测是否到达位置
+						ucFlag = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
+						
+						//到达退出
+						if(ucFlag == 1) break; 
+						rt_thread_mdelay(50);//HAL_Delay(50);
+						usCount += 50;
+					}
+					
+					//延时
+					rt_thread_mdelay(50);//HAL_Delay(50);				
+					
+					//回退
+					ptSendFrame->ucStatus = TMC_MoveBy(eTMC, -usShake);
+					while(usCount < 1500)
+					{
+						//最长等待2秒,检测是否到达位置
+						ucFlag = TMC5160_FIELD_READ(eTMC, TMC5160_RAMPSTAT, TMC5160_RAMPSTAT_POS_REACH_MASK, TMC5160_RAMPSTAT_POS_REACH_SHIFT);
+						
+						//到达退出
+						if(ucFlag == 1) break;
+						rt_thread_mdelay(50);//HAL_Delay(50);
+						usCount += 50;
+					}
+				}
+			}
+			break;
+			
+			case CMD_TEST: // 0xFE
+			{
+				if(0 == ptRecvFrame->ucType)
+				{
+					uint8_t ucAddr = ptRecvFrame->uData.lData;
+				
+					if(CheckRegister_Addr(ucAddr) != ERROR_TYPE_SUCCESS) return ERROR_TYPE_DATA;
+					ptSendFrame->uData.lData = TMC5160_ReadInt(eTMC, ucAddr);
+				}
+			
+//				LOG_Info("Start ...");
+//				if(0 == ptRecvFrame->ucType)
+//				{
+//					//打印六点加速值
+//					TMC5160_PrintSixPoint_V(eTMC);
+//				}else if(1 == ptRecvFrame->ucType){
+//					//打印所有寄存器值
+//					Print_AllRegister_Value(eTMC);
+//				}else if(2 == ptRecvFrame->ucType){
+
+//					//打印CAN通信，收发统计信息
+//					LOG_Debug("Recv: S=%d, E=%d, F=%d, O=%d", g_tBoardStatus.tCanMsgCount_Info.ulRecvSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvErrorNum, \
+//															  g_tBoardStatus.tCanMsgCount_Info.ulRecvFailNum, g_tBoardStatus.tCanMsgCount_Info.ulRecvOverNum);
+//					LOG_Debug("Send: S=%d, F=%d", g_tBoardStatus.tCanMsgCount_Info.ulSendSuccessNum, g_tBoardStatus.tCanMsgCount_Info.ulSendFailNum);
+//				}else if(3 == ptRecvFrame->ucType){
+//					// TMC SPI通信测试
+//					ErrorType_e eError = ERROR_TYPE_SUCCESS;
+//					uint32_t i = 0, ulV = 0, ulNum = ptRecvFrame->uData.ulData;
+//					
+//					if(MSG_TYPE_CAN == eMsgType)
+//					{
+//						Can_Send_Msg(ptSendFrame);
+//						ucSendFlag = 1;
+//					}
+//					//
+//					eError = ERROR_TYPE_SUCCESS;
+//					for(i = 0; i < ulNum; i++)
+//					{
+//						ulV = rand();
+//						eError = TMC5160_WriteInt(eTMC, TMC5160_VSTOP, ulV);  
+//						if(eError != ERROR_TYPE_SUCCESS)
+//						{
+//							ptSendFrame->ucStatus = eError;
+//							if(MSG_TYPE_CAN == eMsgType)
+//							{
+//								Can_Send_Msg(ptSendFrame);
+//							}
+//							HAL_Delay(3);
+//						}
+//					}
+//				}
+			}
+			break;
+			default:
+			{
+				ptSendFrame->ucStatus = ERROR_TYPE_CMD;
+			}
+			break;
 		}
-		break;
-		default:
-		{
-			ptSendFrame->ucStatus = ERROR_TYPE_CMD;
-		}
-		break;
 	}
 	
 	return ucSendFlag;
@@ -1119,31 +1232,17 @@ void Event_Process(void)
 	
 	
 	//从报文队列中查询报文
-    switch(MonCan.Motor.tSysEvent.eMsgType)
-    {
-        case MSG_TYPE_NULL:
-        {
-//			__disable_irq();
-			e = SysEventGet();
-			if(e)
-			{
-				
-				memmove((void*)&MonCan.Motor.tSysEvent, (void*)e, sizeof(SysEvent_t));
-				SysEventFree(e);
-			}
-			else
-			{
-				;
-			}
-//			__enable_irq();
-		}
-		break;
-		
-        default:
+	if(FALSE == MonCan.Motor.IsReSend)
+	{
+		e = SysEventGet();
+		if(e)
 		{
+			memmove((void*)&MonCan.Motor.tSysEvent, (void*)e, sizeof(SysEvent_t));
+			SysEventFree(e);
+			
+			MonCan.Motor.AckBlockTime = 0;
 		}
-		break;
-    }
+	}
 	
 	
     switch(MonCan.Motor.tSysEvent.eMsgType)
@@ -1155,22 +1254,36 @@ void Event_Process(void)
 		
         case MSG_TYPE_CAN:
         {
-//            Can_RxMsg_t tRxMsg = {0};
-//			memmove((void*)&tRxMsg, (void*)tSysEvent.tMsg.ucaDataBuf, sizeof(Can_RxMsg_t));
-//            Handle_Can_RxMsg(&tRxMsg);
-			Can_RxMsg_t *ptRxMsg = (Can_RxMsg_t*)MonCan.Motor.tSysEvent.tMsg.ucaDataBuf;
-			reply = Handle_Can_RxMsg(ptRxMsg);
+			//阻塞应答延时
+			if(TRUE == MonCan.Motor.IsReSend)
+			{
+				Accumulation16(&MonCan.Motor.AckBlockTime);
+			}
 			
 			
-			//判断是否需要重发
+//			Can_RxMsg_t   *ptRxMsg = (Can_RxMsg_t*)MonCan.Motor.tSysEvent.tMsg.ucaDataBuf;
+//			reply = Handle_Can_RxMsg(ptRxMsg);
+			reply = Handle_Can_RxMsg(&MonCan.Motor.tSysEvent.tMsg.tMsgCan);
+			
+			
+			
+			//发送邮箱满
 			if(CAN_TxStatus_NoMailBox == reply)
 			{
-				MonCan.Motor.IsReSend = true;
-				//发送邮箱满
-				//CAN_Config(CAN1, &MonCan.Confg);
-//				CAN_Config(CAN1);
+				//判断是否需要重发
+				MonCan.Motor.IsReSend = TRUE;
+				CAN_Config(CAN1);
+				
+				rt_thread_delay(10);
 			}
 			else
+			{
+				MonCan.Motor.tSysEvent.eMsgType = MSG_TYPE_NULL;
+				MonCan.Motor.IsReSend = false;
+			}
+			
+			
+			if(MonCan.Motor.AckBlockTime > CAN_ACK_TIMEOUT)
 			{
 				MonCan.Motor.tSysEvent.eMsgType = MSG_TYPE_NULL;
 				MonCan.Motor.IsReSend = false;
@@ -1178,21 +1291,8 @@ void Event_Process(void)
         }
         break;
 		
-//        case MSG_TYPE_USART:
-//        {
-////			MsgUsart_t tRxMsg = {0};
-////			memmove((void*)&tRxMsg, (void*)&tSysEvent.tMsg.tMsgUsart, sizeof(MsgUsart_t));
-////            Handle_Usart_RxMsg(&tRxMsg);
-//			
-////			MsgUsart_t *ptRxMsg = (MsgUsart_t*)tSysEvent.tMsg.ucaDataBuf;
-////			Handle_Usart_RxMsg(ptRxMsg);
-//        }
-//        break;
-		
         default:
 		{
-			MonCan.Motor.tSysEvent.eMsgType = MSG_TYPE_NULL;
-			MonCan.Motor.IsReSend = false;
 		}
 		break;
     }

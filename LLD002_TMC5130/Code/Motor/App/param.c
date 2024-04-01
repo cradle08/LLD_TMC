@@ -18,7 +18,6 @@ __IO GlobalParam_t 	 g_tGlobalParam = {0};
 ErrorType_e Global_Param_Init(void)
 {
 	return Read_Global_Param(&g_tGlobalParam);
-	
 }
 
 
@@ -455,8 +454,10 @@ ErrorType_e Read_Global_Param(__IO GlobalParam_t *ptGlobalParam)
 		//计数
 		ucNum++;
 		
+		
 		//读取
 		memset((void*)ptGlobalParam, 0, sizeof(GlobalParam_t));
+		
 		Param_Read(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)ptGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN);
 		usCrc = CRC16((uint8_t*)ptGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN-2);
 		
@@ -514,10 +515,12 @@ ErrorType_e Save_Global_Param(__IO GlobalParam_t *ptGlobalParam)
 		
 		//写入
 		memmove((void*)&tGlobalParam, (void*)ptGlobalParam, sizeof(GlobalParam_t));
+		
 		Param_Write(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)&tGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN);
 			
 		//读取
 		memset((void*)&tGlobalParam, 0, sizeof(GlobalParam_t));
+		
 		Param_Read(EN_SAVE_PARAM_TYPE_GLOBAL, (uint8_t*)&tGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN);
 		usReadCrc = CRC16((uint8_t*)&tGlobalParam, GLOBAL_PARAM_SAVE_TO_EEPROM_LEN-2);
 		
