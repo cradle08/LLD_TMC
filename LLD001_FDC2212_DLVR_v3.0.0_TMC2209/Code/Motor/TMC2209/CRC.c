@@ -1,30 +1,4 @@
-/*
- * CRC.c
- *
- *  Created on: 04.12.2017
- *      Author: LH
- *
- *  This is a generic implementation for a CRC8 generator supporting
- *  both compile-time (1) and run-time initialized Lookup tables for efficient CRC8 calculation.
- *  You can store multiple tables for different polynomials and (non-)reflected CRCs.
- *  The different tables are referenced by an index, with an upper limit set at compile time (CRC_TABLE_COUNT).
- *
- *  To generate CRCs you must first generate the Lookup-table by calling fillCRCTable()
- *  with any index. CRCs can then be generated from any data buffer by calling CRC()
- *  with the same index previously given to fillCRCTable().
- *
- *  The table generation has been optimized for speed so that the runtime
- *  table generation can even be done during normal operation if required.
- *  However, as long as the required polynomials are known on initialization,
- *  the table generation should be done at that time.
- *  On the Landungsbruecke the initialization of a CRC table takes ~250µs. (2)
- *  Should your application still have problems with the table calculation time,
- *  this algorithm could probably be speed up by preparing a 2- or 4-bit lookup table
- *  to speed up the actual table generation.
- *
- *  (1): For compile-time CRC tables, just fill the table(s) by initializing CRCTables[] to the proper values.
- *  (2): Tested by toggling a GPIO pin, generating a table in-between and measuring the GPIO pulse width.
- */
+
 
 #include "CRC.h"
 
